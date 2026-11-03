@@ -1,0 +1,18 @@
+# Lane 3 C++ symbol map (see include/game/cxx_symbols.txt for the format).
+# Component base (ctor/dtor/vtable at 0x00184DC0 / 0x00184DD8 / 0x003619C0)
+__9Component = 0x00184DC0;
+_$_9Component = 0x00184DD8;
+_vt$9Component = 0x003619C0;
+_vt$13Comp_0028FA40 = 0x00376DD0;
+_vt$13Comp_0028EED8 = 0x00376D68;
+_vt$13Comp_0028FDA8 = 0x00376E38;
+_vt$13Comp_00290368 = 0x00376EA0;
+_vt$13Comp_002904C8 = 0x00376F08;
+_vt$13Comp_00291588 = 0x00376FD8;
+__12Sub_00260520 = 0x00260520;
+_$_12Sub_00260520 = 0x00260558;
+_vt$13Comp_002908C0 = 0x00376F70;
+_vt$13Comp_00291B80 = 0x00377040;
+_vt$13Comp_0029DBC8 = 0x003776D8;
+_vt$13Comp_0029E230 = 0x00377750;
+_vt$13Comp_0029A108 = 0x003775F8;

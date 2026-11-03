@@ -102,6 +102,8 @@ def main():
         if f["name"] in allowed:
             continue
         r = split.ends_in_jump(ROOT / f["asm"])
+        if r is None and split.only_fill(ROOT / f["asm"]):
+            r = False
         if r is False:
             problems.append(f"{f['name']} does not end in a jump: likely a missed function boundary "
                             "(fix symbol_addrs, or add to config/split_exceptions.us.txt with a reason)")

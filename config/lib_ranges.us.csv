@@ -1,1 +1,5 @@
 start,end,source,reason
+002CF3E8,002CFF98,sdk,SN Systems NetGlue ("snStoreErrno() thread not registered", sceNetGlueSocket strings)
+002DCC08,00317540,gamespy,GameSpy SDK (assert paths c:/skate5/gamespy/..., "GameSpyHTTP/1.0"); ends approximate
+00317540,00318AA8,unknown,between GameSpy and the Sony libraries; unclassified (references cdrom0:\SCE_DD\SCE_DD.ELF)
+00318AA8,003478CC,sdk,Sony SDK 2.8 + newlib/libm + SN runtime (libpad/libkernl/libmc/libcdvd/libmpeg/libgraph strings, syscall stubs)

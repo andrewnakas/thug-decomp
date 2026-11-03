@@ -41,7 +41,9 @@ def draft(name):
     r = subprocess.run([sys.executable, str(M2C), "-t", "mipsee-gcc-c", "--context", str(context()),
                         *map(str, files), "-f", name], capture_output=True, text=True, cwd=ROOT)
     if r.returncode != 0:
-        sys.exit("m2c failed:\n" + r.stderr[-2000:])
+        sys.exit("m2c failed:\n" + (r.stderr or r.stdout)[-2000:] +
+                 "\nIf this is a parse error in the context: m2c reads C, so wrap the C++-only parts of "
+                 "include/game/*.h (methods, base classes, mode(TI) unions) in #ifndef M2CTX ... #endif.")
     body = r.stdout.replace("? ", "s32 ")
     return ('#include "common.h"\n\n'
             '/* m2c draft (C). Turn it into the real C++: a member function of a class in\n'

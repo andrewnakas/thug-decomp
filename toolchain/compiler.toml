@@ -7,7 +7,7 @@
 # $ra with sd (older SN builds use sq); -ffast-math gives the inline sqrt.s of func_00100118.
 # SN Systems ProDG builds of ee-gcc; the ELF's .DVP.overlay sections are SN dvp-as output.
 name = "ee-gcc2.95.3-136"
-cflags = ["-O2", "-G8", "-ffast-math", "-fno-exceptions"]   # no EH frames anywhere in the ELF
+cflags = ["-O2", "-G8", "-ffast-math", "-fno-exceptions", "-fopt-stack"]   # no EH frames in the ELF; -fopt-stack: sd $s0 in 0x10 frames
 cppflags = ["-Iinclude", "-Iinclude/game", "-DTHUG_DECOMP"]
 
 [as]

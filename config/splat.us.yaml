@@ -36,6 +36,7 @@ options:
 
   symbol_addrs_path:
     - config/symbol_addrs.us.txt
+    - config/fill_starts.us.txt       # tools/find_fill.py
   reloc_addrs_path:
     - config/reloc_addrs.us.txt
 

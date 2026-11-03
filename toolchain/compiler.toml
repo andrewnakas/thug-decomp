@@ -1,0 +1,57 @@
+# The pinned compiler pipeline. Every tool (configure.py, match.py, gate.py,
+# permute.py) reads this file; nothing hard-codes flags.
+# Changing anything here is a tooling change: it re-judges every function.
+
+[compiler]
+# PROVISIONAL until the identification sweep (docs/COMPILER_ID.md) pins it.
+# SN Systems ProDG builds of ee-gcc; the ELF's .DVP.overlay sections are SN dvp-as output.
+name = "ee-gcc2.95.3-136"
+cflags = ["-O2", "-G0", "-fno-exceptions", "-fno-rtti"]
+cppflags = ["-Iinclude", "-Iinclude/game", "-DTHUG_DECOMP"]
+
+[as]
+# GNU as for splat's asm (never for compiler output: SN's own as.exe assembles that).
+flags = ["-EL", "-march=r5900", "-mabi=o64", "-mno-pdr", "-no-pad-sections", "-G0", "-Iinclude"]
+
+# Per-file flag overrides: a unit may start with  /* cflags: -O1 */  and only
+# flags listed here are accepted (tools/scan.py enforces it).
+[per_file]
+allowed_cflags = ["-O0", "-O1", "-O2", "-O3", "-G0", "-G4", "-G8",
+                  "-fno-schedule-insns", "-fno-schedule-insns2", "-fno-strength-reduce",
+                  "-fno-inline", "-funsigned-char", "-fsigned-char", "-fopt-stack"]
+
+# Known compilers: decompme/compilers "compilers" release assets, verified by sha256.
+# dir is relative to toolchain/compilers/, driver relative to dir.
+[compilers."ee-gcc2.95.3-136"]
+url = "https://github.com/decompme/compilers/releases/download/compilers/ee-gcc2.95.3-136.tar.gz"
+sha256 = "3b6ae6897229ad005aaf1b0afaa1f3cb46e74b4c21a42e01130c07c0c598067f"
+dir = "ee-gcc2.95.3-136"
+driver = "bin/ee-gcc.exe"
+
+[compilers."ee-gcc2.95.3-114"]
+url = "https://github.com/decompme/compilers/releases/download/compilers/ee-gcc2.95.3-114.tar.gz"
+sha256 = "dbc2c8c764631788d4cbb4c848c3cb0002fded0f4a95bae39e6d8b794391a6cb"
+dir = "ee-gcc2.95.3-114"
+driver = "bin/ee-gcc.exe"
+
+[compilers."ee-gcc2.95.3-107"]
+url = "https://github.com/decompme/compilers/releases/download/compilers/ps2_compilers.tar.xz"
+sha256 = "f337a65a4fbab5cf0e335efe266dcbc7cf69b19c665c6b3a8924736df151a02a"
+dir = "ps2_compilers/ee-gcc2.95.3-107"
+driver = "bin/ee-gcc.exe"
+
+[compilers."ee-gcc2.95.2-274"]
+url = "https://github.com/decompme/compilers/releases/download/compilers/ps2_compilers.tar.xz"
+sha256 = "f337a65a4fbab5cf0e335efe266dcbc7cf69b19c665c6b3a8924736df151a02a"
+dir = "ps2_compilers/ee-gcc2.95.2-274"
+driver = "bin/ee-gcc.exe"
+
+[compilers."ee-gcc2.95.2-273a"]
+url = "https://github.com/decompme/compilers/releases/download/compilers/ee-gcc2.95.2-273a.tar.gz"
+sha256 = "ee9d9a7fccb59aebfa78a5587f6f8059660b91f705acddbc292ad2243c8e562e"
+dir = "ee-gcc2.95.2-273a"
+driver = "bin/ee-gcc.exe"
+
+[tools.wibo]
+url = "https://github.com/decompals/wibo/releases/download/1.2.0/wibo-x86_64"
+sha256 = "13f86a2d618f0dbe67179d349625345eabf9b46450295cb4c904e49f6aff85af"

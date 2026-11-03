@@ -1,0 +1,75 @@
+# splat config for Tony Hawk's Underground (USA, PS2) boot ELF SLUS_207.31.
+# Always re-split with `python tools/split.py` (clean split); never run splat by hand
+# over an existing asm/ tree: splat leaves stale files behind.
+#
+# The whole ELF file is split by file offset. File offset = vram - 0xFF000 for the
+# main LOAD segment (.text .vutext .data .rodata .lit4 .sdata, then .sbss/.bss nobits).
+# Everything outside the main segment (ELF header, the DNAS blob, the non-alloc
+# sections and the section header table) is copied from your own disc as bin.
+name: SLUS_207.31
+sha1: ffefbe60ba0a1d7f27264bc1be6782f6bfc22985
+options:
+  basename: slus_207.31
+  target_path: disc/files/SLUS_207.31
+  base_path: ..
+  platform: ps2
+  compiler: EEGCC
+
+  asm_path: asm
+  asset_path: asm/bin                # ELF header, DNAS blob, VU code: from your disc, never committed
+  src_path: build/splat_src           # generated INCLUDE_ASM stubs; real code lives in src/funcs
+  build_path: build
+  ld_script_path: build/splat.ld      # unused: configure.py writes the real link script
+  create_c_files: True
+  generate_asm_macros_files: False    # include/macro.inc etc. are committed
+  create_undefined_funcs_auto: True
+  undefined_funcs_auto_path: config/undefined_funcs_auto.us.txt
+  create_undefined_syms_auto: True
+  undefined_syms_auto_path: config/undefined_syms_auto.us.txt
+
+  find_file_boundaries: False
+  gp_value: 0x38F3F0
+  migrate_rodata_to_functions: True
+  o_as_suffix: True
+  use_legacy_include_asm: False
+  section_order: [".text", ".data", ".rodata", ".bss"]
+
+  symbol_addrs_path:
+    - config/symbol_addrs.us.txt
+  reloc_addrs_path:
+    - config/reloc_addrs.us.txt
+
+  subalign: 4
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  disasm_unknown: True
+
+segments:
+  - name: elfhdr
+    type: bin
+    start: 0x0
+
+  - name: main
+    type: code
+    start: 0x1000
+    vram: 0x100000
+    bss_size: 0xD4DB0               # .sbss 0x393E80 .. .bss end 0x468C30
+    subsegments:
+      - [0x1000, c, game]           # .text: Neversoft engine + game, SDK, OpenSSL, GameSpy
+      - [0x2488CC, pad]             # .text -> .vutext alignment
+      - [0x248900, bin, vutext]     # .vutext: VU microcode, not EE code
+      - [0x24E280, data, data]      # .data (.vudata is empty)
+      - [0x25B8F0, pad]
+      - [0x25B900, rodata, rodata]  # .rodata
+      - [0x2883AC, pad]
+      - [0x288400, rodata, lit4]    # .lit4: float literals
+      - [0x289258, pad]
+      - [0x289280, data, sdata]     # .sdata (gp-relative)
+      - { start: 0x294E35, type: bss, vram: 0x393E80, name: bss }
+
+  - name: elftail
+    type: bin
+    start: 0x294E35                 # padding, .dnas (2nd LOAD), non-alloc sections, section headers
+  - [0x3A1638]

@@ -326,9 +326,10 @@ def main():
     ap.add_argument("--show", action="store_true")
     ap.add_argument("--compiler", help="experiment: another compilers.* entry")
     ap.add_argument("--cflags", help="experiment: replace the pinned cflags")
+    ap.add_argument("--outdir", help="where to write objects (default build/match); use one per parallel run")
     a = ap.parse_args()
     import shlex
-    res = compare(a.name, a.src, a.compiler, shlex.split(a.cflags) if a.cflags else None)
+    res = compare(a.name, a.src, a.compiler, shlex.split(a.cflags) if a.cflags else None, a.outdir)
     if res.error:
         print(f"{a.name}: ERROR {res.error}")
         sys.exit(2)

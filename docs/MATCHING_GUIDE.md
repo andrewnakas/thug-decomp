@@ -59,3 +59,37 @@ proves a new one.
 - **An `$a1` that survives into a call** is a forwarded argument.
 - **Fill:** `addiu $sp, $sp, +N; nop` pieces between functions are SN linker leftovers (kind `fill` in the
   table, not targets). `tools/find_fill.py` splits real functions out from behind them.
+
+## Findings from batch 2 (PRs #5, #6)
+
+- **Destructor mangling:** this compiler mangles `~Foo` as `_$_3Foo` (not `_._3Foo`); ctors are `__3Foo`,
+  vtables `_vt$3Foo`. Use those spellings in `cxx_symbols*.txt`.
+- **Derived destructors are empty:** `Derived::~Derived() {}` reproduces the game's dtor (vptr reset, `in_chrg`
+  in `$a1` forwarded to the base dtor, which does the `& 1` delete). Member sub-objects are destroyed in reverse
+  order with `in_chrg = 2` automatically.
+- **Keep the vtable out of the unit:** if the dtor is the class's only/first non-inline virtual, the unit emits
+  `.gnu.linkonce.d._vt$...` + `__tf...` and the gate rejects it. Declare another virtual *before* the destructor
+  (`virtual void Update();`, never defined) so the key function lives elsewhere.
+- **Components:** the shared base at 0x00184DC0 (ctor) / 0x00184DD8 (deleting dtor) has fields 0x0-0x17 and its
+  vptr at 0x18. Factories call `func_001046B0(size)` (the global allocator, zeroing) and then the ctor.
+- **Sub-object init order:** an inline `Identity()` call in the ctor body keeps the game's order; an inline
+  sub-object ctor schedules its stores earlier.
+- **Copy through a destination pointer** (`addiu $a2, $a0, 0x40` then `sq` off `$a2`) needs an inline
+  `operator=` copying row by row; plain struct assignment uses direct offsets.
+- **Identical functions need distinct names** (a different class/method per file), or the link sees duplicates.
+- **A 1-element array loop** `for (i = 0; i < 1; i++) a[i] = 0;` reproduces a run-once count-down loop.
+
+## Findings from batch 3 (PRs #7-#11)
+
+- **Single-bit bool tests:** `return (m_flags & 8) != 0;` compiles to `sra` + `andi 1`. The game's
+  `andi 8; sltu $v0, $zero, $v0` comes from `if (m_flags & 8) return true; return false;` (or `> 0`). For bit 0
+  a plain `andi 1` is right; multi-bit masks (`& 0xC`) take `!= 0`.
+- **Defining a destructor without emitting the vtable:** declare it pure with a body (`virtual ~Foo() = 0;` and
+  `Foo::~Foo() {...}`) plus another virtual after it; or keep it undefined in units that only `new` the class.
+- **Class `operator delete`:** an in-class `static void operator delete(void* p) { func_0010A8D8(D_00388A70, p); }`
+  inlines into deleting dtors as the `& 1` pool-free branch. `delete p` on a virtual-dtor class is a slot-1 call
+  with `$a1 = 3`.
+- **CRC loops:** index (`data[i]`) rather than `*data++`; take a local copy of a string pointer after the null check.
+- **Singleton getters** `if (!inst && create) inst = ...; refcount++; return inst;` match as written.
+- **An extra `daddu $v0, $a0` before a conditional store** is an inline helper returning a pointer.
+- **List append** stores `node->prev` before `node->next`.

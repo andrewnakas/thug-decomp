@@ -170,7 +170,7 @@ def main():
     refs = reference_counts()
     for f in funcs:
         p = ROOT / f["asm"]
-        if f["kind"] == "func" and not refs.get(f["name"]) and (ends_in_jump(p) is False or only_fill(p)):
+        if f["kind"] == "func" and not refs.get(f["name"]) and (ends_in_jump(p) is not True or only_fill(p)):
             f["kind"] = "fill"
     funcs.sort(key=lambda f: f["addr"])
     for a, b in zip(funcs, funcs[1:]):

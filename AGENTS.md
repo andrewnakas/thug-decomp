@@ -102,3 +102,10 @@ python3 toolchain/setup.py
 - **Evaluation order shows in the schedule.** A value the original computes early (a `sqrtf`, a sum) is usually its
   own statement in the source: `func_00100118` only matched once `float s = sqrtf(1.0f - x);` was hoisted.
 - **Scheduler-only differences are not worth chasing**: log them in your PR notes and move on.
+
+## Clones: one source, many functions
+
+`tools/clones.py` lists unmatched functions whose normalised instructions are identical to a matched unit
+(`func_A -> func_B func_C ...`), and with `--unmatched-groups N` groups of N+ identical functions nobody has
+matched yet (match one, adapt it to the rest). Use `--lane LO HI` for your range. Adapt the source (class,
+callee and global names per address) and run `match.py` on every copy: a clone is a hint, not a match.

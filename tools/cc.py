@@ -159,10 +159,13 @@ def target_jtables(func):
     return int(row["addr"], 16), out
 
 
+ALIGNS = {}   # table label -> .align (power of two) in effect before it
+
+
 def local_tables(text):
     """[(label, [entry labels])] for .rdata jump tables in compiler output, in reference order."""
     lines = text.splitlines()
-    tables, cur, sect = {}, None, ".text"
+    tables, cur, sect, align = {}, None, ".text", 2
     for line in lines:
         s = line.strip()
         if s in (".rdata", ".text", ".data") or s.startswith(".section"):
@@ -170,10 +173,15 @@ def local_tables(text):
             cur = None
             continue
         if sect == ".rdata":
+            m = re.match(r"^\.align\s+(\d+)", s)
+            if m:
+                align = int(m.group(1))
+                continue
             m = re.match(r"^(\$L\d+):$", s)
             if m:
                 cur = m.group(1)
                 tables[cur] = []
+                ALIGNS[cur] = align
                 continue
             m = re.match(r"^\.(?:word|gpword)\s+(\$L\d+)$", s)
             if m and cur:
@@ -219,6 +227,8 @@ def retarget_jtables(text_b, func, first_obj):
     pos = 0
     plan = []
     for (lab, entries), jt in zip(tables, want):
+        a2 = 1 << ALIGNS.get(lab, 2)       # SN aligns each table (.align 4 = 16 bytes)
+        pos = (pos + a2 - 1) // a2 * a2
         mine = [offs.get(pos + 4 * i) for i in range(len(entries))]
         pos += 4 * len(entries)
         a = int(jt[5:], 16)

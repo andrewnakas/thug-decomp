@@ -92,33 +92,34 @@ def check(path):
 def check_cxx_symbols():
     """Every include/game/cxx_symbols.txt entry names a real function start or data label, once."""
     import re
-    f = ROOT / "include" / "game" / "cxx_symbols.txt"
-    if not f.exists():
+    files = sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt"))
+    if not files:
         return 0
     funcs = {r["addr"] for r in match.load_functions()}
     labels = set(match.symbols().values())
     for d in (ROOT / "asm" / "data").glob("*.s"):
         labels.update(int(x, 16) for x in re.findall(r"dlabel D_([0-9A-F]{8})", d.read_text()))
     seen, bad = set(), 0
-    for n, line in enumerate(f.read_text().splitlines(), 1):
+    lines = [(f.name, n, l) for f in files for n, l in enumerate(f.read_text().splitlines(), 1)]
+    for fname, n, line in lines:
         s = line.strip()
         if not s or s.startswith("#"):
             continue
         m = re.match(r"^([^\s#=]+)\s*=\s*0x([0-9A-Fa-f]{1,8})\s*;\s*(?:#.*)?$", s)
         if not m:
-            print(f"PROBLEM cxx_symbols.txt: line {n}: expected '<mangled> = 0xADDR;'")
+            print(f"PROBLEM {fname}: line {n}: expected '<mangled> = 0xADDR;'")
             bad += 1
             continue
         name, addr = m.group(1), int(m.group(2), 16)
         if name in seen:
-            print(f"PROBLEM cxx_symbols.txt: line {n}: {name} mapped twice")
+            print(f"PROBLEM {fname}: line {n}: {name} mapped twice")
             bad += 1
         seen.add(name)
         if name.startswith(("func_", "D_")):
-            print(f"PROBLEM cxx_symbols.txt: line {n}: {name} is not a C++ name")
+            print(f"PROBLEM {fname}: line {n}: {name} is not a C++ name")
             bad += 1
         if addr not in funcs and addr not in labels:
-            print(f"PROBLEM cxx_symbols.txt: line {n}: 0x{addr:08X} is neither a function start nor a data label")
+            print(f"PROBLEM {fname}: line {n}: 0x{addr:08X} is neither a function start nor a data label")
             bad += 1
     return bad
 

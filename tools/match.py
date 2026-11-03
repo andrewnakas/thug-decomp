@@ -73,8 +73,7 @@ def symbols():
             m = SYMFILE.match(line)
             if m:
                 syms[m.group(1)] = int(m.group(2), 16)
-    alias = ROOT / "include" / "game" / "cxx_symbols.txt"   # mangled name -> address (contributors)
-    if alias.exists():
+    for alias in sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt")):  # contributors' C++ names
         for line in alias.read_text().splitlines():
             m = SYMFILE.match(line)
             if m:

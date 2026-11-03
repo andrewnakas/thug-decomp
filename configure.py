@@ -39,9 +39,8 @@ TOOL_DEPS = ["tools/cc.py", "tools/common.py", "toolchain/compiler.toml", "confi
 def cxx_symbols():
     """include/game/cxx_symbols.txt: mangled names contributors map to original addresses."""
     import re
-    f = ROOT / "include" / "game" / "cxx_symbols.txt"
     out = []
-    if f.exists():
+    for f in sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt")):
         for line in f.read_text().splitlines():
             m = re.match(r"^\s*([^\s#=]+)\s*=\s*(0x[0-9A-Fa-f]+)\s*;", line)
             if m:
@@ -124,7 +123,7 @@ def main():
          f"rule ld\n  command = {py} tools/link.py $out\n  description = link $out\n",
          f"rule verify\n  command = {py} tools/link.py --verify $in $out\n  description = sha1 $in\n",
          f"rule configure\n  command = {py} configure.py\n  generator = 1\n  description = configure\n",
-         "build build.ninja: configure | configure.py config/functions.us.csv include/game/cxx_symbols.txt\n"]
+         "build build.ninja: configure | configure.py config/functions.us.csv " + " ".join(rel(p) for p in sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt"))) + "\n"]
     headers = sorted(rel(p) for p in (ROOT / "include").rglob("*.h"))
     for o, (kind, src) in sorted(objects.items()):
         extra = " ".join(headers) if kind == "cxx" else ""

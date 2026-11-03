@@ -44,10 +44,10 @@ def main():
     ap.add_argument("--out", help="permuter directory (default work/permute/<name>)")
     a, rest = ap.parse_known_args()
     name = a.name
-    unit = Path(a.src) if a.src else unit_path(name)
+    unit = (ROOT / a.src).resolve() if a.src else unit_path(name)
     if not unit.exists():
         sys.exit(f"{unit.relative_to(ROOT)} missing: python tools/new_func.py {name}")
-    d = Path(a.out) if a.out else ROOT / "work" / "permute" / name
+    d = (ROOT / a.out).resolve() if a.out else ROOT / "work" / "permute" / name
     d.mkdir(parents=True, exist_ok=True)
 
     cfg = compiler_config()

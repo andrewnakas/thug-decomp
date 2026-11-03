@@ -16,3 +16,5 @@ _vt$13Comp_00291B80 = 0x00377040;
 _vt$13Comp_0029DBC8 = 0x003776D8;
 _vt$13Comp_0029E230 = 0x00377750;
 _vt$13Comp_0029A108 = 0x003775F8;
+# Base destructor 0x002B6C20 (still asm), referenced by the derived dtor at 0x002B6E68
+_$_13Base_002B6E68 = 0x002B6C20;

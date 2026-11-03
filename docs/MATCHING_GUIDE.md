@@ -143,3 +143,12 @@ Example: `src/funcs/func_002BA688.cpp`.
 - **No dead statements.** A bare `m_count;` or a no-op assignment kept only to steer the compiler is not allowed;
   if nothing else works, leave the function for later.
 - `tools/permute.py NAME --src work/draft.cpp --out work/perm/NAME` permutes a draft outside src/funcs.
+
+## Stack objects (iterators, scoped helpers)
+
+- When an inline ctor/method runs on a *local* object, gcc folds `this` to the frame address and stores come out
+  as `off($sp)`. The game's form (stores through `$sN`, calls with `daddu $aN, $sN`) comes from a named pointer:
+  `T* p = &obj;` and all stores/calls through `p` (or inline helpers on `p`). The field at +0 still folds to
+  `X($sp)`; declaration order sets the stack layout.
+- Still open: the two-register form (`daddu $s7, $s1` copy) with the vptr at +8 (func_002A8270, func_002A8F40);
+  see lane 3's notes before attempting.

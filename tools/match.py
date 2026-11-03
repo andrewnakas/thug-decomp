@@ -82,13 +82,34 @@ def symbols():
     return syms
 
 
+_labels = None
+
+
+def real_labels():
+    """Every label the asm actually defines (the linker only knows these)."""
+    global _labels
+    if _labels is None:
+        _labels = set()
+        for f in ASM.rglob("*.s"):
+            _labels.update(re.findall(r"^\s*(?:glabel|dlabel|jlabel|alabel)\s+(\S+)", f.read_text(), re.M))
+    return _labels
+
+
+EXTRA_SYMS = {}   # from a .sym file next to --src (contributor experiments; the gate never uses it)
+
+
 def sym_addr(name):
-    a = symbols().get(name)
+    a = EXTRA_SYMS.get(name, symbols().get(name))
     if a is None:
         m = NAMED_ADDR.match(name)
-        if m:
+        if m and name in real_labels():
             a = int(m.group(1), 16)
+        elif m and not name.startswith(".L"):
+            UNKNOWN.add(name)   # e.g. D_00393FA2 inside an object: the linker has no such symbol
     return a
+
+
+UNKNOWN = set()
 
 
 def sext16(v):
@@ -239,6 +260,13 @@ def reloc_equal(tr, orr, here, tw, ow):
 
 def compare(name, src=None, compiler=None, cflags=None, outdir=None):
     row = func_row(name)
+    if src:
+        side = Path(src).with_suffix(".sym")
+        if side.exists():
+            for line in side.read_text().splitlines():
+                m = SYMFILE.match(line)
+                if m:
+                    EXTRA_SYMS[m.group(1)] = int(m.group(2), 16)
     addr = row["addr"]
     src = Path(src) if src else unit_path(name)
     outdir = Path(outdir) if outdir else BUILD / "match"
@@ -304,6 +332,9 @@ def main():
     if res.error:
         print(f"{a.name}: ERROR {res.error}")
         sys.exit(2)
+    if UNKNOWN:
+        print(f"{a.name}: unknown symbol(s) {', '.join(sorted(UNKNOWN))}: not a label in the asm (a name inside a "
+              "data object?). Index from the object's real label instead; the link would fail.")
     if a.show:
         show(res, func_row(a.name)["addr"])
     extra = [f"{k} ({v} bytes)" for k, v in res.ours.sections.items()

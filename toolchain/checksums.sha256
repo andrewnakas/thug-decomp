@@ -1,0 +1,9 @@
+# sha256 of every pinned tool; tools/toolcheck.py checks them. A change here is a tooling change.
+13f86a2d618f0dbe67179d349625345eabf9b46450295cb4c904e49f6aff85af  toolchain/bin/wibo
+e5445089a6f707e30cb5e02992451b604619cedfd2660ee2373a86bfefd9e718  toolchain/bin/objdiff-cli
+522d28f9d74ddfce89568437156c8ee323c806de525d99907f698050dee8d81e  toolchain/compilers/ee-gcc2.95.3-136/bin/ee-gcc.exe
+b9c50aa66f9cf5dbd80b2affe9874ec7674b7328965c629476f6ad7c77943154  toolchain/compilers/ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/cpp.exe
+0393bcd31f91a6b9f0255db97f1cc99eba78ee8fc003e9a04dfabed1ae1d522e  toolchain/compilers/ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/cc1.exe
+78a0df900a396098986cbc97a8d3eab6dbbc587a343d4dbd22929a4112c003fb  toolchain/compilers/ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/cc1plus.exe
+7f504e571215fead2a15a14520bd22dc13507a1f13b479ca8c06a165f4a886a4  toolchain/compilers/ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/as.exe
+7b5520c0d9d04623b899ba80dbd713635a0aa17f0e58f7ba58b30c443cd48d76  toolchain/compilers/ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/specs

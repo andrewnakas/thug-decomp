@@ -121,21 +121,24 @@ def main():
     n.append(f"build {rel(exe)}.ok: verify {rel(exe)}\n")
 
     # objdiff: one unit per game function (target = original asm, base = the C++)
-    units = []
+    units, targets = [], []
     for f in funcs:
         if f["source"] != "game" or f["kind"] != "func":
             continue
         c = unit_path(f["name"])
-        u = {"name": f["name"], "target_path": rel(obj_for(ROOT / f["asm"]).with_name(
-                 f["name"] + ".target.o")),
+        u = {"name": f["name"], "target_path": rel(obj_for(ROOT / f["asm"])),
              "metadata": {"progress_categories": ["game"], "auto_generated": True}}
         if c.exists():
             t = Path(u["target_path"])
-            n.append(f"build {t}: as {f['asm']} | {deps}\n")
+            if obj_for(ROOT / f["asm"]) not in objects:   # its asm is not in the link: build it for objdiff
+                n.append(f"build {t}: as {f['asm']} | {deps}\n")
+            targets.append(str(t))
             u["base_path"] = rel(obj_for(c))
             u["metadata"]["source_path"] = rel(c)
             u["metadata"]["complete"] = True
         units.append(u)
+    n.append("build objdiff: phony " + " ".join(targets) + " "
+             + " ".join(rel(o) for o, (k, _) in sorted(objects.items()) if k == "cxx") + "\n")
     (ROOT / "objdiff.json").write_text(json.dumps({
         "$schema": "https://raw.githubusercontent.com/encounter/objdiff/main/config.schema.json",
         "custom_make": "ninja", "build_target": False, "build_base": True,

@@ -1,0 +1,7 @@
+# Functions that legitimately do not end in a jump (checked by tools/check_split.py).
+# <name>  <reason>
+func_002CE778  exit syscall (v1 = 0x23): never returns
+func_003340D0  ends in a call to func_0033B058, which never returns (assert/abort path)
+func_00334148  ends in a call to func_002CE770 (exit), never returns
+func_0033B058  calls func_002CE770 (exit) and never returns
+func_0033ECE8  ends in a call to func_0033B058, which never returns

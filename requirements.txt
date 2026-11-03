@@ -8,3 +8,5 @@ pytest==9.1.1
 colorama==0.4.6
 toml==0.10.2
 levenshtein==0.27.1
+pycparser==3.12
+graphviz==0.21

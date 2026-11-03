@@ -104,6 +104,38 @@ def wordify_vu(path):
     return n
 
 
+INSN = re.compile(r"/\*\s*[0-9A-F]+\s+[0-9A-F]{8}\s+[0-9A-F]{8}\s*\*/\s+(\S+)")
+FUNC_REF = re.compile(r"\bfunc_[0-9A-F]{8}\b")
+ENDERS = ("jr", "j", "jalr", "b", "eret")
+
+
+def ends_in_jump(path):
+    """True/False for code; None for something too short to tell (data in .text)."""
+    insns = []
+    for line in path.read_text().splitlines():
+        if line.lstrip().startswith("endlabel"):
+            break
+        m = INSN.search(line)
+        if m:
+            insns.append(m.group(1))
+    while len(insns) > 2 and insns[-1] == "nop" and insns[-2] == "nop":
+        insns.pop()  # alignment padding
+    if len(insns) < 2:
+        return None
+    return insns[-2] in ENDERS or insns[-1] in ENDERS
+
+
+def reference_counts():
+    """func_X -> number of mentions in other asm files (calls, jumps, pointers in data)."""
+    counts = {}
+    for p in ASM.rglob("*.s"):
+        own = p.stem
+        for m in FUNC_REF.findall(p.read_text()):
+            if m != own:
+                counts[m] = counts.get(m, 0) + 1
+    return counts
+
+
 def main():
     for d in (ASM, BUILD / "splat_src"):
         shutil.rmtree(d, ignore_errors=True)
@@ -124,6 +156,12 @@ def main():
             sys.exit(f"{rel}: no instructions")
         funcs.append({"name": info["func"] or info["name"], "addr": info["addr"], "size": info["size"],
                       "kind": "func" if info["func"] else "data", "asm": rel})
+    # Unreferenced fragments that never end (addiu $sp/nop pairs between functions, left
+    # by SN's linker) are not functions: kind "fill", never a decomp target, kept as asm.
+    refs = reference_counts()
+    for f in funcs:
+        if f["kind"] == "func" and ends_in_jump(ROOT / f["asm"]) is False and not refs.get(f["name"]):
+            f["kind"] = "fill"
     funcs.sort(key=lambda f: f["addr"])
     for a, b in zip(funcs, funcs[1:]):
         if not a["size"]:
@@ -142,10 +180,13 @@ def main():
     STAMP.write_text(inputs_hash() + "\n")
     by = {}
     for f in funcs:
+        if f["kind"] != "func":
+            continue
         s = source_of(f["addr"], ranges)
         n, b = by.get(s, (0, 0))
         by[s] = (n + 1, b + f["size"])
-    print(f"split: {vu} VU0 macro instructions emitted as .word")
+    print(f"split: {vu} VU0 macro instructions emitted as .word, "
+          f"{sum(1 for f in funcs if f['kind'] == 'fill')} unreferenced fill fragments")
     print("split: " + ", ".join(f"{s} {n} functions ({b:,} bytes)" for s, (n, b) in sorted(by.items())))
 
 

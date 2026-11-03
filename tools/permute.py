@@ -40,12 +40,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("name")
     ap.add_argument("--run", action="store_true")
+    ap.add_argument("--src", help="permute this draft instead of src/funcs/<name>.cpp")
+    ap.add_argument("--out", help="permuter directory (default work/permute/<name>)")
     a, rest = ap.parse_known_args()
     name = a.name
-    unit = unit_path(name)
+    unit = (ROOT / a.src).resolve() if a.src else unit_path(name)
     if not unit.exists():
         sys.exit(f"{unit.relative_to(ROOT)} missing: python tools/new_func.py {name}")
-    d = ROOT / "work" / "permute" / name
+    d = (ROOT / a.out).resolve() if a.out else ROOT / "work" / "permute" / name
     d.mkdir(parents=True, exist_ok=True)
 
     cfg = compiler_config()
@@ -68,7 +70,7 @@ def main():
         f'func_name = "{name}"\ncompiler_type = "gcc"\n'
         f'objdump_command = "{tool("mipsel-linux-gnu-objdump")} -drz -m mips:5900"\n')
 
-    res = match.compare(name)
+    res = match.compare(name, unit)
     if res.error:
         sys.exit(f"unit does not compile: {res.error}")
     target = ROOT / "build" / "match" / "target" / f"{name}.o"

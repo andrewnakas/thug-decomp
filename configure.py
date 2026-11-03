@@ -101,6 +101,10 @@ def main():
         text.append((f["addr"], o))
         if c.exists():
             aliases.append((f["name"], f["addr"]))
+            # labels inside the replaced asm (jump-table targets the game's .rodata points at)
+            import re as _re
+            for m in _re.finditer(r"^\s*(?:jlabel\s+)?\.L([0-9A-F]{8})\b", (ROOT / f["asm"]).read_text(), _re.M):
+                aliases.append((f'".L{m.group(1)}"', int(m.group(1), 16)))
     data = []
     for addr, src, kind, sect in DATA:
         o = obj_for(ROOT / src)

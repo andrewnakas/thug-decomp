@@ -136,6 +136,104 @@ def retarget_literals(asm_text, func):
     return ("\n".join(lines) + "\n").encode()
 
 
+# Jump tables. SN's compiler emits a switch table as a local `.rdata` block
+# (`$L11: .word $L4 ...`) loaded with %hi/%lo($L11). The game's own table already
+# sits in .rodata as jtbl_XXXXXXXX. The k-th table the unit references is pointed
+# at the k-th jtbl_ the original function loads, but only after checking that every
+# entry lands on the same offset in the function as the game's table entry does.
+JTBL_REF = re.compile(r"%(?:hi|lo)\((jtbl_[0-9A-F]{8})\)")
+LOCAL_REF = re.compile(r"%(hi|lo)\((\$L\d+)\)")
+
+
+def target_jtables(func):
+    from common import FUNCTIONS_CSV
+    import csv
+    with open(FUNCTIONS_CSV) as f:
+        row = next((r for r in csv.DictReader(f) if r["name"] == func), None)
+    if row is None:
+        return None, []
+    out = []
+    for m in JTBL_REF.finditer((ROOT / row["asm"]).read_text()):
+        if m.group(1) not in out:
+            out.append(m.group(1))
+    return int(row["addr"], 16), out
+
+
+def local_tables(text):
+    """[(label, [entry labels])] for .rdata jump tables in compiler output, in reference order."""
+    lines = text.splitlines()
+    tables, cur, sect = {}, None, ".text"
+    for line in lines:
+        s = line.strip()
+        if s in (".rdata", ".text", ".data") or s.startswith(".section"):
+            sect = s
+            cur = None
+            continue
+        if sect == ".rdata":
+            m = re.match(r"^(\$L\d+):$", s)
+            if m:
+                cur = m.group(1)
+                tables[cur] = []
+                continue
+            m = re.match(r"^\.(?:word|gpword)\s+(\$L\d+)$", s)
+            if m and cur:
+                tables[cur].append(m.group(1))
+    order = []
+    for m in LOCAL_REF.finditer(text):
+        if m.group(2) in tables and m.group(2) not in order:
+            order.append(m.group(2))
+    return [(t, tables[t]) for t in order]
+
+
+def label_offsets(obj, func_sym=None):
+    """Offsets (from the function start) of every .rodata word in a first-pass object."""
+    from elftools.elf.elffile import ELFFile
+    from elftools.elf.relocation import RelocationSection
+    with open(obj, "rb") as fh:
+        elf = ELFFile(fh)
+        sym = elf.get_section_by_name(".symtab")
+        start = next((x["st_value"] for x in sym.iter_symbols() if x["st_info"]["type"] == "STT_FUNC"
+                      and x["st_shndx"] not in ("SHN_UNDEF", "SHN_ABS")), 0)
+        ro = elf.get_section_by_name(".rodata") or elf.get_section_by_name(".rdata")
+        if ro is None:
+            return {}
+        rel = elf.get_section_by_name(".rel" + ro.name)
+        data = ro.data()
+        out = {}
+        if isinstance(rel, RelocationSection):
+            for r in rel.iter_relocations():
+                off = r["r_offset"]
+                out[off] = int.from_bytes(data[off:off + 4], "little") - start
+        return out
+
+
+def retarget_jtables(text_b, func, first_obj):
+    text = text_b.decode(errors="replace")
+    faddr, want = target_jtables(func)
+    tables = local_tables(text)
+    if not tables or not want or len(tables) != len(want):
+        return text_b
+    from common import EXE, FILE_OFF, VRAM
+    img = EXE.read_bytes()
+    offs = label_offsets(first_obj)
+    pos = 0
+    plan = []
+    for (lab, entries), jt in zip(tables, want):
+        mine = [offs.get(pos + 4 * i) for i in range(len(entries))]
+        pos += 4 * len(entries)
+        a = int(jt[5:], 16)
+        game = [int.from_bytes(img[a - VRAM + FILE_OFF + 4 * i:a - VRAM + FILE_OFF + 4 * i + 4], "little") - faddr
+                for i in range(len(entries))]
+        if mine != game:
+            return text_b       # different case layout: leave it, the gate rejects the unit's .rodata
+        plan.append((lab, jt))
+    for lab, jt in plan:
+        text = re.sub(r"%(hi|lo)\(" + re.escape(lab) + r"\)", lambda m: f"%{m.group(1)}({jt})", text)
+        # drop the local table block
+        text = re.sub(r"(?m)^" + re.escape(lab) + r":\n(?:\s*\.(?:word|gpword)\s+\$L\d+\n)+", "", text)
+    return text.encode()
+
+
 def fix_symtab(path):
     """Make an SN object linkable by modern ld.
 
@@ -167,6 +265,21 @@ def fix_symtab(path):
     Path(path).write_bytes(bytes(b))
 
 
+def strip_lang(cflags):
+    """A language override (-x c++) must not apply when assembling the .s."""
+    if cflags is None:
+        return None
+    out, skip = [], False
+    for f in cflags:
+        if skip:
+            skip = False
+        elif f == "-x":
+            skip = True
+        else:
+            out.append(f)
+    return out
+
+
 def compile_obj(src, out, cfg, compiler=None, cflags=None, extra_cpp=(), literals=True, func=None):
     """Compile a unit to an object. With literals=True, float literals are retargeted
     to the original function's constants (see above); func defaults to the file stem."""
@@ -179,18 +292,13 @@ def compile_obj(src, out, cfg, compiler=None, cflags=None, extra_cpp=(), literal
         text = retarget_literals(text, func)
     with tempfile.TemporaryDirectory(prefix="thugas", dir=ROOT / "build") as td:
         s = Path(td) / "u.s"
+        if literals and func and b".rdata" in text:   # jump tables: first pass to learn label offsets
+            s.write_bytes(text)
+            first = Path(td) / "first.o"
+            run("ee-gcc -c", driver_cmd(s, cfg, compiler, strip_lang(cflags), (), "-c", first))
+            text = retarget_jtables(text, func, first)
         s.write_bytes(text)
-        as_flags = None
-        if cflags is not None:   # a language override (-x c++) must not apply to the .s
-            as_flags, skip = [], False
-            for f in cflags:
-                if skip:
-                    skip = False
-                elif f == "-x":
-                    skip = True
-                else:
-                    as_flags.append(f)
-        run("ee-gcc -c", driver_cmd(s, cfg, compiler, as_flags, (), "-c", tmp))
+        run("ee-gcc -c", driver_cmd(s, cfg, compiler, strip_lang(cflags), (), "-c", tmp))
     if not tmp.exists() or tmp.stat().st_size == 0:
         raise StageError("compiler produced an empty object")
     fix_symtab(tmp)

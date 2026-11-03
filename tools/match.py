@@ -306,6 +306,12 @@ def main():
         sys.exit(2)
     if a.show:
         show(res, func_row(a.name)["addr"])
+    extra = [f"{k} ({v} bytes)" for k, v in res.ours.sections.items()
+             if v and (k in (".data", ".sdata", ".bss", ".sbss", ".rodata", ".rdata", ".lit4", ".lit8")
+                       or k.startswith(".gnu.linkonce"))]
+    if extra:
+        print(f"{a.name}: WARNING the unit emits {', '.join(extra)}: gate.py will reject it "
+              "(keep vtables/strings/tables in the asm; see MATCHING_GUIDE key-function notes)")
     if res.ok:
         print(f"{a.name}: MATCH")
     else:

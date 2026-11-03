@@ -48,9 +48,18 @@ def main():
     ap.add_argument("--unmatched-groups", type=int, metavar="N",
                     help="also list groups of >= N identical unmatched functions (one source would do all)")
     ap.add_argument("--min-insns", type=int, default=4)
+    ap.add_argument("--full", action="store_true", help="print every member of each group (no 12-name cut)")
+    ap.add_argument("--with", dest="extra", action="append", default=[], metavar="DIR",
+                    help="also count units in DIR (e.g. another clone's src/funcs) as matched")
     a = ap.parse_args()
     lo, hi = (int(a.lane[0], 16), int(a.lane[1], 16)) if a.lane else (0, 1 << 32)
     done = {p.stem for p in SRC_FUNCS.glob("func_*.cpp")}
+    where = {n: "src/funcs" for n in done}
+    for d in a.extra:
+        for p in Path(d).expanduser().glob("func_*.cpp"):
+            if p.stem not in done:
+                done.add(p.stem)
+                where[p.stem] = d
     groups = defaultdict(list)
     for f in load_functions():
         if f["kind"] != "func" or f["source"] != "game":
@@ -64,14 +73,16 @@ def main():
         todo = [f for f in fs if f["name"] not in done and lo <= f["addr"] < hi]
         if matched and todo:
             n += len(todo)
-            print(f"{matched[0]['name']} ({len(sig)} insns) -> " + " ".join(f["name"] for f in todo))
+            src = matched[0]["name"]
+            print(f"{src} [{where[src]}] ({len(sig)} insns) -> " + " ".join(f["name"] for f in todo))
     print(f"clones: {n} unmatched functions are identical to a matched unit")
     if a.unmatched_groups:
         for sig, fs in sorted(groups.items(), key=lambda kv: -len(kv[1])):
             todo = [f for f in fs if f["name"] not in done and lo <= f["addr"] < hi]
             if len(todo) >= a.unmatched_groups and not any(f["name"] in done for f in fs):
-                print(f"group of {len(todo)} ({len(sig)} insns): " + " ".join(f["name"] for f in todo[:12])
-                      + (" ..." if len(todo) > 12 else ""))
+                shown = todo if a.full else todo[:12]
+                print(f"group of {len(todo)} ({len(sig)} insns): " + " ".join(f["name"] for f in shown)
+                      + (" ..." if len(todo) > len(shown) else ""))
 
 
 if __name__ == "__main__":

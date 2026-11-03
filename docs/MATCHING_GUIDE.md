@@ -120,3 +120,14 @@ original function references its tables). Only if every entry lands on the same 
 rejects it (`has its own .rodata`). So a rejected switch means the case layout differs: check the case order
 against `asm/data/rodata.rodata.s` (`dlabel jtbl_...`) and spell out every case, including empty ones.
 Example: `src/funcs/func_002BA688.cpp`.
+
+## Findings from lane 3 batches 11-12 (medium functions, switches)
+
+- **A callee's declared return type changes codegen even when the result is ignored**: declaring it `int`/`void*`
+  instead of `void` fixes `$v0`/`$v1` choices and the `$a0`/`$a1` order in a call's delay slot.
+- **Timeouts** keep the constant in a register only through an inline helper:
+  `static inline bool Elapsed(int ms, int now, int start) { return now - start > ms; }`.
+- **Cross-jumped calls:** write the same call in every `case`; gcc merges them into the game's single shared call.
+- **Block order:** a `goto` into another case's block, or falling through from a case's `if`, reproduces layouts
+  that structured code cannot.
+- **Several switches in one function** are supported (each table is checked separately).

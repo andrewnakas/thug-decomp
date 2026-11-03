@@ -44,7 +44,7 @@ def obj_for(src):
     return BUILD / (rel(src) + ".o")
 
 
-def link_script(text, data, bss_obj):
+def link_script(text, data, bss_obj, cxx_aliases=()):
     def place(addr, o, sect):
         return f"        . = 0x{addr - VRAM:X}; {rel(o)}({sect})\n"
 
@@ -54,6 +54,8 @@ def link_script(text, data, bss_obj):
            "INCLUDE config/undefined_funcs_auto.us.txt\n",
            "INCLUDE config/undefined_syms_auto.us.txt\n",
            f"_gp = 0x{GP:08X};\n",
+           # C++ units define mangled names; asm callers keep calling func_XXXXXXXX
+           *[f"{name} = 0x{addr:08X};\n" for name, addr in cxx_aliases],
            "SECTIONS\n{\n",
            f"    .main 0x{VRAM:08X} : SUBALIGN(1)\n    {{\n"]
     for addr, o in text:
@@ -77,12 +79,15 @@ def main():
     funcs = load_functions()
     objects = {}  # obj -> (rule, src)
     text = []
+    aliases = []
     for f in funcs:
         c = unit_path(f["name"])
         src = c if c.exists() else ROOT / f["asm"]
         o = obj_for(src)
         objects[o] = ("cxx" if c.exists() else "as", src)
         text.append((f["addr"], o))
+        if c.exists():
+            aliases.append((f["name"], f["addr"]))
     data = []
     for addr, src, kind, sect in DATA:
         o = obj_for(ROOT / src)
@@ -93,7 +98,7 @@ def main():
 
     BUILD.mkdir(parents=True, exist_ok=True)
     ld = BUILD / "link.ld"
-    ld.write_text(link_script(text, data, bss_obj))
+    ld.write_text(link_script(text, data, bss_obj, aliases))
 
     py = sys.executable
     deps = " ".join(TOOL_DEPS)

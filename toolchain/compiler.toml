@@ -3,10 +3,11 @@
 # Changing anything here is a tooling change: it re-judges every function.
 
 [compiler]
-# PROVISIONAL until the identification sweep (docs/COMPILER_ID.md) pins it.
+# Pinned 2026-11-03 by the identification sweep (docs/COMPILER_ID.md): only SN 1.36 saves
+# $ra with sd (older SN builds use sq); -ffast-math gives the inline sqrt.s of func_00100118.
 # SN Systems ProDG builds of ee-gcc; the ELF's .DVP.overlay sections are SN dvp-as output.
 name = "ee-gcc2.95.3-136"
-cflags = ["-O2", "-G0", "-fno-exceptions", "-fno-rtti"]
+cflags = ["-O2", "-G8", "-ffast-math", "-fno-exceptions"]   # no EH frames anywhere in the ELF
 cppflags = ["-Iinclude", "-Iinclude/game", "-DTHUG_DECOMP"]
 
 [as]

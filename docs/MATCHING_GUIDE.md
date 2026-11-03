@@ -110,3 +110,13 @@ proves a new one.
   parameter of a `static inline` helper.
 - **Code after a `beqz` landing point runs on both paths**: only what precedes it belongs inside the `if`.
 - **`1.0f / 60.0f`** folds to the .lit4 constant 0x3C888889.
+
+## Switch statements (jump tables)
+
+Write the `switch` normally. `tools/cc.py` compiles the unit once, reads where each entry of the compiler's local
+jump table lands in the function, and compares that with the game's `jtbl_XXXXXXXX` table (in the same order the
+original function references its tables). Only if every entry lands on the same offset does it point the
+`%hi/%lo` at the game's table and drop the local one; otherwise the unit keeps its own `.rodata` and the gate
+rejects it (`has its own .rodata`). So a rejected switch means the case layout differs: check the case order
+against `asm/data/rodata.rodata.s` (`dlabel jtbl_...`) and spell out every case, including empty ones.
+Example: `src/funcs/func_002BA688.cpp`.

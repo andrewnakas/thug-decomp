@@ -1,0 +1,7 @@
+# Lane 2 C++ symbol map (see include/game/cxx_symbols.txt for the format)
+__12ObjComponent = 0x00184DC0;
+_$_12ObjComponent = 0x00184DD8;
+_vt$13Comp_001CE200 = 0x00363770;
+_vt$13Comp_001CE688 = 0x003637D8;
+_vt$13Comp_001CCEA8 = 0x003636E8;
+_vt$13Comp_001CEC38 = 0x00363840;

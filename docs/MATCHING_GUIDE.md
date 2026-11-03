@@ -59,3 +59,22 @@ proves a new one.
 - **An `$a1` that survives into a call** is a forwarded argument.
 - **Fill:** `addiu $sp, $sp, +N; nop` pieces between functions are SN linker leftovers (kind `fill` in the
   table, not targets). `tools/find_fill.py` splits real functions out from behind them.
+
+## Findings from batch 2 (PRs #5, #6)
+
+- **Destructor mangling:** this compiler mangles `~Foo` as `_$_3Foo` (not `_._3Foo`); ctors are `__3Foo`,
+  vtables `_vt$3Foo`. Use those spellings in `cxx_symbols*.txt`.
+- **Derived destructors are empty:** `Derived::~Derived() {}` reproduces the game's dtor (vptr reset, `in_chrg`
+  in `$a1` forwarded to the base dtor, which does the `& 1` delete). Member sub-objects are destroyed in reverse
+  order with `in_chrg = 2` automatically.
+- **Keep the vtable out of the unit:** if the dtor is the class's only/first non-inline virtual, the unit emits
+  `.gnu.linkonce.d._vt$...` + `__tf...` and the gate rejects it. Declare another virtual *before* the destructor
+  (`virtual void Update();`, never defined) so the key function lives elsewhere.
+- **Components:** the shared base at 0x00184DC0 (ctor) / 0x00184DD8 (deleting dtor) has fields 0x0-0x17 and its
+  vptr at 0x18. Factories call `func_001046B0(size)` (the global allocator, zeroing) and then the ctor.
+- **Sub-object init order:** an inline `Identity()` call in the ctor body keeps the game's order; an inline
+  sub-object ctor schedules its stores earlier.
+- **Copy through a destination pointer** (`addiu $a2, $a0, 0x40` then `sq` off `$a2`) needs an inline
+  `operator=` copying row by row; plain struct assignment uses direct offsets.
+- **Identical functions need distinct names** (a different class/method per file), or the link sees duplicates.
+- **A 1-element array loop** `for (i = 0; i < 1; i++) a[i] = 0;` reproduces a run-once count-down loop.

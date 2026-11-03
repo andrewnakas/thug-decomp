@@ -36,6 +36,19 @@ BSS = (0x393E80, "asm/data/bss.bss.s")
 TOOL_DEPS = ["tools/cc.py", "tools/common.py", "toolchain/compiler.toml", "configure.py"]
 
 
+def cxx_symbols():
+    """include/game/cxx_symbols.txt: mangled names contributors map to original addresses."""
+    import re
+    f = ROOT / "include" / "game" / "cxx_symbols.txt"
+    out = []
+    if f.exists():
+        for line in f.read_text().splitlines():
+            m = re.match(r"^\s*([^\s#=]+)\s*=\s*(0x[0-9A-Fa-f]+)\s*;", line)
+            if m:
+                out.append((m.group(1), int(m.group(2), 16)))
+    return out
+
+
 def rel(p):
     return os.path.relpath(p, ROOT)
 
@@ -56,6 +69,7 @@ def link_script(text, data, bss_obj, cxx_aliases=()):
            f"_gp = 0x{GP:08X};\n",
            # C++ units define mangled names; asm callers keep calling func_XXXXXXXX
            *[f"{name} = 0x{addr:08X};\n" for name, addr in cxx_aliases],
+           *[f"\"{name}\" = 0x{addr:08X};\n" for name, addr in cxx_symbols()],
            "SECTIONS\n{\n",
            f"    .main 0x{VRAM:08X} : SUBALIGN(1)\n    {{\n"]
     for addr, o in text:
@@ -110,7 +124,7 @@ def main():
          f"rule ld\n  command = {py} tools/link.py $out\n  description = link $out\n",
          f"rule verify\n  command = {py} tools/link.py --verify $in $out\n  description = sha1 $in\n",
          f"rule configure\n  command = {py} configure.py\n  generator = 1\n  description = configure\n",
-         "build build.ninja: configure | configure.py config/functions.us.csv\n"]
+         "build build.ninja: configure | configure.py config/functions.us.csv include/game/cxx_symbols.txt\n"]
     headers = sorted(rel(p) for p in (ROOT / "include").rglob("*.h"))
     for o, (kind, src) in sorted(objects.items()):
         extra = " ".join(headers) if kind == "cxx" else ""

@@ -33,7 +33,7 @@ GLABEL = re.compile(r"^\s*glabel\s+(\w+)")
 
 def split_inputs():
     """Files whose change requires a re-split (tools/fresh.py stamps these)."""
-    files = [YAML, CONFIG / "symbol_addrs.us.txt", CONFIG / "reloc_addrs.us.txt", LIB_RANGES,
+    files = [YAML, CONFIG / "symbol_addrs.us.txt", CONFIG / "fill_starts.us.txt", CONFIG / "reloc_addrs.us.txt", LIB_RANGES,
              ROOT / "requirements.txt", Path(__file__)]
     return [f for f in files if f.exists()]
 
@@ -125,6 +125,15 @@ def ends_in_jump(path):
     return insns[-2] in ENDERS or insns[-1] in ENDERS
 
 
+FILL_INSN = re.compile(r"/\*\s*[0-9A-F]+\s+[0-9A-F]{8}\s+[0-9A-F]{8}\s*\*/\s+(addiu\s+\$sp, \$sp, 0x[0-9A-F]+|nop)\s*$")
+
+
+def only_fill(path):
+    """Nothing but `addiu $sp, $sp, +N` / `nop` (SN linker leftovers)."""
+    lines = [l for l in path.read_text().splitlines() if INSN.search(l)]
+    return bool(lines) and all(FILL_INSN.search(l) for l in lines)
+
+
 def reference_counts():
     """func_X -> number of mentions in other asm files (calls, jumps, pointers in data)."""
     counts = {}
@@ -160,7 +169,8 @@ def main():
     # by SN's linker) are not functions: kind "fill", never a decomp target, kept as asm.
     refs = reference_counts()
     for f in funcs:
-        if f["kind"] == "func" and ends_in_jump(ROOT / f["asm"]) is False and not refs.get(f["name"]):
+        p = ROOT / f["asm"]
+        if f["kind"] == "func" and not refs.get(f["name"]) and (ends_in_jump(p) is False or only_fill(p)):
             f["kind"] = "fill"
     funcs.sort(key=lambda f: f["addr"])
     for a, b in zip(funcs, funcs[1:]):

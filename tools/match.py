@@ -40,7 +40,7 @@ GP_TYPES = (R_MIPS_GPREL16, R_MIPS_LITERAL)  # SN as uses LITERAL for .lit4 load
 NAMED_ADDR = re.compile(r"^(?:\.L|[A-Za-z]+_)([0-9A-F]{8})$")
 LABEL_DEF = re.compile(r"^\s*(?:glabel|dlabel|jlabel|alabel|ehlabel)\s+(\S+)")
 OFF_ADDR = re.compile(r"/\*\s*[0-9A-F]+\s+([0-9A-F]{8})\s")
-SYMFILE = re.compile(r"^\s*(\S+)\s*=\s*(0x[0-9A-Fa-f]+)\s*;")
+SYMFILE = re.compile(r"^\s*\"?([^\s\"]+)\"?\s*=\s*(0x[0-9A-Fa-f]+)\s*;")
 LITERAL_SECTIONS = (".lit4", ".lit8", ".rodata", ".rdata", ".sdata")
 
 _symbols = None
@@ -73,7 +73,7 @@ def symbols():
             m = SYMFILE.match(line)
             if m:
                 syms[m.group(1)] = int(m.group(2), 16)
-    alias = BUILD / "cxx_aliases.ld"   # mangled name -> address of every C++ unit (configure.py)
+    alias = ROOT / "include" / "game" / "cxx_symbols.txt"   # mangled name -> address (contributors)
     if alias.exists():
         for line in alias.read_text().splitlines():
             m = SYMFILE.match(line)

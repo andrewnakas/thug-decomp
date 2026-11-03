@@ -1,0 +1,6 @@
+# Mangled C++ names -> original addresses, for calls/references a unit makes by C++ name
+# (base-class constructors, vtables, methods of classes that are still asm).
+# One per line:   <mangled name> = 0x<address>;     e.g.   _vt$1C = 0x00376DD0;
+# tools/gate.py checks every entry: the address must be a function start or a data label, and a
+# name may appear only once. Names must be the ones *your* class declarations mangle to (see
+# match.py --show), never names from leaked material.

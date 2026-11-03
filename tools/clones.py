@@ -48,6 +48,7 @@ def main():
     ap.add_argument("--unmatched-groups", type=int, metavar="N",
                     help="also list groups of >= N identical unmatched functions (one source would do all)")
     ap.add_argument("--min-insns", type=int, default=4)
+    ap.add_argument("--full", action="store_true", help="print every member of each group (no 12-name cut)")
     ap.add_argument("--with", dest="extra", action="append", default=[], metavar="DIR",
                     help="also count units in DIR (e.g. another clone's src/funcs) as matched")
     a = ap.parse_args()
@@ -79,8 +80,9 @@ def main():
         for sig, fs in sorted(groups.items(), key=lambda kv: -len(kv[1])):
             todo = [f for f in fs if f["name"] not in done and lo <= f["addr"] < hi]
             if len(todo) >= a.unmatched_groups and not any(f["name"] in done for f in fs):
-                print(f"group of {len(todo)} ({len(sig)} insns): " + " ".join(f["name"] for f in todo[:12])
-                      + (" ..." if len(todo) > 12 else ""))
+                shown = todo if a.full else todo[:12]
+                print(f"group of {len(todo)} ({len(sig)} insns): " + " ".join(f["name"] for f in shown)
+                      + (" ..." if len(todo) > len(shown) else ""))
 
 
 if __name__ == "__main__":

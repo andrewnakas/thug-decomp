@@ -1,0 +1,21 @@
+# systemd user unit for the Tony Hawk's Underground (PS2) decomp (no AI, no Discord):
+#   cp tools/linux/thug-steward.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now thug-steward
+# Runs alongside decompathon-steward.service (thps64) and thrasher-steward.service: own judge workspace, own data and log dir.
+# The judge workspace is a clone of the repo with the disc extracted (disc/files) and the toolchain
+# installed (python3 toolchain/setup.py); gates call its own .venv/bin/python.
+[Unit]
+Description=Decompathon Steward (thug-decomp, no AI) under its watchdog
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/decompathon-steward
+Environment=PATH=%h/decompathon-steward/.venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/decompathon-steward/.venv/bin/python -u -m steward.watchdog --log-dir %h/.decompathon/thug --module steward.daemon -- --repo andrewnakas/thug-decomp --app decompathon-steward --no-ai --judge-workspace %h/thug-judge
+Nice=5
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

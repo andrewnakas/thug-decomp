@@ -150,5 +150,10 @@ Example: `src/funcs/func_002BA688.cpp`.
   as `off($sp)`. The game's form (stores through `$sN`, calls with `daddu $aN, $sN`) comes from a named pointer:
   `T* p = &obj;` and all stores/calls through `p` (or inline helpers on `p`). The field at +0 still folds to
   `X($sp)`; declaration order sets the stack layout.
-- Still open: the two-register form (`daddu $s7, $s1` copy) with the vptr at +8 (func_002A8270, func_002A8F40);
-  see lane 3's notes before attempting.
+- **One-register iterator:** Node gets `Valid()` (returns `this` or 0) and `GetData()`; the iterator gets
+  `Next() { cur = cur->next->Valid(); if (!cur) return 0; return cur->GetData(); }` and
+  `First(h) { cur = h; return Next(); }`.
+- **Copy-register form (`daddu $sN, $sp, $zero`):** add `Advance(Node* c)` and write the loop as
+  `if (d) { It* p = &it; do { ...; d = p->Advance(it.cur); } while (d); }`.
+- Hardware addresses such as the scratchpad (`(Mat*)0x70003FC0`) are fine as constants.
+

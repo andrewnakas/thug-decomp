@@ -1,4 +1,5 @@
 // Real function starts hidden behind SN linker fill (tools/find_fill.py). Generated.
+func_00104988 = 0x00104988; // type:func
 func_001156A0 = 0x001156A0; // type:func
 func_0011AB30 = 0x0011AB30; // type:func
 func_0012E798 = 0x0012E798; // type:func
@@ -24,6 +25,7 @@ func_0019E9D8 = 0x0019E9D8; // type:func
 func_0019F978 = 0x0019F978; // type:func
 func_001A06C8 = 0x001A06C8; // type:func
 func_001A43B8 = 0x001A43B8; // type:func
+func_001A5848 = 0x001A5848; // type:func
 func_001A9AD0 = 0x001A9AD0; // type:func
 func_001AA370 = 0x001AA370; // type:func
 func_001B10A8 = 0x001B10A8; // type:func
@@ -110,6 +112,7 @@ func_0030B358 = 0x0030B358; // type:func
 func_0030E500 = 0x0030E500; // type:func
 func_00310D38 = 0x00310D38; // type:func
 func_0031E568 = 0x0031E568; // type:func
+func_003204F8 = 0x003204F8; // type:func
 func_003236B0 = 0x003236B0; // type:func
 func_0033C0E0 = 0x0033C0E0; // type:func
 func_00346CA0 = 0x00346CA0; // type:func

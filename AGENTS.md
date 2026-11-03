@@ -26,7 +26,7 @@ Sony SDK, OpenSSL, GameSpy and libgcc code is linked in among the game code. It 
 clearly library code (a known SDK routine, OpenSSL `BN_*`, GameSpy, `__divdi3`...), skip it and note it in your PR
 so it can be tagged in `config/lib_ranges.us.csv`.
 
-Use **one clone per agent**. Never run `split.py`, `gate.py` and `build.py` at the same time in one clone: they share
+Use **one clone per agent**, and keep every temporary file inside your own clone (under `work/`, git-ignored): never in a shared temp or scratchpad directory, where another agent can pick it up. Never run `split.py`, `gate.py` and `build.py` at the same time in one clone: they share
 `asm/`, `build/` and `build.ninja`. Keep parallel compiles low (`-j2` to `-j4`) when several agents share a machine.
 
 ## Setup (once per workspace)

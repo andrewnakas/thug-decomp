@@ -10,6 +10,11 @@ with an epilogue. This finds every function whose first instructions are such
 pairs followed by real code and records the real start as a function symbol, so
 the next split separates them (the fill then becomes kind=fill on its own).
 Run it until it finds nothing new (a re-split can expose another layer).
+
+Second source: functions reached only through data (vtable slots). A raw `.word`
+in the data that points 8-aligned just past a function's start (<= 0x10 in) is a
+real entry hidden behind a short dead fragment (e.g. func_00104980 = `sw; nop`
+fill, then the deleting destructor at 0x00104988 that a vtable points to).
 """
 import re
 import sys
@@ -51,6 +56,19 @@ def main():
         a = real_start(ROOT / f["asm"])
         if a is not None:
             found[f"func_{a:08X}"] = a
+    import bisect
+    from common import ASM
+    funcs = load_functions()
+    starts = [f["addr"] for f in funcs]
+    known = set(starts)
+    for d in (ASM / "data").glob("*.s"):
+        for m in re.finditer(r"\.word\s+0x([0-9A-F]{8})", d.read_text()):
+            a = int(m.group(1), 16)
+            if a in known or a % 8 or not (starts[0] <= a < starts[-1] + funcs[-1]["size"]):
+                continue
+            f = funcs[bisect.bisect_right(starts, a) - 1]
+            if 0 < a - f["addr"] <= 0x10 and f["kind"] == "func":
+                found[f"func_{a:08X}"] = a
     lines = ["// Real function starts hidden behind SN linker fill (tools/find_fill.py). Generated."]
     lines += [f"{n} = 0x{a:08X}; // type:func" for n, a in sorted(found.items(), key=lambda t: t[1])]
     OUT.write_text("\n".join(lines) + "\n")

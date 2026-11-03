@@ -3,6 +3,7 @@ extern unsigned char* D_00394278;
 
 struct Col_001573B8 {
     unsigned char r, g, b, a;
+    Col_001573B8() {}
 };
 
 struct V3_001573B8 {
@@ -68,9 +69,7 @@ void C_001573B8::Draw()
         p[1] = 0;
         D_00394274 = (unsigned char*)(p + 2);
         func_00168D98(m224, m210, 0, 0);
-        int k = 2;
-        while (k--) {
-        }
+        Col_001573B8 out[2];
         E_001573B8* e = m1CC;
         V3_001573B8* a = m204[0];
         V3_001573B8* b = m204[m200 - 1];
@@ -93,7 +92,6 @@ void C_001573B8::Draw()
                 c0 = m218;
                 c1 = m220;
             }
-            Col_001573B8 out[2];
             for (int j = 0; j < 2; j++) {
                 Col_001573B8 x = *c0;
                 Col_001573B8 y = *c1;

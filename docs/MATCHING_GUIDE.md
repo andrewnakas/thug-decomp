@@ -131,3 +131,15 @@ Example: `src/funcs/func_002BA688.cpp`.
 - **Block order:** a `goto` into another case's block, or falling through from a case's `if`, reproduces layouts
   that structured code cannot.
 - **Several switches in one function** are supported (each table is checked separately).
+
+## Types and tables (lanes' large-function rounds)
+
+- **`long` is the 64-bit type** (`ld`/`sd`); `long long` is 128-bit on this compiler (`lq`/`sq`, or
+  "unsupported wide integer operation"). Bit fields over 64-bit registers: `unsigned long` members.
+- **A jump table starting at index 0 needs an explicit empty `case 0:`**; every index the table covers must be a
+  `case` (empty ones fall to the shared exit), or gcc emits a compare chain.
+- **Declare callees with their real return type** (`int`, `void*`, `bool`) even if the result is ignored: it
+  decides `$v0`/`$v1` and delay-slot order.
+- **No dead statements.** A bare `m_count;` or a no-op assignment kept only to steer the compiler is not allowed;
+  if nothing else works, leave the function for later.
+- `tools/permute.py NAME --src work/draft.cpp --out work/perm/NAME` permutes a draft outside src/funcs.

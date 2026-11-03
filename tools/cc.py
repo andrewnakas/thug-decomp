@@ -180,7 +180,17 @@ def compile_obj(src, out, cfg, compiler=None, cflags=None, extra_cpp=(), literal
     with tempfile.TemporaryDirectory(prefix="thugas", dir=ROOT / "build") as td:
         s = Path(td) / "u.s"
         s.write_bytes(text)
-        run("ee-gcc -c", driver_cmd(s, cfg, compiler, cflags, (), "-c", tmp))
+        as_flags = None
+        if cflags is not None:   # a language override (-x c++) must not apply to the .s
+            as_flags, skip = [], False
+            for f in cflags:
+                if skip:
+                    skip = False
+                elif f == "-x":
+                    skip = True
+                else:
+                    as_flags.append(f)
+        run("ee-gcc -c", driver_cmd(s, cfg, compiler, as_flags, (), "-c", tmp))
     if not tmp.exists() or tmp.stat().st_size == 0:
         raise StageError("compiler produced an empty object")
     fix_symtab(tmp)
@@ -220,6 +230,7 @@ def main():
     ap.add_argument("--compiler")
     ap.add_argument("--cflags")
     ap.add_argument("-D", action="append", default=[])
+    ap.add_argument("--func", help="the function this file is (default: the file name), for literals")
     a = ap.parse_args()
     cfg = compiler_config()
     cflags = shlex.split(a.cflags) if a.cflags is not None else None
@@ -231,7 +242,7 @@ def main():
         if not a.out:
             sys.exit("output path required")
         if a.kind == "cxx":
-            compile_obj(a.src, a.out, cfg, a.compiler, cflags, defs)
+            compile_obj(a.src, a.out, cfg, a.compiler, cflags, defs, func=a.func)
         elif a.kind == "bin":
             rel = os.path.relpath(a.src, ROOT)
             assemble_gnu(f'.section .data\n.incbin "{rel}"\n'.encode(), a.out, cfg)

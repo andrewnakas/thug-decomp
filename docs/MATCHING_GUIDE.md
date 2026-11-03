@@ -93,3 +93,20 @@ proves a new one.
 - **Singleton getters** `if (!inst && create) inst = ...; refcount++; return inst;` match as written.
 - **An extra `daddu $v0, $a0` before a conditional store** is an inline helper returning a pointer.
 - **List append** stores `node->prev` before `node->next`.
+
+## Findings from batches 4-6 (PRs #12-#17)
+
+- **Variable-bit tests:** `int mask = 1 << n; return (m & mask) != 0;` gives the game's `sllv; and; sltu`;
+  writing `(m & (1 << n)) != 0` directly gives `srav; andi 1`.
+- **`bool` is 4 bytes.** `lw; xori 1; sltu; sw` is `b ^= true;` (`b = !b` gives only the `xori`).
+- **`volatile` globals:** an `ld` left out of the delay slot, or `lw` + `dsll32/dsrl32` zero-extension, is a
+  `volatile` global.
+- **Indexing order:** `T* p = m_items; p += i; return p->m;` when `p[i].m` puts the `addu` operands the other way.
+- **`char buf[1024]` locals** explain 0x410 frames (format-then-print helpers).
+- **Script commands:** `bool Cmd_X(void* params, void* script) { ...; return true; }` free functions; identical
+  bodies need distinct names.
+- **Uninitialised out-params:** no `sw $zero` before a getter call means `int v; get(params, 0, &v, 1);`.
+- **A `sw $a1, 0($sp)` in a leaf then the same value stored to a field** is a temporary bound to a `const T&`
+  parameter of a `static inline` helper.
+- **Code after a `beqz` landing point runs on both paths**: only what precedes it belongs inside the `if`.
+- **`1.0f / 60.0f`** folds to the .lit4 constant 0x3C888889.

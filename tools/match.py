@@ -251,6 +251,10 @@ def reloc_equal(tr, orr, here, tw, ow):
         if orr[3] is not None and tr[1] is not None:   # our literal vs the original constant
             return read_orig(tr[1], len(orr[3])) == orr[3]
         return False
+    if orr and not tr and orr[0] == R_MIPS_HI16 and orr[1] is not None:
+        # splat sometimes leaves a duplicated `lui` (copied into a branch-likely delay slot) without its
+        # %hi: accept it when the immediate is exactly the high half of the address our %hi resolves to
+        return (tw & 0xFFFF) == ((orr[1] + 0x8000) >> 16) & 0xFFFF
     if tr and not orr and tr[0] == R_MIPS_PC16:
         return tr[1] is not None and tr[1] == branch_target(ow, here)
     if orr and not tr and orr[0] == R_MIPS_PC16:

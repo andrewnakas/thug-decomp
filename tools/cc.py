@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import ROOT, TOOLCHAIN, compiler_config, file_cflags, tool  # noqa: E402
 
 UNIT_EXTS_SRC = (".cpp", ".c")
-TIMEOUT = 120  # wibo can hang (RAC3 lesson): never wait forever
+TIMEOUT = 300  # wibo can hang (RAC3 lesson): never wait forever; generous for loaded machines
 
 
 class StageError(Exception):

@@ -109,3 +109,18 @@ python3 toolchain/setup.py
 (`func_A -> func_B func_C ...`), and with `--unmatched-groups N` groups of N+ identical functions nobody has
 matched yet (match one, adapt it to the rest). Use `--lane LO HI` for your range. Adapt the source (class,
 callee and global names per address) and run `match.py` on every copy: a clone is a hint, not a match.
+
+## C++ name mappings live in the unit (`/* sym: */`)
+
+Steward copies only a PR's `src/funcs/` files into the judge, so put every mangled-name mapping your unit needs
+**in the unit file itself**, one per line:
+
+```cpp
+/* sym: __12Box_002BDDA8UcScUcUcUcUc = 0x002BAA28 */
+/* sym: _vt$12Ctx_002C0168 = 0x00367170 */
+```
+
+match.py, configure.py (link script) and gate.py read these from every unit. The same name may appear in several
+units if the address is the same; a name mapped to two different addresses fails the gate. Do not add new
+`include/game/cxx_symbols*.txt` files or edit shared headers in a PR (the judge never sees them): define the
+types your unit needs inside the `.cpp`.

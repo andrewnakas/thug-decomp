@@ -1,3 +1,5 @@
+/* sym: _vt$12Obj_001D4318 = 0x00364230 */
+/* sym: _$_13Base_001D4318 = 0x001D33D8 */
 struct Data_001D4318 {
     int m0;
     int m4;

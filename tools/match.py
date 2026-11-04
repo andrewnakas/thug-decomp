@@ -73,6 +73,9 @@ def symbols():
             m = SYMFILE.match(line)
             if m:
                 syms[m.group(1)] = int(m.group(2), 16)
+    from common import all_unit_syms
+    for n, a, _ in all_unit_syms():          # /* sym: */ directives in units
+        syms.setdefault(n, a)
     for alias in sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt")):  # contributors' C++ names
         for line in alias.read_text().splitlines():
             m = SYMFILE.match(line)
@@ -265,6 +268,9 @@ def reloc_equal(tr, orr, here, tw, ow):
 def compare(name, src=None, compiler=None, cflags=None, outdir=None):
     row = func_row(name)
     if src:
+        from common import unit_syms
+        for n, a in unit_syms(src):          # the unit being tried may carry new directives
+            EXTRA_SYMS[n] = a
         side = Path(src).with_suffix(".sym")
         if side.exists():
             for line in side.read_text().splitlines():

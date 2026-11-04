@@ -39,12 +39,15 @@ TOOL_DEPS = ["tools/cc.py", "tools/common.py", "toolchain/compiler.toml", "confi
 def cxx_symbols():
     """include/game/cxx_symbols.txt: mangled names contributors map to original addresses."""
     import re
-    out = []
+    from common import all_unit_syms
+    out = [(n, a) for n, a, _ in all_unit_syms()]
+    seen = {n for n, _ in out}
     for f in sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt")):
         for line in f.read_text().splitlines():
             m = re.match(r"^\s*([^\s#=]+)\s*=\s*(0x[0-9A-Fa-f]+)\s*;", line)
-            if m:
+            if m and m.group(1) not in seen:
                 out.append((m.group(1), int(m.group(2), 16)))
+                seen.add(m.group(1))
     return out
 
 

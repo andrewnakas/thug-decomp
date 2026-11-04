@@ -20,3 +20,9 @@ _vt$13Comp_0029A108 = 0x003775F8;
 _$_13Base_002B6E68 = 0x002B6C20;
 # Iterator vtable at 0x003714C0 (stack iterator in func_0029FC98)
 _vt$13Iter_0029FC98 = 0x003714C0;
+# Base destructors referenced by clone dtors (empty dtor 0x00184EB0; dtor(this, flags) 0x00104870 / 0x002BAB20)
+_$_13Base_00184EB0 = 0x00184EB0;
+_$_13Base_00104870 = 0x00104870;
+_$_13Base_002BAB20 = 0x002BAB20;
+_vt$13Comp_002AB840 = 0x003631E8;
+_vt$13Comp_002CBCE0 = 0x003631E8;

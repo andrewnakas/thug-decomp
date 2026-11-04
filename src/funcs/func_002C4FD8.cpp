@@ -1,0 +1,49 @@
+struct Struct_002C4FD8 { char pad[0x10]; };
+extern "C" void* func_001E6978(void* p);
+extern "C" void func_001E6AE8(void* p, int v);
+extern "C" void func_001E73C8(void* p, char* s, int v);
+extern "C" void func_001F0370(char*, void*, int, int);
+extern char D_00392810[];
+extern char D_0037A820[];
+extern "C" void func_002C7488(void* p);
+extern "C" void func_002BD308(void* p, int a, int b);
+extern "C" void func_002C74D8(void* p);
+extern "C" void* func_002C0368();
+extern "C" int func_002BD248(void* p);
+extern "C" void func_002BD628(void* p, int v);
+extern "C" void func_002C9000(void* p, int v);
+extern "C" void func_002C0E60(void* p, int a, int b);
+
+struct Obj_002C4FD8 {
+    char pad[0x80];
+    void* m80;
+    char pad84[0xA0 - 0x84];
+    void* mA0;
+    char padA4[0xAC - 0xA4];
+    unsigned int mAC;
+    void Set(int now, int a, int b);
+};
+
+void Obj_002C4FD8::Set(int now, int a, int keep)
+{
+    if (now) {
+        func_002BD308(func_002C0368(), 1, a);
+        return;
+    }
+    int old = func_002BD248(func_002C0368());
+    if (mAC != 0xD443A2BC && !keep) func_002C7488(mA0);
+    if (mA0) func_002C74D8(mA0);
+    func_002BD308(func_002C0368(), 0, a);
+    if (mAC == 0xD443A2BC || keep) return;
+    if (func_002BD248(func_002C0368()) != old) {
+        Struct_002C4FD8 s;
+        func_001E6978(&s);
+        func_001E73C8(&s, D_00392810, 0xE8B4B836);
+        func_001F0370(D_0037A820, &s, 0, 0);
+        func_001E6AE8(&s, 2);
+    } else {
+        func_002BD628(func_002C0368(), 0);
+        func_002C9000(mA0, 0);
+        func_002C0E60(m80, 0, 0);
+    }
+}

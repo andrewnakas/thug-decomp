@@ -11,6 +11,7 @@ Rejected (each prints "PROBLEM <file>: <why>" for Steward's report):
   - __attribute__((section(...))) and other placement tricks
   - hard-coded addresses inside the game image (0x00100000..0x00468C30): use the symbol
   - string literals: the game's strings stay in its .rodata; use extern char D_XXXXXXXX[]
+  - bare expression statements (`m_count;`): dead reads kept to steer the compiler
   - #include of anything that is not a header
   - a file name that is not func_XXXXXXXX.cpp for a function in the table
   - per-file cflags outside toolchain/compiler.toml [per_file].allowed_cflags
@@ -39,6 +40,7 @@ RULES = [
     (re.compile(r"^\s*#\s*include\s*[<\"][^>\"]*\.(?:c|cpp|cc|s|S|inc|txt)[>\"]", re.M),
      "only headers may be included"),
 ]
+BARE_STMT = re.compile(r"^\s*(?!(?:break|continue|return|default)\b)[A-Za-z_][\w.]*(?:->[\w.]+)*\s*;\s*$", re.M)
 ADDR_LIT = re.compile(r"\b0x([0-9A-Fa-f]{6,8})\b")
 IMAGE = (0x00100000, 0x00468C30)
 STRING_LIT = re.compile(r'"(?:[^"\\]|\\.)*"')
@@ -103,6 +105,10 @@ def scan_file(path, allowed, funcs):
     no_includes = re.sub(r"^\s*#\s*include\s*\"[^\"]*\"", "", no_extern_c, flags=re.M)
     if STRING_LIT.search(no_includes):
         problems.append("string literals are not allowed: declare the game's string as extern char D_XXXXXXXX[]")
+    m = BARE_STMT.search(code)
+    if m:
+        problems.append(f"bare expression statement `{m.group(0).strip()}` (a read that does nothing): "
+                        "no dead statements, even on volatile members")
     for lit in ADDR_LIT.findall(code):
         v = int(lit, 16)
         if looks_like_address(v):

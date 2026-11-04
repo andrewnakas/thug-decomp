@@ -41,3 +41,8 @@ def test_bad_name(tmp_path):
 def test_cflags(tmp_path):
     assert problems(tmp_path, "/* cflags: -O3 */\nint f() { return 0; }\n")
     assert problems(tmp_path, "/* cflags: -O1 */\nint f() { return 0; }\n") == []
+
+
+def test_bare_statement(tmp_path):
+    assert problems(tmp_path, "struct S { volatile int m; void f(); };\nvoid S::f()\n{\n    m;\n}\n")
+    assert problems(tmp_path, "void f(int x) { for (;;) { if (x) break; } return; }\n") == []

@@ -1,3 +1,4 @@
+/* sym: _vt$12Ctx_00254C98 = 0x00367278 */
 struct Entry_00254C98 {
     int m0;
     char m4[0x4C];

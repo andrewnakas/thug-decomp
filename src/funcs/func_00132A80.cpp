@@ -1,0 +1,12 @@
+struct Obj132A80 {
+    char pad[0xC];
+    int mC;
+    int m10;
+    void Reset();
+};
+
+void Obj132A80::Reset()
+{
+    m10 = 0;
+    mC = -1;
+}

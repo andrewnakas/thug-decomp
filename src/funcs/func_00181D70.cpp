@@ -1,0 +1,63 @@
+struct H_00181D70 {
+    unsigned char m_b;
+    unsigned char m_m;
+    unsigned short m_sizeLo;
+    unsigned short m_sizeHi;
+    unsigned short m_res1;
+    unsigned short m_res2;
+    unsigned short m_offLo;
+    unsigned short m_offHi;
+    unsigned short m_hdrLo;
+    unsigned short m_hdrHi;
+    unsigned short m_wLo;
+    unsigned short m_wHi;
+    unsigned short m_hLo;
+    unsigned short m_hHi;
+    unsigned short m_planes;
+    unsigned short m_bpp;
+    unsigned short m_compLo;
+    unsigned short m_compHi;
+    unsigned short m_imgLo;
+    unsigned short m_imgHi;
+    unsigned short m_xresLo;
+    unsigned short m_xresHi;
+    unsigned short m_yresLo;
+    unsigned short m_yresHi;
+    unsigned short m_usedLo;
+    unsigned short m_usedHi;
+    unsigned short m_impLo;
+    unsigned short m_impHi;
+};
+
+void Init_00181D70(H_00181D70* h, int w, int ht)
+{
+    int img = w * ht * 3;
+    int size = img + 0x36;
+    h->m_b = 0x42;
+    h->m_m = 0x4D;
+    h->m_sizeLo = size;
+    h->m_sizeHi = size >> 16;
+    h->m_res1 = 0;
+    h->m_offLo = 0x36;
+    h->m_offHi = 0;
+    h->m_hdrLo = 0x28;
+    h->m_hdrHi = 0;
+    h->m_wLo = w;
+    h->m_wHi = w >> 16;
+    h->m_hLo = ht;
+    h->m_hHi = ht >> 16;
+    h->m_planes = 1;
+    h->m_bpp = 0x18;
+    h->m_compLo = 0;
+    h->m_compHi = 0;
+    h->m_imgLo = img;
+    h->m_imgHi = img >> 16;
+    h->m_xresLo = 0x1284;
+    h->m_xresHi = 0;
+    h->m_yresLo = 0x1284;
+    h->m_yresHi = 0;
+    h->m_usedLo = 0;
+    h->m_usedHi = 0;
+    h->m_impLo = 0;
+    h->m_impHi = 0;
+}

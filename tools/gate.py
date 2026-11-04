@@ -93,14 +93,14 @@ def check_cxx_symbols():
     """Every include/game/cxx_symbols.txt entry names a real function start or data label, once."""
     import re
     files = sorted((ROOT / "include" / "game").glob("cxx_symbols*.txt"))
-    if not files:
-        return 0
     funcs = {r["addr"] for r in match.load_functions()}
     labels = set(match.symbols().values())
     for d in (ROOT / "asm" / "data").glob("*.s"):
         labels.update(int(x, 16) for x in re.findall(r"dlabel D_([0-9A-F]{8})", d.read_text()))
-    seen, bad = set(), 0
+    seen, bad = {}, 0
     lines = [(f.name, n, l) for f in files for n, l in enumerate(f.read_text().splitlines(), 1)]
+    from common import all_unit_syms
+    lines += [(unit, 0, f"{n} = 0x{a:08X};") for n, a, unit in all_unit_syms()]
     for fname, n, line in lines:
         s = line.strip()
         if not s or s.startswith("#"):
@@ -111,10 +111,10 @@ def check_cxx_symbols():
             bad += 1
             continue
         name, addr = m.group(1), int(m.group(2), 16)
-        if name in seen:
-            print(f"PROBLEM {fname}: line {n}: {name} mapped twice")
+        if name in seen and seen[name] != addr:
+            print(f"PROBLEM {fname}: line {n}: {name} is mapped to 0x{seen[name]:08X} elsewhere, 0x{addr:08X} here")
             bad += 1
-        seen.add(name)
+        seen.setdefault(name, addr)
         if name.startswith(("func_", "D_")):
             print(f"PROBLEM {fname}: line {n}: {name} is not a C++ name")
             bad += 1

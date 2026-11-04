@@ -1,3 +1,4 @@
+/* sym: _vt$13Iter_00231C60 = 0x00371C78 */
 typedef int qword_00231C60 __attribute__((mode(TI)));
 
 extern void* D_00392068;

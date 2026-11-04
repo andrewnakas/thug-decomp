@@ -1,3 +1,6 @@
+/* sym: __14ListA_00236458i = 0x0023AE70 */
+/* sym: __14ListB_00236458ii = 0x0023AF30 */
+/* sym: __14Entry_00236458 = 0x001E4C80 */
 struct ListA_00236458 {
     char m_pad[0x18];
     ListA_00236458(int n);

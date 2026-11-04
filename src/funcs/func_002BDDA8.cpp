@@ -1,3 +1,4 @@
+/* sym: __12Box_002BDDA8UcScUcUcUcUc = 0x002BAA28 */
 struct Box_002BDDA8 {
     unsigned char x;
     signed char y;

@@ -1,3 +1,4 @@
+/* sym: _vt$12Ctx_002C0168 = 0x00367170 */
 struct Box_002C0168 {
     unsigned char x;
     signed char y;

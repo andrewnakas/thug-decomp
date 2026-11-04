@@ -61,3 +61,26 @@ def unit_path(name):
         if p.exists():
             return p
     return SRC_FUNCS / f"{name}.cpp"
+
+
+UNIT_SYM_RE = re.compile(r"/\*\s*sym:\s*([^\s=*]+)\s*=\s*(0x[0-9A-Fa-f]+)\s*\*/")
+
+
+def unit_syms(path):
+    """[(mangled name, address)] from `/* sym: NAME = 0xADDR */` directives in a unit file.
+
+    A unit carries the C++-name mappings it needs itself, so a PR that only touches src/funcs
+    (all Steward copies into the judge) is self-contained.
+    """
+    try:
+        text = Path(path).read_text(errors="replace")
+    except OSError:
+        return []
+    return [(m.group(1), int(m.group(2), 16)) for m in UNIT_SYM_RE.finditer(text)]
+
+
+def all_unit_syms():
+    out = []
+    for p in sorted(SRC_FUNCS.glob("func_*.cpp")):
+        out += [(n, a, p.name) for n, a in unit_syms(p)]
+    return out

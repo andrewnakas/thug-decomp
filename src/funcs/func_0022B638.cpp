@@ -1,0 +1,38 @@
+struct Params_0022B638;
+
+struct Entry_0022B638 {
+    char m_name[0x80];
+    char m_desc[0x80];
+};
+
+struct Args_0022B638 {
+    Entry_0022B638* m_entry;
+};
+
+extern char D_0038FC08[];
+extern char D_0038FC10[];
+extern char D_003726F8[];
+
+extern "C" void* func_001190D0(unsigned int size);
+extern "C" Params_0022B638* func_001E6978(void* mem);
+extern "C" unsigned int func_001F0D78(const char* s);
+extern "C" void func_001E7A30(Params_0022B638* p, unsigned int name, int type, const char* value);
+extern "C" void func_001F0370(const char* script, Params_0022B638* p, int a, int b);
+extern "C" void func_001E6AE8(Params_0022B638* p, int flags);
+
+static inline void Delete_0022B638(Params_0022B638* p)
+{
+    if (p)
+        func_001E6AE8(p, 3);
+}
+
+bool func_0022B638(Args_0022B638* args)
+{
+    Entry_0022B638* e = args->m_entry;
+    Params_0022B638* p = func_001E6978(func_001190D0(8));
+    func_001E7A30(p, func_001F0D78(D_0038FC08), 3, e->m_name);
+    func_001E7A30(p, func_001F0D78(D_0038FC10), 3, e->m_desc);
+    func_001F0370(D_003726F8, p, 0, 0);
+    Delete_0022B638(p);
+    return true;
+}

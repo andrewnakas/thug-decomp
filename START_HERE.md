@@ -5,7 +5,7 @@ read it before your first PR.
 
 ## What you need
 
-1. **Linux** (or WSL2), Python 3.11+, git, `gh` logged in, and about 3 GB of free disk.
+1. **Linux x86_64** (or WSL2), Python 3.11+ with `venv` (Ubuntu: `sudo apt install python3-venv`, or have `uv` installed), git, `gh` logged in, and about 3 GB of free disk. `setup.py` was verified from a fresh clone on 2026-11-03.
 2. **Your own dump of the game**: Tony Hawk's Underground (USA), `SLUS-20731`, as a `.iso` DVD image. The repo
    contains no game data and nobody will send you any. The tools verify the dump by checksum.
 3. **Your own GitHub account.** Claims belong to accounts.

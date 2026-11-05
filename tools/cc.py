@@ -29,7 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import ROOT, TOOLCHAIN, compiler_config, file_cflags, tool  # noqa: E402
 
 UNIT_EXTS_SRC = (".cpp", ".c")
-TIMEOUT = 900  # wibo can hang (RAC3 lesson): never wait forever; generous for loaded machines
+TIMEOUT = 120  # per attempt: wibo can hang (RAC3 lesson); a unit normally compiles in well under 1 s
+ATTEMPTS = 4   # a hung compile is retried: under heavy load wibo occasionally deadlocks, and a rerun passes
 
 
 class StageError(Exception):
@@ -37,12 +38,16 @@ class StageError(Exception):
 
 
 def run(stage, argv, data=b"", cwd=ROOT):
-    try:
-        p = subprocess.run(argv, input=data, capture_output=True, cwd=cwd, timeout=TIMEOUT)
-    except FileNotFoundError:
-        raise StageError(f"{stage}: tool not found: {argv[0]} (run python3 toolchain/setup.py)")
-    except subprocess.TimeoutExpired:
-        raise StageError(f"{stage}: timed out after {TIMEOUT}s")
+    for attempt in range(ATTEMPTS):
+        try:
+            p = subprocess.run(argv, input=data, capture_output=True, cwd=cwd, timeout=TIMEOUT)
+            break
+        except FileNotFoundError:
+            raise StageError(f"{stage}: tool not found: {argv[0]} (run python3 toolchain/setup.py)")
+        except subprocess.TimeoutExpired:
+            if attempt == ATTEMPTS - 1:
+                raise StageError(f"{stage}: timed out {ATTEMPTS} times ({TIMEOUT}s each)")
+            print(f"{stage}: no result after {TIMEOUT}s, retrying", file=sys.stderr)
     if p.returncode != 0:
         raise StageError(f"{stage} failed ({p.returncode}):\n{p.stderr.decode(errors='replace')}")
     return p.stdout

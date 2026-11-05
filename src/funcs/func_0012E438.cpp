@@ -1,3 +1,5 @@
+/* sym: FindChild__10C_0012E438P15Handle_0012E438i = 0x0012EB90 */
+/* sym: Find__10C_0012E438ii = 0x0012DB48 */
 struct Obj_0012E438;
 struct Handle_0012E438;
 

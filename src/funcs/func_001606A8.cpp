@@ -1,3 +1,4 @@
+/* sym: Sum__14Quant_001606A8P12Box_001606A8 = 0x001600A0 */
 struct Box_001606A8 {
     unsigned char min[4];
     unsigned char max[4];

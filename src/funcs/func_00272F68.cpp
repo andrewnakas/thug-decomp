@@ -24,10 +24,10 @@ struct Obj_00272F68 {
     int m28;
     char pad2[0x34 - 0x2C];
     Cfg_00272F68* m34;
-    int CallMemberFunction(unsigned int name, void* params, Script_00272F68* script);
+    int Dispatch(unsigned int name, void* params, Script_00272F68* script);
 };
 
-int Obj_00272F68::CallMemberFunction(unsigned int name, void* params, Script_00272F68* script)
+int Obj_00272F68::Dispatch(unsigned int name, void* params, Script_00272F68* script)
 {
     switch (name) {
     case 0x3522D612:

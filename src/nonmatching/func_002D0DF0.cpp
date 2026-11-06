@@ -1,4 +1,4 @@
-/* fuzzy: 87.8 */
+/* fuzzy: 94.7 */
 /* nonmatch func_002D0DF0: best earlier draft (thug-claude-lane3/work/kz/func_002D0DF0.cpp), 104 of 152 words differ (size 0x25c, want 0x260). */
 extern char D_0037BDC0[];
 extern char D_0037B938[];
@@ -65,7 +65,7 @@ extern Pool_002D0DF0* D_00388A70;
 extern "C" void func_0010A950(void* p, int v);
 extern "C" void func_0010A9B0(void* p);
 extern "C" int func_00336228(char* a, char* b);
-extern "C" void func_00306CA8(void* self, char* name, int a, char* out);
+extern "C" unsigned int func_00306CA8(void* self, char* name, int a, char* out);
 extern "C" void* func_001046B0(int size);
 extern "C" Item_002D0DF0* func_002D3D78(void* p);
 extern "C" char* func_00331A9C(char* d, const char* s);

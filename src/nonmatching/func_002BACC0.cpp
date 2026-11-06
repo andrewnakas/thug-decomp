@@ -1,4 +1,4 @@
-/* fuzzy: 90.6 */
+/* fuzzy: 94.8 */
 struct Box_002BACC0 {
     unsigned char x;
     signed char y;
@@ -25,7 +25,7 @@ extern "C" void func_0010A950(void* p, int v);
 extern "C" void func_0010A9B0(void* p);
 extern "C" void* func_0010A638(void* pool, unsigned int size, int a, int b);
 extern "C" void func_0010A8D8(void* pool, void* p);
-extern "C" void func_002BAA28(Box_002BACC0* c, int a, int b, int d, int e, int f, int g);
+extern "C" unsigned int func_002BAA28(Box_002BACC0* c, int a, int b, int d, int e, int f, int g);
 extern "C" Box_002BACC0* func_002BE5F0(void* self, int key, int* out);
 extern "C" void func_002B6C58(int t, Box_002BACC0* b);
 

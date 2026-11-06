@@ -1,4 +1,4 @@
-/* fuzzy: 88.2 */
+/* fuzzy: 93.0 */
 typedef int qword_00296A70 __attribute__((mode(TI)));
 struct Vec_00296A70 {
     union {
@@ -79,7 +79,7 @@ extern "C" void func_001E9170(void* arr, int i, void* v);
 extern "C" int func_00291E80(void* params);
 extern "C" void func_00293830(Ent_00296A70* e, unsigned char v);
 extern "C" void func_002938A0(Ent_00296A70* e, unsigned char v);
-extern "C" long func_00293998(Ent_00296A70* e, unsigned char v);
+extern "C" float func_00293998(Ent_00296A70* e, unsigned char v);
 extern "C" void func_002939E0(Ent_00296A70* e, int a, int x, int b, int c);
 extern "C" void func_00293A80(Ent_00296A70* e, int v);
 extern "C" Goal_00296A70* func_00293B20(Ent_00296A70* e, int v);

@@ -1,4 +1,4 @@
-/* fuzzy: 82.5 */
+/* fuzzy: 84.4 */
 /* near miss: size 0x25c vs 0x254; inner-loop shape right (if (p && check) form gives the game's rotated loop); ours gets loop-align nops and hoists &bits out of the outer loop (game: no nops, &bits recomputed, only &msg hoisted); regs n/i/start differ */
 extern char D_00371C78[];
 extern void* D_00392068;
@@ -53,7 +53,7 @@ extern "C" void func_001FAA70(Bits_00231188* b, unsigned int v, int bits);
 extern "C" void func_00230D88(void* p, Bits_00231188* b);
 extern "C" void func_001FAB48(Bits_00231188* b);
 extern "C" int func_001FAA60(Bits_00231188* b);
-extern "C" void func_001FA800(Msg_00231188* m);
+extern "C" unsigned int func_001FA800(Msg_00231188* m);
 extern "C" int func_002B3080(Node_00231188* n);
 extern "C" void func_001FF970(void* server, int conn, Msg_00231188* m);
 

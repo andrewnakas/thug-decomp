@@ -1,4 +1,4 @@
-/* fuzzy: 90.3 */
+/* fuzzy: 93.5 */
 /* NEAR MISS func_00231FE8 (101/379 words, size 0x5F4 want 0x5EC): net skater-history decode (bitstream into 20-entry ring of 0x90-byte records). Remaining: game keeps lh pos[0] in $a2 across the m50 float stores (mine reloads it for the func_00279F60 arg), so the blez skip and the f12 reload are one insn off; sk should be in $fp and c7D/c7E in $s7/$s6 (declaration-order search got close); stack slot 0x40 = 1 store modelled as bs.m20 = 1; bit 7 of the 4-bit read written as (b << 24) >> 31 (needs a better form). */
 typedef int qword_00231FE8 __attribute__((mode(TI)));
 
@@ -94,9 +94,9 @@ extern "C" int func_001FAB88(Bits_00231FE8* b, int n);
 extern "C" int func_001FAC80(Bits_00231FE8* b, int n);
 extern "C" long func_001FAA60(Bits_00231FE8* b);
 extern "C" Conn_00231FE8* func_002A5248(Net_00231FE8* net, int id);
-extern "C" Mat_00231FE8 func_00100200(float x, float y, float z);
-extern "C" unsigned int func_00279F48(Rec_00231FE8* r, float v);
-extern "C" void func_00279F60(Rec_00231FE8* r, unsigned int t, int p, Vec4_00231FE8* v);
+extern "C" Mat_00231FE8 func_00100200(float x);
+extern "C" unsigned int func_00279F48(Rec_00231FE8* r);
+extern "C" void func_00279F60(Rec_00231FE8* r, unsigned int t);
 
 struct Cmd_00231FE8 {
     void* m0;
@@ -225,11 +225,11 @@ decode:
     if (f & 0x100)
         c88 = func_001FAC80(&bs, 0x10);
     m8 = func_001FAA60(&bs);
-    if (sk->m2DC->m_count > 0 && t < func_00279F48(prev, vel[0]))
+    if (sk->m2DC->m_count > 0 && t < func_00279F48(prev))
         return 3;
-    cur->m10 = func_00100200(vel[0], vel[1], vel[2]);
+    cur->m10 = func_00100200(vel[0]);
     cur->m50.Set(pos[0] * 0.5f, pos[1] * 0.25f, pos[2] * 0.5f, 0.0f);
-    func_00279F60(cur, t, pos[0], &cur->m50);
+    func_00279F60(cur, t);
     for (i = 0; i < 3; i++) {
         cur->pos[i] = pos[i];
         cur->m60[i] = vel[i];

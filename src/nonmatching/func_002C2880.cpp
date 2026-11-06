@@ -1,4 +1,4 @@
-/* fuzzy: 87.5 */
+/* fuzzy: 90.4 */
 /* nonmatch func_002C2880: best earlier draft (thug-claude-lane2/work/wk23/mine/nm_func_002C2880.cpp), 578 of 628 words differ (size 0x9c0, want 0x9d0). */
 /* sym: __12Box_002C2880UcScUcUcUcUc = 0x002BAA28 */
 struct Box_002C2880 {
@@ -92,7 +92,7 @@ extern "C" void func_002B6C58(Elem_002C2880* e, Box_002C2880* b);
 extern "C" int func_002B6E90(Elem_002C2880* e);
 extern "C" void func_002C3250(Loader_002C2880* l, int i, int v);
 extern "C" Info_002C2880* func_002BE5F0(Loader_002C2880* l, int id, int* out);
-extern "C" void func_002BC120(Piece_002C2880* p, Info_002C2880* info, Box_002C2880* b, int rot, int flip);
+extern "C" unsigned int func_002BC120(Piece_002C2880* p, Info_002C2880* info, Box_002C2880* b, int rot, int flip);
 extern "C" Node_002C2880* func_002C48E0(int size);
 
 void Loader_002C2880::Load()

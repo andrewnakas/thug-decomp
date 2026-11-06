@@ -1,0 +1,125 @@
+/* fuzzy: 63.6 */
+typedef int qword __attribute__((mode(TI)));
+
+extern "C" float sqrtf(float);
+
+struct Vec_001CC6B0 {
+    union {
+        struct { float x, y, z, w; };
+        qword q;
+    };
+    Vec_001CC6B0() {}
+    Vec_001CC6B0(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+};
+
+static inline Vec_001CC6B0 operator+(const Vec_001CC6B0& a, const Vec_001CC6B0& b)
+{
+    return Vec_001CC6B0(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+}
+
+static inline Vec_001CC6B0 operator-(const Vec_001CC6B0& a, const Vec_001CC6B0& b)
+{
+    return Vec_001CC6B0(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+}
+
+static inline Vec_001CC6B0 operator*(const Vec_001CC6B0& a, float s)
+{
+    return Vec_001CC6B0(a.x * s, a.y * s, a.z * s, a.w * s);
+}
+
+struct Node_001CC6B0 {
+    char m_pad[0x50];
+    Node_001CC6B0* m50;
+    Node_001CC6B0* m54;
+};
+
+struct Board_001CC6B0 {
+    char m_pad[0x290];
+    float m290;
+};
+
+struct Obj_001CC6B0 {
+    char m_pad0[0x30];
+    Vec_001CC6B0 m30;
+    char m_pad40[0x20];
+    Vec_001CC6B0 m60;
+    char m_pad70[0x90 - 0x70];
+    unsigned int m90;
+    char m_pad94[0x98 - 0x94];
+    float m98;
+    char m_pad9C[0xB0 - 0x9C];
+    float mB0;
+    char m_padB4[0x954 - 0xB4];
+    float m954;
+    char m_pad958[0xA1C - 0x958];
+    Node_001CC6B0* mA1C;
+    int m_padA20;
+    void* mA24;
+    Board_001CC6B0* mA28;
+    char m_padA2C[0xBF0 - 0xA2C];
+    float mBF0;
+    void UpdateRail();
+};
+
+extern "C" void func_0026B1B0(Vec_001CC6B0* out, void* rails, Node_001CC6B0* node);
+extern "C" void* func_001E5548(unsigned int key, int create);
+extern "C" bool func_001E7EB0(void* params, unsigned int name, float* out, int required);
+extern "C" float func_00340F60(float a);
+extern "C" void func_001CCA18(Obj_001CC6B0* self);
+extern "C" void func_001CCC00(Obj_001CC6B0* self);
+
+static inline float GetF_001CC6B0(unsigned int id)
+{
+    float v;
+    func_001E7EB0(func_001E5548(0x6775E538, 0), id, &v, 1);
+    return v;
+}
+
+void Obj_001CC6B0::UpdateRail()
+{
+    m954 = GetF_001CC6B0(0x0AB2DB54) * mB0 * func_00340F60(mA28->m290);
+    float step = m954 * m98;
+    Node_001CC6B0* next = mA1C->m50;
+    if (!next)
+        next = mA1C->m54;
+    Vec_001CC6B0 d;
+    Vec_001CC6B0 a;
+    func_0026B1B0(&a, mA24, next);
+    Vec_001CC6B0 b;
+    func_0026B1B0(&b, mA24, mA1C);
+    d.x = a.x - b.x;
+    d.y = a.y - b.y;
+    d.z = a.z - b.z;
+    d.w = a.w - b.w;
+    float len = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
+    step = step / len;
+    int forward = 1;
+    if (!(0.0f < step))
+        forward = 0;
+    mBF0 += step;
+    if (mBF0 < GetF_001CC6B0(0x5296E3FD) / len) {
+        func_001CCA18(this);
+        return;
+    }
+    if ((len - GetF_001CC6B0(0x76BF49E0)) / len < mBF0) {
+        func_001CCC00(this);
+        return;
+    }
+    float t = mBF0;
+    t = 1.0f < t ? 1.0f : t;
+    if (t < 0.0f)
+        t = 0.0f;
+    mBF0 = t;
+    if (t == 0.0f || t == 1.0f) {
+        m954 = 0.0f;
+        m90 = 0xC84243DA;
+    } else {
+        m90 = forward ? 0xAF5ABC82 : 0xFEC9DDED;
+    }
+    Vec_001CC6B0 c;
+    func_0026B1B0(&c, mA24, mA1C);
+    Vec_001CC6B0 pos = c + d * mBF0;
+    Vec_001CC6B0 res = pos - m60 * GetF_001CC6B0(0x35B3BBDA);
+    m954 = __builtin_fabsf(m954);
+    m30 = res;
+}

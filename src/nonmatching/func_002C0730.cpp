@@ -1,4 +1,4 @@
-/* fuzzy: 92.8 */
+/* fuzzy: 95.5 */
 typedef int qword __attribute__((mode(TI)));
 struct Vec_002C0730 {
     union {
@@ -51,7 +51,7 @@ extern "C" void func_002BC640(List_002C0730* l, int f);
 extern "C" void* func_002BC690(List_002C0730* l);
 extern "C" void* func_002BC5A0(void* n);
 extern "C" Piece_002C0730* func_002BAB80(void* p);
-extern "C" void* func_002BA8A0(void* m, Vec_002C0730* pos, int flag, float ang);
+extern "C" void* func_002BA8A0(void* m, Vec_002C0730* pos, int flag);
 extern "C" void func_002B7028(void* q, float s);
 extern "C" void func_002CC060(void* mgr, void* q, Piece_002C0730* p, int id);
 extern "C" void func_002CC108(void* mgr, void* q, Piece_002C0730* p, int id);
@@ -118,7 +118,7 @@ bool Obj_002C0730::Build(Set_002C0730* s)
         }
         pos.f.x -= D_00392610 * 28.0f;
         pos.f.z -= D_00392618 * 28.0f;
-        void* q = func_002BA8A0(m0, &pos, flag, ang);
+        void* q = func_002BA8A0(m0, &pos, flag);
         func_002B7028(q, ang / D_00392610);
         if (i == 0)
             func_002CC060(m6B00, q, p, id);

@@ -1,4 +1,4 @@
-/* fuzzy: 80.8 */
+/* fuzzy: 81.0 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00375F50[];
@@ -59,7 +59,7 @@ extern "C" void func_002313E0(void* g, int v);
 extern "C" unsigned int func_002657A0(void* mgr, unsigned int n, unsigned int* ids, char* flags, int gen,
                                       unsigned int time);
 extern "C" void* func_00265978(int gen);
-extern "C" void func_00265E50(void* mgr, unsigned int id, int gen);
+extern "C" unsigned int func_00265E50(void* mgr, unsigned int id, int gen);
 extern "C" void* func_002A39D8(void* net);
 extern "C" void* func_002A52F0(void* net, unsigned short id);
 extern "C" void* func_002A53F8(void* net, Iter_002659C8* it, int kind);

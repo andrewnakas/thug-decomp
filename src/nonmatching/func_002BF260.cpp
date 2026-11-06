@@ -1,4 +1,4 @@
-/* fuzzy: 38.4 */
+/* fuzzy: 55.3 */
 struct Box_002BF260 {
     unsigned char x;
     signed char y;
@@ -61,7 +61,6 @@ struct Obj_002BF260 {
 Node_002BF260* Obj_002BF260::Move(Item_002BF260* it, int dx, int dy, int dz)
 {
     Box_002BF260 b;
-    Rec_002BF260 rec;
     Box_002BF260 b2;
     Info_002BF260 info;
     info.key = it->m34;
@@ -70,6 +69,7 @@ Node_002BF260* Obj_002BF260::Move(Item_002BF260* it, int dx, int dy, int dz)
     info.flags = it->m8;
     b = it->box;
     Rec_002BF260* r = func_002C0640(this, &b, &info);
+    Rec_002BF260 rec;
     info.has = 0;
     info.pbox = &b2;
     if (r) {

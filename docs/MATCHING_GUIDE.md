@@ -177,3 +177,13 @@ Example: `src/funcs/func_002BA688.cpp`.
   stores, ignored-result calls and bare reads kept only to steer the compiler are not.
 - **The permuter** (`tools/permute.py`) now takes units with `extern "C"`, bare struct names, bool literals and
   128-bit typedefs. Units with member functions still need a C-style copy with an explicit self pointer.
+- **Diagnosing a register swap:** compile once with `-dl -dg` (in work/) and read the pseudos' use counts and live
+  lengths: allocation priority is roughly uses × log2(uses) / live length, and ties go to the lower register number.
+  Shortening or lengthening one temporary's live range (pass `x * 0.5f` directly instead of naming it) often flips it.
+- **Registers for hoisted global addresses** are ordered by gcse in the order the expressions first appear (and, for
+  ties, by a hash of the symbol name), not by `extern` declaration order.
+- **Dead divide traps:** a `beql reg,$zero; break 0,7` with no `div` is a division whose result was optimised away;
+  two orphaned `li` of the same constant mean a divide-and-modulo pair. Reproducing that never-read pair is allowed
+  only with a comment citing the trap as evidence.
+- **Jump-table switches:** an empty case is fine where the table or the compare tree proves it existed; never invent
+  a case value that the binary does not show.

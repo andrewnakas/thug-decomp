@@ -1,4 +1,4 @@
-/* fuzzy: 52.8 */
+/* fuzzy: 64.0 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -154,7 +154,8 @@ struct Handler_002B11C8 {
 
 struct Ref_002B11C8 {
     Handler_002B11C8* p;
-    Ref_002B11C8() { p = 0; }
+    int m4;
+    int m8;
     void Clear()
     {
         if (p) {
@@ -180,6 +181,7 @@ void Obj_002B11C8::UpdateScores()
     void* game = D_0038FC78;
     void* net = m_net;
     void* root = D_00389A30;
+    func_0022E358(game);
     bool ranked = func_0024F938(func_0022E358(game)) != 0x1C471C60;
     bool timed = false;
     if (func_0024F938(func_0022E358(game)) == 0x6EF8FDA0 || func_0024F938(func_0022E358(game)) == 0x5D32129C)

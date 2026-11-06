@@ -1191,7 +1191,9 @@ def main():
         f"cd {shlex.quote(str(ROOT))} || exit 1\n"
         "src=\"$3.cpp\"\n"
         f"{shlex.quote(py)} tools/permute.py --to-cpp \"$1\" \"$src\" {ti} || exit 1\n"
-        f"exec {shlex.quote(py)} tools/cc.py cxx \"$src\" \"$3\" --func {name} --cflags {shlex.quote(' '.join(flags + ['-x', 'c++']))}\n")
+        # the permuter deletes its own .c/.o temp files but not this .cpp: remove it here, or /tmp fills up
+        f"{shlex.quote(py)} tools/cc.py cxx \"$src\" \"$3\" --func {name} --cflags {shlex.quote(' '.join(flags + ['-x', 'c++']))}\n"
+        "rc=$?\nrm -f \"$src\"\nexit $rc\n")
     os.chmod(d / "compile.sh", 0o755)
     (d / "settings.toml").write_text(settings_text(name, a.all_passes))
 

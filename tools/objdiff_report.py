@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import ROOT, SRC_FUNCS, load_functions  # noqa: E402
+from common import FUZZY_RE, ROOT, SRC_FUNCS, SRC_NONMATCHING, load_functions  # noqa: E402
 
 REPORT_VERSION = 2
 VERSION = "SLUS_207.31"
@@ -25,12 +25,14 @@ def pct(a, b):
     return 100.0 * a / b if b else 0.0
 
 
-def measures(funcs, matched, units, complete_units=0):
+def measures(funcs, matched, units, complete_units=0, fuzzy=None):
+    fuzzy = fuzzy or {}
     total = sum(f["size"] for f in funcs)
     done = sum(f["size"] for f in funcs if f["name"] in matched)
     mf = sum(1 for f in funcs if f["name"] in matched)
+    near = sum(f["size"] * fuzzy.get(f["name"], 0.0) / 100.0 for f in funcs if f["name"] not in matched)
     return {
-        "fuzzy_match_percent": pct(done, total), "total_code": str(total),
+        "fuzzy_match_percent": pct(done + near, total), "total_code": str(total),
         "matched_code": str(done), "matched_code_percent": pct(done, total),
         "total_data": "0", "matched_data": "0", "matched_data_percent": 0.0,
         "total_functions": len(funcs), "matched_functions": mf,
@@ -41,25 +43,29 @@ def measures(funcs, matched, units, complete_units=0):
     }
 
 
-def report(funcs, matched):
+def report(funcs, matched, fuzzy=None):
+    fuzzy = fuzzy or {}
     units = []
     for f in funcs:
         ok = f["name"] in matched
+        fz = 100.0 if ok else fuzzy.get(f["name"], 0.0)
         meta = {"complete": ok, "progress_categories": ["game"]}
         if ok:
             meta["source_path"] = f"src/funcs/{f['name']}.cpp"
+        elif f["name"] in fuzzy:
+            meta["source_path"] = f"src/nonmatching/{f['name']}.cpp"
         units.append({
             "name": f"funcs/{f['name']}",
-            "measures": measures([f], matched, 1, int(ok)),
+            "measures": measures([f], matched, 1, int(ok), fuzzy),
             "sections": [{"name": ".text", "size": str(f["size"]),
-                          "fuzzy_match_percent": 100.0 if ok else 0.0,
+                          "fuzzy_match_percent": fz,
                           "metadata": {"virtual_address": str(f["addr"])}}],
             "functions": [{"name": f["name"], "size": str(f["size"]),
-                           "fuzzy_match_percent": 100.0 if ok else 0.0,
+                           "fuzzy_match_percent": fz,
                            "metadata": {"virtual_address": str(f["addr"])}, "address": "0"}],
             "metadata": meta,
         })
-    m = measures(funcs, matched, len(units), sum(1 for f in funcs if f["name"] in matched))
+    m = measures(funcs, matched, len(units), sum(1 for f in funcs if f["name"] in matched), fuzzy)
     return {"measures": m, "units": units, "version": REPORT_VERSION,
             "categories": [{"id": "game", "name": "Game", "measures": m}]}
 
@@ -70,14 +76,21 @@ def main():
     a = ap.parse_args()
     funcs = [f for f in load_functions() if f["source"] == "game" and f["kind"] == "func"]
     matched = {p.stem for p in SRC_FUNCS.glob("func_*.cpp")} & {f["name"] for f in funcs}
-    rep = report(funcs, matched)
+    # scores of src/nonmatching units: gate.py verified each stated value on the judge before it merged
+    fuzzy = {}
+    for p in SRC_NONMATCHING.glob("func_*.cpp"):
+        m = FUZZY_RE.search(p.read_text(errors="replace"))
+        if m and p.stem not in matched:
+            fuzzy[p.stem] = min(float(m.group(1)), 99.9)
+    rep = report(funcs, matched, fuzzy)
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(rep, separators=(",", ":")) + "\n")
     m = rep["measures"]
     print(f"{out.relative_to(ROOT) if out.is_relative_to(ROOT) else out}: "
           f"{m['matched_functions']}/{m['total_functions']} functions, "
-          f"{m['matched_code']}/{m['total_code']} bytes ({m['matched_code_percent']:.3f}%)")
+          f"{m['matched_code']}/{m['total_code']} bytes ({m['matched_code_percent']:.3f}%), "
+          f"fuzzy {m['fuzzy_match_percent']:.3f}% ({len(fuzzy)} non-matching units)")
 
 
 if __name__ == "__main__":

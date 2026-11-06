@@ -126,3 +126,18 @@ match.py, configure.py (link script) and gate.py read these from every unit. The
 units if the address is the same; a name mapped to two different addresses fails the gate. Do not add new
 `include/game/cxx_symbols*.txt` files or edit shared headers in a PR (the judge never sees them): define the
 types your unit needs inside the `.cpp`.
+
+## Equivalent but not matching yet (`src/nonmatching/`)
+
+When a function is readable and functionally equivalent but still differs from the game's code (register or
+scheduling ties, a missing source shape), keep it as `src/nonmatching/func_XXXXXXXX.cpp` instead of leaving it
+in `work/`. Same rules as `src/funcs/` (scan.py applies: no asm, no string literals, no dead or steering code,
+one function, no data of its own). It is never linked (the build keeps the game's asm), and counts only toward
+ByteMatch's **fuzzy** progress, not exact progress.
+
+```sh
+.venv/bin/python tools/nonmatch.py func_00112345 --write    # scores it and writes /* fuzzy: NN.N */
+```
+
+gate.py recomputes the score on the judge and rejects a stale line, a score under 30%, a unit that already matches
+(move it to `src/funcs/`), or a copy of a function that is already matched (delete the nonmatching copy).

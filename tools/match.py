@@ -233,6 +233,33 @@ class Result:
     error: str = ""
 
 
+def _norm(obj):
+    """Instruction words with relocated fields masked, for a similarity score."""
+    out = []
+    for i, w in enumerate(obj.words):
+        r = obj.relocs.get(i)
+        if r is None:
+            out.append(w)
+        elif r[0] == 4:                      # R_MIPS_26: keep the opcode, drop the target
+            out.append(w & 0xFC000000)
+        else:                                # hi/lo/gprel/literal: drop the 16-bit field
+            out.append(w & 0xFFFF0000)
+    return out
+
+
+def fuzzy(res):
+    """0-100 similarity of our instructions to the game's (100 only for an exact match).
+    Aligned like a diff, so one extra instruction does not count as a whole shifted tail."""
+    if res.ok:
+        return 100.0
+    if res.error or res.target is None or res.ours is None:
+        return 0.0
+    import difflib
+    a, b = _norm(res.ours), _norm(res.target)
+    r = difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() * 100.0
+    return min(r, 99.9)
+
+
 def func_row(name):
     for f in load_functions():
         if f["name"] == name:

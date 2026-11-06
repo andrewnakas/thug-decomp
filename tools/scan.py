@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import CFLAGS_RE, FUNCTIONS_CSV, SRC_FUNCS, UNIT_CONST_RE, compiler_config  # noqa: E402
+from common import CFLAGS_RE, FUNCTIONS_CSV, SRC_FUNCS, SRC_NONMATCHING, UNIT_CONST_RE, compiler_config  # noqa: E402
 
 UNIT_NAME = re.compile(r"^func_([0-9A-F]{8})\.cpp$")
 RULES = [
@@ -119,7 +119,7 @@ def scan_file(path, allowed, funcs):
 
 
 def main(argv):
-    files = [Path(a) for a in argv] or sorted(SRC_FUNCS.glob("*"))
+    files = [Path(a) for a in argv] or (sorted(SRC_FUNCS.glob("*")) + sorted(SRC_NONMATCHING.glob("*")))
     allowed = set(compiler_config()["per_file"]["allowed_cflags"])
     funcs = known_functions()
     nbad = n = 0

@@ -30,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import match  # noqa: E402
-from common import BUILD, ROOT, SRC_FUNCS, UNIT_RE  # noqa: E402
+from common import BUILD, FUZZY_RE, ROOT, SRC_FUNCS, SRC_NONMATCHING, UNIT_RE  # noqa: E402
 
 UNIT_FILE = __import__("re").compile(r"^func_[0-9A-F]{8}\.cpp$")
 
@@ -77,6 +77,8 @@ def check(path):
         if s.startswith(".gnu.linkonce") and n:
             problems.append(f"emits {s} ({n} bytes): an out-of-line inline/template copy; "
                             "make the helper static inline or declare it extern")
+    if path.resolve().parent == SRC_NONMATCHING.resolve():
+        return path.name, problems + check_nonmatching(path, res), []
     if not res.ok:
         n = len(res.target.words)
         problems.append(f"does not match: {len(res.diffs)} instruction(s) differ ({n} in the original)"
@@ -87,6 +89,31 @@ def check(path):
             game = match.disasm(res.target.words[i], a, res.target.relocs.get(i)) if i < n else "-"
             lines.append(f"{a:08X} {yours} | {game}")
     return path.name, problems, lines
+
+
+MIN_FUZZY = 30.0
+
+
+def check_nonmatching(path, res):
+    """src/nonmatching/ holds equivalent C++ that does not match yet. It is never linked (the build keeps the
+    game's asm); it must follow every unit rule and state its score, which is checked here, so the disc-free
+    progress report can trust it."""
+    from match import fuzzy
+    problems = []
+    if (SRC_FUNCS / path.name).exists():
+        problems.append("this function is matched in src/funcs: delete the src/nonmatching copy")
+    score = fuzzy(res)
+    if res.ok:
+        problems.append("it matches exactly: move it to src/funcs/")
+        return problems
+    m = FUZZY_RE.search(path.read_text(errors="replace"))
+    if not m:
+        problems.append(f"needs a `/* fuzzy: {score:.1f} */` line (its similarity to the game's code)")
+    elif abs(float(m.group(1)) - score) > 0.05:
+        problems.append(f"states fuzzy {m.group(1)} but scores {score:.1f}: update the `/* fuzzy: */` line")
+    if score < MIN_FUZZY:
+        problems.append(f"scores {score:.1f}%, below {MIN_FUZZY:.0f}%: not yet close enough to keep")
+    return problems
 
 
 def check_cxx_symbols():
@@ -156,7 +183,7 @@ def main():
     import fresh
     fresh.ensure()
 
-    files = [Path(f) for f in a.files] or sorted(SRC_FUNCS.glob("*.cpp"))
+    files = [Path(f) for f in a.files] or (sorted(SRC_FUNCS.glob("*.cpp")) + sorted(SRC_NONMATCHING.glob("*.cpp")))
     stray = [f for f in SRC_FUNCS.glob("*") if f.suffix != ".cpp" and f.is_file()]
     sh = shared_hash()
     cache = {}
@@ -167,7 +194,8 @@ def main():
     todo, passed = [], []
     for f in files:
         key = hashlib.sha256(f.read_bytes()).hexdigest() if f.exists() else None
-        if key and cache.get(f.name) == key:
+        nonm = f.resolve().parent == SRC_NONMATCHING.resolve()   # never cached: its verdict depends on src/funcs
+        if key and not nonm and cache.get(f.name) == key:
             passed.append(f.name)
         else:
             todo.append(f)
@@ -178,6 +206,8 @@ def main():
         bad += 1
     with ProcessPoolExecutor(max_workers=max(1, a.j)) as ex:
         for f, (fname, problems, lines) in zip(todo, ex.map(check, todo)):
+            if f.resolve().parent == SRC_NONMATCHING.resolve():
+                fname = "nonmatching/" + fname
             if problems:
                 bad += 1
                 for p in problems:

@@ -11,6 +11,7 @@ BIN = TOOLCHAIN / "bin"
 ASM = ROOT / "asm"
 BUILD = Path(os.environ.get("THUG_BUILD", ROOT / "build"))
 SRC_FUNCS = ROOT / "src" / "funcs"
+SRC_NONMATCHING = ROOT / "src" / "nonmatching"   # equivalent C++ that does not match yet: scored, never linked
 CONFIG = ROOT / "config"
 FUNCTIONS_CSV = CONFIG / "functions.us.csv"
 EXE_NAME = "SLUS_207.31"
@@ -24,6 +25,7 @@ SEG_END = 0x294E35       # end of the main segment's file bytes (.sdata end)
 UNIT_EXTS = (".cpp", ".c")
 UNIT_RE = re.compile(r"^func_([0-9A-F]{8})\.(cpp|c)$")
 CFLAGS_RE = re.compile(r"^/\*\s*cflags:(.*?)\*/")
+FUZZY_RE = re.compile(r"/\*\s*fuzzy:\s*([0-9]+(?:\.[0-9]+)?)\s*\*/")
 
 
 def tool(name):

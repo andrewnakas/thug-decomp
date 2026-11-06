@@ -258,6 +258,10 @@ def reloc_equal(tr, orr, here, tw, ow):
         # splat sometimes leaves a duplicated `lui` (copied into a branch-likely delay slot) without its
         # %hi: accept it when the immediate is exactly the high half of the address our %hi resolves to
         return (tw & 0xFFFF) == ((orr[1] + 0x8000) >> 16) & 0xFFFF
+    if orr and not tr and orr[0] == R_MIPS_LO16 and orr[1] is not None:
+        # likewise a raw low half splat left unsymbolised: the linked bytes are identical when the
+        # immediate is exactly the low half of the address our %lo resolves to
+        return (tw & 0xFFFF) == orr[1] & 0xFFFF
     if tr and not orr and tr[0] == R_MIPS_PC16:
         return tr[1] is not None and tr[1] == branch_target(ow, here)
     if orr and not tr and orr[0] == R_MIPS_PC16:

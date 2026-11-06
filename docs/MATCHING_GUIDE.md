@@ -187,3 +187,10 @@ Example: `src/funcs/func_002BA688.cpp`.
   only with a comment citing the trap as evidence.
 - **Jump-table switches:** an empty case is fine where the table or the compare tree proves it existed; never invent
   a case value that the binary does not show.
+- **Check callee arity first:** before chasing a register swap, read the callee's asm for its real argument count and
+  return type. A bogus `this`, a missing argument or a constructor declared `void` shifts live ranges everywhere.
+- **addu operand order:** a member array `m[i]` gives `addu base, idx`; a pointer `p[i]` gives `addu idx, base`.
+- **Loop direction:** `for (i = 0; i < n; i++)` becomes a reversed `bnez` loop with a counter copy;
+  `for (; n > 0; n--)` gives `bgtz`. The polarity of `?:` picks `movn` vs `movz`.
+- **Not every swap is allocation:** many near misses are sched1/sched2 order, gcse/CSE merging or loop hoisting.
+  `-fno-schedule-insns` (diagnostic only) tells you quickly whether scheduling is the cause.

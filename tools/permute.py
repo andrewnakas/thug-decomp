@@ -62,7 +62,7 @@ def to_c(src):
         i += 1
     text = EXTERN_C.sub("", "".join(out))
     # C++ uses struct names bare; C needs a typedef (also valid C++, so compile.sh keeps it)
-    tags = dict.fromkeys(re.findall(r"\b(struct|union)\s+([A-Za-z_]\w*)\s*\{", text))
+    tags = dict.fromkeys(re.findall(r"\b(struct|union)\s+([A-Za-z_]\w*)\s*[{;]", text))
     typedefs = "".join(f"typedef {kw} {n} {n};\n" for kw, n in tags)
     # 128-bit types: pycparser cannot read __attribute__((mode(TI))); compile.sh restores it
     text = TI_TYPEDEF.sub(r"typedef \1 \2;", text)

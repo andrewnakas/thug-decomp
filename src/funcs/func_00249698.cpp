@@ -10,7 +10,7 @@ struct Comp_00249698 {
     virtual void V7();
     virtual void V8();
     virtual void V9();
-    virtual void CallMemberFunction(unsigned int name, void* params, int script);
+    virtual void Dispatch(unsigned int name, void* params, int script);
 };
 
 struct Cam_00249698 {
@@ -54,7 +54,7 @@ void func_00249698(Cam_00249698* self)
         func_001E7360(p, 0x7321A8D6, 0x659BF355);
         func_001E7360(p, 0x40C698AF, 0xC0BA0665);
         if (obj) {
-            func_00185578(obj, 0x72AD7B23)->CallMemberFunction(0x986D274E, p, 0);
+            func_00185578(obj, 0x72AD7B23)->Dispatch(0x986D274E, p, 0);
         }
         if (p) {
             func_001E6AE8(p, 3);

@@ -16,13 +16,13 @@ struct Skater_00205E08 {
     int m_id;
     char pad324[0x388 - 0x324];
     int m_m388;
-    bool CallMemberFunction(unsigned int name, void* params, Script_00205E08* script);
+    bool Dispatch(unsigned int name, void* params, Script_00205E08* script);
 };
 
 extern "C" void func_00203DF0(Skater_00205E08* self);
 extern "C" bool func_00205F70(Skater_00205E08* self, unsigned int name, void* params, Script_00205E08* script);
 
-bool Skater_00205E08::CallMemberFunction(unsigned int name, void* params, Script_00205E08* script)
+bool Skater_00205E08::Dispatch(unsigned int name, void* params, Script_00205E08* script)
 {
     switch (name) {
     case 0x7015BC33:

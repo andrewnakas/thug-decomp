@@ -6,7 +6,7 @@ struct Script_00271218 {
 struct Obj_00271218 {
     char pad0[0xC];
     void* m_object;
-    int CallMemberFunction(unsigned int name, void* params, Script_00271218* script);
+    int Dispatch(unsigned int name, void* params, Script_00271218* script);
 };
 
 extern "C" void func_002717A0(Obj_00271218* self, void* params, Script_00271218* script);
@@ -20,7 +20,7 @@ extern "C" void* func_00229DF0(void* link);
 extern "C" bool func_001E8398(void* s, unsigned int name, unsigned int* out, int required);
 extern "C" void func_00184BC0(void* obj, unsigned int name, int node, int a, int b, int c);
 
-int Obj_00271218::CallMemberFunction(unsigned int name, void* params, Script_00271218* script)
+int Obj_00271218::Dispatch(unsigned int name, void* params, Script_00271218* script)
 {
     switch (name) {
     case 0x65B9EC39:

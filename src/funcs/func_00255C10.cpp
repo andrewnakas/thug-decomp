@@ -11,7 +11,7 @@ public:
     virtual void V7();
     virtual void V8();
     virtual void V9();
-    virtual bool CallMemberFunction(unsigned int name, void* params, void* script);
+    virtual bool Dispatch(unsigned int name, void* params, void* script);
 };
 
 struct Obj_00255C10 {
@@ -38,7 +38,7 @@ void Obj_00255C10::Start(int forward)
             func_001A0B50(func_00185578(this, 0x72AD7B23));
             void* s = func_001E6978(func_001190D0(8));
             func_001E72B0(s, 0x06C9F278, 1.0f / 60.0f);
-            func_00185578(this, 0x72AD7B23)->CallMemberFunction(0x6AAEB76F, s, 0);
+            func_00185578(this, 0x72AD7B23)->Dispatch(0x6AAEB76F, s, 0);
             if (s) {
                 func_001E6AE8(s, 3);
             }
@@ -48,14 +48,14 @@ void Obj_00255C10::Start(int forward)
             func_001A0AF0(func_00185578(this, 0x72AD7B23), speed);
             func_001A0B50(func_00185578(this, 0x72AD7B23));
             func_001A1888(func_00185578(this, 0x72AD7B23), 0);
-            func_00185578(this, 0x72AD7B23)->CallMemberFunction(0xF5E2B871, 0, 0);
+            func_00185578(this, 0x72AD7B23)->Dispatch(0xF5E2B871, 0, 0);
             void* s = func_001E6978(func_001190D0(8));
             func_001E72B0(s, 0x06C9F278, speed);
-            func_00185578(this, 0x72AD7B23)->CallMemberFunction(0x6AAEB76F, s, 0);
+            func_00185578(this, 0x72AD7B23)->Dispatch(0x6AAEB76F, s, 0);
             if (s) {
                 func_001E6AE8(s, 3);
             }
-            func_00185578(this, 0x72AD7B23)->CallMemberFunction(0xF5E2B871, 0, 0);
+            func_00185578(this, 0x72AD7B23)->Dispatch(0xF5E2B871, 0, 0);
         }
         func_001A0D38(func_00185578(this, 0x72AD7B23));
         func_00185578(this, 0x72AD7B23)->Hide(1);

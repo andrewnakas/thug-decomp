@@ -33,6 +33,8 @@ def main():
         for s in gate.DATA_SECTIONS:
             if s in (".lit4", ".lit8"):
                 continue   # without the disc, literals are not retargeted yet
+            if s in (".rodata", ".rdata") and cc.rdata_only_jtables(cc.cxx_to_asm(f, cfg).decode(errors="replace")):
+                continue   # switch jump tables: with the disc they are pointed at the game's own (tools/gate.py checks)
             if o.sections.get(s, 0):
                 print(f"PROBLEM {f.name}: has its own {s} ({o.sections[s]} bytes)")
                 bad += 1

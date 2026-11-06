@@ -198,6 +198,24 @@ def local_tables(text):
     return [(t, tables[t]) for t in order]
 
 
+def rdata_only_jtables(text):
+    """True when every .rdata line of compiler output belongs to a jump table (labels, .align,
+    .word/.gpword $L entries): with the disc, retarget_jtables points those at the game's own tables."""
+    sect, seen = ".text", False
+    for line in text.splitlines():
+        s = line.strip()
+        if s in (".rdata", ".text", ".data") or s.startswith(".section"):
+            sect = s
+            continue
+        if sect != ".rdata" or not s:
+            continue
+        seen = True
+        if not (re.match(r"^\.align\s+\d+$", s) or re.match(r"^\$L\d+:$", s)
+                or re.match(r"^\.(?:word|gpword)\s+\$L\d+$", s)):
+            return False
+    return seen
+
+
 def label_offsets(obj, func_sym=None):
     """Offsets (from the function start) of every .rodata word in a first-pass object."""
     from elftools.elf.elffile import ELFFile

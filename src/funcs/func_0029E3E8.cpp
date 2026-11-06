@@ -25,10 +25,10 @@ struct Obj_0029E3E8 {
     char pad2[0x1C - 0x10];
     int m1C;
     float m20;
-    int CallMemberFunction(unsigned int name, void* params, Script_0029E3E8* script);
+    int Dispatch(unsigned int name, void* params, Script_0029E3E8* script);
 };
 
-int Obj_0029E3E8::CallMemberFunction(unsigned int name, void* params, Script_0029E3E8* script)
+int Obj_0029E3E8::Dispatch(unsigned int name, void* params, Script_0029E3E8* script)
 {
     switch (name) {
     case 0x82445966:

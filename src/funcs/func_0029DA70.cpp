@@ -33,10 +33,10 @@ struct Comp_0029DA70 : public Component {
     char pad84[0x8C - 0x84];
     float m8C;
     virtual void Finalize();
-    int CallMemberFunction(unsigned int name, void* params, void* script);
+    int Dispatch(unsigned int name, void* params, void* script);
 };
 
-int Comp_0029DA70::CallMemberFunction(unsigned int name, void* params, void* script)
+int Comp_0029DA70::Dispatch(unsigned int name, void* params, void* script)
 {
     switch (name) {
     case 0xF362BBBF:

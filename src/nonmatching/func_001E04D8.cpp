@@ -1,4 +1,5 @@
-/* fuzzy: 90.9 */
+/* cflags: -fno-strength-reduce */
+/* fuzzy: 93.8 */
 typedef unsigned long u64_001E04D8;
 
 extern int D_0038E130;

@@ -1,11 +1,11 @@
-/* fuzzy: 98.9 */
+/* fuzzy: 99.5 */
 extern "C" int func_001E8398(void* params, unsigned int name, unsigned int* out, int req);
 extern "C" int func_001E7EB0(void* params, unsigned int name, float* out, int req);
 extern "C" int func_001E7DE8(void* params, unsigned int name, int* out, int req);
 extern "C" int func_001E8708(void* params, unsigned int name);
 extern "C" int func_0033ECA8(float f);
 extern "C" unsigned int func_0033EBE0(float f);
-extern "C" void func_00103F28(const char* file, const char* fmt, int line, ...);
+extern "C" int  func_00103F28(const char* file, const char* fmt, int line, ...);
 extern char D_00363108[];
 extern char D_0036312F[];
 

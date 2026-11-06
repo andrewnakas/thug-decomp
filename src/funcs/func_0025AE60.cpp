@@ -1,4 +1,3 @@
-/* fuzzy: 99.4 */
 /* sym: Fn__12Obj_0025AE60ffi = 0x0025AE30 */
 typedef int qword_0025AE60 __attribute__((mode(TI)));
 
@@ -107,7 +106,7 @@ struct Skel_0025AE60 {
 
 extern "C" float func_00119768(void* p);
 extern "C" void func_001197F0(void* p);
-extern "C" void func_00116170(Skel_0025AE60* s, Quat_0025AE60* q, Vec_0025AE60* t, int c, float f);
+extern "C" int func_00116170(Skel_0025AE60* s, Quat_0025AE60* q, Vec_0025AE60* t, int c, float f);
 extern "C" unsigned int func_001180B0(Skel_0025AE60* s, int i);
 extern "C" Target_0025AE60* func_00184D70(unsigned int id);
 extern "C" bool func_001E5628(unsigned int name, int a);

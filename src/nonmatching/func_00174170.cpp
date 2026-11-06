@@ -1,4 +1,5 @@
 /* fuzzy: 88.2 */
+/* const: 0x149960 */
 struct Heap_00174170 {
     char pad[0xDC];
     int mDC;
@@ -28,7 +29,7 @@ extern "C" void func_00174170(int alloc)
         int p = Alloc(0x14996, 0x10);
         D_003942D4 = p;
         D_0038BE44 = p;
-        D_003942D8 = 0x14996 * 0x10; /* a byte count (0x14996 qwords), not an address */
+        D_003942D8 = 0x149960;
     } else if (D_0038BE44) {
         D_003942D4 = D_00393F68;
         func_0010BEB8(D_0038BE44);

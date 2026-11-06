@@ -317,6 +317,11 @@ def reloc_equal(tr, orr, here, tw, ow):
         # likewise a raw low half splat left unsymbolised: the linked bytes are identical when the
         # immediate is exactly the low half of the address our %lo resolves to
         return (tw & 0xFFFF) == orr[1] & 0xFFFF
+    if tr and not orr and tr[0] in (R_MIPS_HI16, R_MIPS_LO16) and tr[1] is not None:
+        # the reverse: splat gave the game's word a %hi/%lo that is really a plain constant (e.g. a loop bound
+        # that happens to look like an address); ours is the same raw immediate, so the linked bytes are identical
+        want = ((tr[1] + 0x8000) >> 16) & 0xFFFF if tr[0] == R_MIPS_HI16 else tr[1] & 0xFFFF
+        return (ow & 0xFFFF) == want
     if tr and not orr and tr[0] == R_MIPS_PC16:
         return tr[1] is not None and tr[1] == branch_target(ow, here)
     if orr and not tr and orr[0] == R_MIPS_PC16:

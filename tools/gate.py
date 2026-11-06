@@ -111,7 +111,8 @@ def check_nonmatching(path, res):
         problems.append(f"needs a `/* fuzzy: {score:.1f} */` line (its similarity to the game's code)")
     elif abs(float(m.group(1)) - score) > 0.05 and abs(float(m.group(1)) - fuzzy_v1(res)) > 0.05:
         problems.append(f"states fuzzy {m.group(1)} but scores {score:.1f}: update the `/* fuzzy: */` line")
-    if max(score, fuzzy_v1(res)) < MIN_FUZZY:
+    # tiny functions: one differing branch is a large share of a handful of instructions, so no floor
+    if max(score, fuzzy_v1(res)) < MIN_FUZZY and len(res.target.words) > 12:
         problems.append(f"scores {score:.1f}%, below {MIN_FUZZY:.0f}%: not yet close enough to keep")
     return problems
 

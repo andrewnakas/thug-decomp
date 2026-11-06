@@ -98,7 +98,7 @@ def check_nonmatching(path, res):
     """src/nonmatching/ holds equivalent C++ that does not match yet. It is never linked (the build keeps the
     game's asm); it must follow every unit rule and state its score, which is checked here, so the disc-free
     progress report can trust it."""
-    from match import fuzzy
+    from match import fuzzy, fuzzy_v1
     problems = []
     if (SRC_FUNCS / path.name).exists():
         problems.append("this function is matched in src/funcs: delete the src/nonmatching copy")
@@ -109,9 +109,9 @@ def check_nonmatching(path, res):
     m = FUZZY_RE.search(path.read_text(errors="replace"))
     if not m:
         problems.append(f"needs a `/* fuzzy: {score:.1f} */` line (its similarity to the game's code)")
-    elif abs(float(m.group(1)) - score) > 0.05:
+    elif abs(float(m.group(1)) - score) > 0.05 and abs(float(m.group(1)) - fuzzy_v1(res)) > 0.05:
         problems.append(f"states fuzzy {m.group(1)} but scores {score:.1f}: update the `/* fuzzy: */` line")
-    if score < MIN_FUZZY:
+    if max(score, fuzzy_v1(res)) < MIN_FUZZY:
         problems.append(f"scores {score:.1f}%, below {MIN_FUZZY:.0f}%: not yet close enough to keep")
     return problems
 

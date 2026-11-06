@@ -247,17 +247,45 @@ def _norm(obj):
     return out
 
 
-def fuzzy(res):
-    """0-100 similarity of our instructions to the game's (100 only for an exact match).
-    Aligned like a diff, so one extra instruction does not count as a whole shifted tail."""
+def _shape(w):
+    """The instruction without its register fields: opcode, function and immediate/shift bits."""
+    op = w >> 26
+    if op == 0:                    # SPECIAL: keep opcode, sa and function
+        return w & 0xFC0007FF
+    if op in (0x10, 0x11, 0x12):   # COP0/COP1/COP2: keep opcode, format and function
+        return w & 0xFFE0003F
+    return w & 0xFC00FFFF          # I/J type: keep opcode and immediate
+
+
+def fuzzy_v1(res):
+    """The first score (exact relocation-masked words only). Kept so units scored with it stay valid."""
     if res.ok:
         return 100.0
     if res.error or res.target is None or res.ours is None:
         return 0.0
     import difflib
     a, b = _norm(res.ours), _norm(res.target)
-    r = difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() * 100.0
-    return min(r, 99.9)
+    return min(difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() * 100.0, 99.9)
+
+
+def fuzzy(res):
+    """0-100 similarity of our instructions to the game's (100 only for an exact match).
+    Instructions are aligned by their shape (no registers), like a diff, so an inserted instruction does not
+    shift the whole tail; an aligned instruction scores 1 when identical and 0.5 when only registers differ.
+    The total is divided by the longer of the two functions."""
+    if res.ok:
+        return 100.0
+    if res.error or res.target is None or res.ours is None:
+        return 0.0
+    import difflib
+    a, b = _norm(res.ours), _norm(res.target)
+    sa, sb = [_shape(w) for w in a], [_shape(w) for w in b]
+    credit = 0.0
+    for blk in difflib.SequenceMatcher(None, sa, sb, autojunk=False).get_matching_blocks():
+        for k in range(blk.size):
+            credit += 1.0 if a[blk.a + k] == b[blk.b + k] else 0.5
+    n = max(len(a), len(b)) or 1
+    return min(credit * 100.0 / n, 99.9)
 
 
 def func_row(name):

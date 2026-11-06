@@ -157,3 +157,23 @@ Example: `src/funcs/func_002BA688.cpp`.
   `if (d) { It* p = &it; do { ...; d = p->Advance(it.cur); } while (d); }`.
 - Hardware addresses such as the scratchpad (`(Mat*)0x70003FC0`) are fine as constants.
 
+
+## Findings from the 2026-11-05 rounds (all lanes)
+
+- **Compare against a register known to hold 0** (`sltu v1,a1,v1` where `$zero` would do): write the test as an
+  unsigned less-than against an inline's unsigned parameter that defaults to 0, e.g.
+  `Node* Valid(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }`. A literal 0 is folded away before RTL.
+  Use the same helper at every call site (func_002D1390, func_00272300).
+- **Virtual call register pair:** vptr in `$v1` and function in `$v0` means the virtual returns a value; declare it
+  `int` or a pointer. A `void` virtual gives the swapped pair. Declaring an ignored callee result as `int` fixes many
+  argument-order ties too.
+- **Loop bound reloaded every pass:** read it through an inline getter (`unsigned GetSize() { return m_size; }`).
+- **Array of structs:** `(base + i)->field` gives the game's single induction variable; `base[i].field` may not.
+- **Store order:** with several stores through one base, the game's first store is usually the source's last.
+- **Unrotated top-tested loop:** `do { if (!c) break; ... } while (1);`.
+- **Allocation:** an inline class `operator new` / `new[]` reproduces the game's alloc-then-construct calls.
+- **`.lit4` floats** that are not round need enough digits to hit the exact bits (`3.141593f` = 0x40490FDC).
+- **Busy-waits** (empty loops that re-read a volatile field or call a function) are real code and are fine. Dead
+  stores, ignored-result calls and bare reads kept only to steer the compiler are not.
+- **The permuter** (`tools/permute.py`) now takes units with `extern "C"`, bare struct names, bool literals and
+  128-bit typedefs. Units with member functions still need a C-style copy with an explicit self pointer.

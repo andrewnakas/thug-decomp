@@ -1,0 +1,72 @@
+/* fuzzy: 60.0 */
+struct Cam_0013F7A8 {
+    char pad0[0x50];
+    float m50;
+    float m54;
+    float m58;
+    char pad5C[0x110];
+    float m16C;
+    float m170;
+    float m174;
+    float m178;
+    float m17C;
+    int m180;
+    int m184;
+    int m188;
+    float m18C;
+    int m190;
+    float m194;
+    float m198;
+    float m19C;
+    float m1A0;
+    float m1A4;
+    float m1A8;
+    int m1AC;
+    float m1B0;
+    int m1B4;
+    int m1B8;
+    int m1BC;
+    int m1C0;
+    char pad1C4[0xC];
+    int m1D0;
+    int m1D4;
+    int m1D8;
+    char pad1DC[0xC];
+    int m1E8;
+    int m1EC;
+    void Reset();
+};
+
+void Cam_0013F7A8::Reset()
+{
+    m184 = 1;
+    m50 = 2048.0f;
+    m54 = 144.0f;
+    m58 = -928.0f;
+    m17C = 0.5f;
+    m18C = -0.02f;
+    m16C = 1.0f;
+    m170 = 2.0f;
+    m1D0 = 0;
+    m1D4 = 0;
+    m1D8 = 0;
+    m1E8 = 0;
+    m1EC = 0;
+    m194 = 2.0f;
+    m198 = 2.0f;
+    m19C = 2.0f;
+    m1A0 = 2.0f;
+    m1A4 = 2.0f;
+    m1A8 = 2.0f;
+    m174 = 1.0f;
+    m178 = 1.0f;
+    m188 = 0;
+    m190 = 0;
+    m1AC = 0;
+    m1B0 = 1.0f;
+    m1B4 = 0;
+    m1B8 = 0;
+    m1BC = 0;
+    m1C0 = 0;
+    m180 = 0;
+}

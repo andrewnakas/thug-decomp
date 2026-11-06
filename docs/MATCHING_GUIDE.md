@@ -194,3 +194,7 @@ Example: `src/funcs/func_002BA688.cpp`.
   `for (; n > 0; n--)` gives `bgtz`. The polarity of `?:` picks `movn` vs `movz`.
 - **Not every swap is allocation:** many near misses are sched1/sched2 order, gcse/CSE merging or loop hoisting.
   `-fno-schedule-insns` (diagnostic only) tells you quickly whether scheduling is the cause.
+- **Volatile reloads with an unused result:** when the game's binary itself reloads a volatile field after updating
+  it (e.g. `lw` of a request counter after `++m34`, value never used), reproduce it with a plausible inline accessor on
+  the class (`int NextId() { return ++m_34; }`, called as `s->NextId();`), used the same way across the family. Bare
+  expression statements, comma tricks and ignored reads of non-volatile data remain banned.

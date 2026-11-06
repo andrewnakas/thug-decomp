@@ -75,15 +75,27 @@ def objdiff_agrees():
     if r.returncode or r2.returncode:
         print("PROBLEM objdiff: could not build or run the objdiff check:\n" + (r.stdout + r2.stderr)[-1500:])
         return False
-    ok = True
+    ok, noted = True, []
     for u in json.loads(out.read_text())["units"]:
         if u.get("metadata", {}).get("complete"):
             for f in u.get("functions", []):
                 if f.get("fuzzy_match_percent", 0) < 100.0:
-                    print(f"PROBLEM {f['name']}.cpp: objdiff scores it {f.get('fuzzy_match_percent', 0):.2f}%")
-                    ok = False
+                    # the image's sha1 already passed; objdiff cannot see relocations splat invented on the game side
+                    # (a plain constant given a %hi/%lo). Accept only if match.py's exact comparison agrees.
+                    name = f["name"].split("__")[0] if f["name"].startswith("func_") else u["name"].split("/")[-1]
+                    import match
+                    try:
+                        same = match.compare(name).ok
+                    except Exception:
+                        same = False
+                    if same:
+                        noted.append(f"{name} ({f.get('fuzzy_match_percent', 0):.2f}%)")
+                    else:
+                        print(f"PROBLEM {f['name']}.cpp: objdiff scores it {f.get('fuzzy_match_percent', 0):.2f}%")
+                        ok = False
     if ok:
-        print("objdiff: every unit file is a 100% match")
+        print("objdiff: every unit file is a 100% match"
+              + (f" (match.py confirms: {', '.join(noted)})" if noted else ""))
     return ok
 
 

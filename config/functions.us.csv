@@ -5061,7 +5061,8 @@ func_001F8270,001F8270,0x74,game,func,asm/nonmatchings/game/func_001F8270.s
 func_001F82E8,001F82E8,0x48,game,func,asm/nonmatchings/game/func_001F82E8.s
 func_001F8330,001F8330,0x4C,game,func,asm/nonmatchings/game/func_001F8330.s
 func_001F8380,001F8380,0x48,game,func,asm/nonmatchings/game/func_001F8380.s
-func_001F83C8,001F83C8,0x84,game,func,asm/nonmatchings/game/func_001F83C8.s
+func_001F83C8,001F83C8,0x68,game,func,asm/nonmatchings/game/func_001F83C8.s
+func_001F8430,001F8430,0x1C,game,func,asm/nonmatchings/game/func_001F8430.s
 func_001F8450,001F8450,0x94,game,func,asm/nonmatchings/game/func_001F8450.s
 func_001F84E8,001F84E8,0xA4,game,func,asm/nonmatchings/game/func_001F84E8.s
 func_001F8590,001F8590,0x48,game,func,asm/nonmatchings/game/func_001F8590.s
@@ -7490,7 +7491,8 @@ func_0025FF78,0025FF78,0x58,game,func,asm/nonmatchings/game/func_0025FF78.s
 func_0025FFD0,0025FFD0,0xC,game,fill,asm/nonmatchings/game/func_0025FFD0.s
 func_0025FFE0,0025FFE0,0x9C,game,func,asm/nonmatchings/game/func_0025FFE0.s
 func_00260080,00260080,0x410,game,func,asm/nonmatchings/game/func_00260080.s
-func_00260498,00260498,0x58,game,func,asm/nonmatchings/game/func_00260498.s
+func_00260498,00260498,0x2C,game,fill,asm/nonmatchings/game/func_00260498.s
+func_002604C8,002604C8,0x28,game,func,asm/nonmatchings/game/func_002604C8.s
 func_002604F0,002604F0,0x20,game,func,asm/nonmatchings/game/func_002604F0.s
 func_00260510,00260510,0x8,game,func,asm/nonmatchings/game/func_00260510.s
 func_00260518,00260518,0x4,game,fill,asm/nonmatchings/game/func_00260518.s

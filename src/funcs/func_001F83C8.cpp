@@ -1,4 +1,3 @@
-/* fuzzy: 88.1 */
 extern char D_0038EB90[];
 extern "C" int func_0031BCE0(int sema);
 extern "C" int func_0031F440(char* path, int mode, int a, int b, int c, int d);

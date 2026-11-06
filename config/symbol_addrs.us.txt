@@ -1,0 +1,5 @@
+// Function starts splat cannot find on its own (hand-checked), splat symbol_addrs format.
+// func_002604C8: a 0x28-byte function behind 0x30 bytes of unreachable fill, referenced from vtable entry 0x00375AF4
+// func_001F8430: a second function inside the old func_001F83C8 range, used as a pointer by func_001F8450
+func_002604C8 = 0x002604C8; // type:func
+func_001F8430 = 0x001F8430; // type:func

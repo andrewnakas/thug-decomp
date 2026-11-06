@@ -18,6 +18,8 @@ from common import ROOT, tool  # noqa: E402
 
 
 def main():
+    if len(sys.argv) > 1:   # it takes no options: never start a full build on a mistyped flag
+        sys.exit(__doc__.strip() if sys.argv[1] in ("-h", "--help") else f"build.py takes no arguments, got {sys.argv[1:]}")
     fresh.ensure()
     py = sys.executable
     subprocess.run([py, "configure.py"], cwd=ROOT, check=True)

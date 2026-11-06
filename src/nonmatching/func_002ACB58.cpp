@@ -1,5 +1,4 @@
-/* cflags: -G0 */
-/* fuzzy: 88.1 */
+/* fuzzy: 89.7 */
 struct Item_002ACB58 {
     char pad[0x14];
     void* m14;

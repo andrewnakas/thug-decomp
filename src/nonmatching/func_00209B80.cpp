@@ -1,0 +1,118 @@
+/* fuzzy: 53.7 */
+typedef int qword __attribute__((mode(TI)));
+
+struct Vec_00209B80 {
+    union {
+        struct { float x, y, z, w; };
+        qword q;
+    };
+    Vec_00209B80() {}
+    Vec_00209B80(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    Vec_00209B80& operator=(const Vec_00209B80& o)
+    {
+        q = o.q;
+        return *this;
+    }
+};
+
+struct Pt_00209B80 {
+    Vec_00209B80 pos;
+    Vec_00209B80 v;
+    unsigned char flag;
+};
+
+struct Edge_00209B80 {
+    Pt_00209B80 pts[2];
+    Vec_00209B80 n;
+    int m70;
+    unsigned char m74;
+};
+
+extern "C" void func_003233B8(Vec_00209B80* d, Vec_00209B80* s);
+
+static inline bool Near_00209B80(Vec_00209B80 a, Vec_00209B80 b, float eps)
+{
+    if (__builtin_fabsf(a.x - b.x) < eps && __builtin_fabsf(a.y - b.y) < eps && __builtin_fabsf(a.z - b.z) < eps)
+        return true;
+    return false;
+}
+
+static inline float Dot_00209B80(const Vec_00209B80& a, const Vec_00209B80& b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+struct Edges_00209B80 {
+    char pad0[0x30];
+    Edge_00209B80 m_in[32];
+    int m1030;
+    char pad1034[0xC];
+    Edge_00209B80 m_out[32];
+    int m2040;
+    void Merge();
+};
+
+void Edges_00209B80::Merge()
+{
+    int used[32];
+    Vec_00209B80 dirs[32];
+    int i = m1030;
+    while (i--) {
+        used[i] = 0;
+        Edge_00209B80* e = &m_in[i];
+        Vec_00209B80 d(e->pts[1].pos.x - e->pts[0].pos.x, e->pts[1].pos.y - e->pts[0].pos.y,
+                       e->pts[1].pos.z - e->pts[0].pos.z, e->pts[1].pos.w - e->pts[0].pos.w);
+        dirs[i] = d;
+        func_003233B8(&dirs[i], &dirs[i]);
+    }
+    i = m1030;
+    while (i--) {
+        if (used[i])
+            continue;
+        Edge_00209B80* a = &m_in[i];
+        int j = i;
+        while (j--) {
+            Edge_00209B80* b = &m_in[j];
+            bool same = false;
+            if (Near_00209B80(a->pts[0].pos, b->pts[0].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[1].pos, 0.1f)) {
+                same = true;
+            } else if (Near_00209B80(a->pts[0].pos, b->pts[1].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[0].pos, 0.1f)) {
+                same = true;
+            }
+            if (same) {
+                if (0.99f < Dot_00209B80(b->n, a->n))
+                    used[j] = 1;
+            }
+        }
+    }
+    m2040 = 0;
+    i = m1030;
+    while (i--) {
+        Edge_00209B80 cur = m_in[i];
+        if (used[i])
+            continue;
+        int j = i;
+        while (j--) {
+            if (used[j])
+                continue;
+            Edge_00209B80* b = &m_in[j];
+            if (Dot_00209B80(cur.n, b->n) < 0.99f)
+                continue;
+            if (__builtin_fabsf(Dot_00209B80(dirs[i], dirs[j])) < 0.99f)
+                continue;
+            if (Near_00209B80(cur.pts[0].pos, b->pts[0].pos, 0.1f)) {
+                cur.pts[0] = b->pts[1];
+            } else if (Near_00209B80(cur.pts[0].pos, b->pts[1].pos, 0.1f)) {
+                cur.pts[0] = b->pts[0];
+            } else if (Near_00209B80(cur.pts[1].pos, b->pts[0].pos, 0.1f)) {
+                cur.pts[1] = b->pts[1];
+            } else if (Near_00209B80(cur.pts[1].pos, b->pts[1].pos, 0.1f)) {
+                cur.pts[1] = b->pts[0];
+            } else {
+                continue;
+            }
+            used[j] = 1;
+        }
+        m_out[m2040++] = cur;
+    }
+}

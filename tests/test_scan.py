@@ -46,3 +46,9 @@ def test_cflags(tmp_path):
 def test_bare_statement(tmp_path):
     assert problems(tmp_path, "struct S { volatile int m; void f(); };\nvoid S::f()\n{\n    m;\n}\n")
     assert problems(tmp_path, "void f(int x) { for (;;) { if (x) break; } return; }\n") == []
+
+
+def test_declared_const(tmp_path):
+    body = "int f(int x) { return x + 0x00149960; }\n"
+    assert problems(tmp_path, body)
+    assert problems(tmp_path, "/* const: 0x149960 */\n" + body) == []

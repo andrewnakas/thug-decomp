@@ -79,6 +79,19 @@ def unit_syms(path):
     return [(m.group(1), int(m.group(2), 16)) for m in UNIT_SYM_RE.finditer(text)]
 
 
+UNIT_CONST_RE = re.compile(r"/\*\s*const:\s*(0x[0-9A-Fa-f]+)\s*\*/")
+
+
+def unit_consts(path):
+    """Numbers a unit declares with `/* const: 0xVALUE */`: in-image-looking values the game loads as plain
+    immediates (a size, a mask). scan.py lets them through; gate.py checks the game's asm really does that."""
+    try:
+        text = Path(path).read_text(errors="replace")
+    except OSError:
+        return []
+    return [int(m.group(1), 16) for m in UNIT_CONST_RE.finditer(text)]
+
+
 def all_unit_syms():
     out = []
     for p in sorted(SRC_FUNCS.glob("func_*.cpp")):

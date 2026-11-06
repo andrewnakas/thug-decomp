@@ -75,6 +75,8 @@ python3 toolchain/setup.py
 - **No string literals.** The game's strings stay in its `.rodata`: `extern char D_0035AC80[];`.
 - **No hard-coded addresses** inside the image (`0x00100000`–`0x00468C30`): use the symbol (`D_00393E80`,
   `func_00100030`). Hardware registers (`0x10000000`…, `0x12000000`…) and scratchpad (`0x70000000`) are fine.
+  A plain *number* that happens to fall in that range (a size, a mask) is allowed only with a
+  `/* const: 0x149960 */` line in the unit; gate.py checks that the game's own asm loads it as a raw immediate.
 - **One function per file.** No other out-of-line function (helpers must be `static inline` and fully inlined), no
   data of the unit's own: globals, vtables, jump tables stay in the asm and are referenced with `extern`.
   Float literals are fine: `tools/cc.py` points them at the game's own `.lit4` constants when the bytes agree.

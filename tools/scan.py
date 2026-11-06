@@ -10,6 +10,7 @@ Rejected (each prints "PROBLEM <file>: <why>" for Steward's report):
     .set noreorder, #pragma, INCLUDE_ASM/INCLUDE_RODATA/GLOBAL_ASM
   - __attribute__((section(...))) and other placement tricks
   - hard-coded addresses inside the game image (0x00100000..0x00468C30): use the symbol
+    (a plain number in that range is allowed with `/* const: 0xVALUE */`; gate.py checks the asm)
   - string literals: the game's strings stay in its .rodata; use extern char D_XXXXXXXX[]
   - bare expression statements (`m_count;`): dead reads kept to steer the compiler
   - #include of anything that is not a header
@@ -24,7 +25,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import CFLAGS_RE, FUNCTIONS_CSV, SRC_FUNCS, compiler_config  # noqa: E402
+from common import CFLAGS_RE, FUNCTIONS_CSV, SRC_FUNCS, UNIT_CONST_RE, compiler_config  # noqa: E402
 
 UNIT_NAME = re.compile(r"^func_([0-9A-F]{8})\.cpp$")
 RULES = [
@@ -109,9 +110,10 @@ def scan_file(path, allowed, funcs):
     if m:
         problems.append(f"bare expression statement `{m.group(0).strip()}` (a read that does nothing): "
                         "no dead statements, even on volatile members")
+    declared = {int(m.group(1), 16) for m in UNIT_CONST_RE.finditer(text)}   # gate.py verifies these
     for lit in ADDR_LIT.findall(code):
         v = int(lit, 16)
-        if looks_like_address(v):
+        if looks_like_address(v) and v not in declared:
             problems.append(f"hard-coded address 0x{lit}: reference the symbol (D_{v:08X}/func_{v:08X}) instead")
     return problems
 

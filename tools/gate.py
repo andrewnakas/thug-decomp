@@ -124,6 +124,28 @@ def check_cxx_symbols():
     return bad
 
 
+def check_unit_consts():
+    """A `/* const: 0xV */` unit directive is allowed only where the game's own asm for that function loads V as
+    a raw immediate (splat writes `(0xV >> 16)` / `(0xV & 0xFFFF)` exactly when there is no relocation), so an
+    address can never be smuggled in as a number."""
+    from common import unit_consts
+    rows = {r["name"]: r for r in match.load_functions()}
+    bad = 0
+    for f in sorted(SRC_FUNCS.glob("func_*.cpp")):
+        vals = unit_consts(f)
+        if not vals:
+            continue
+        row = rows.get(f.stem)
+        asm = (ROOT / row["asm"]).read_text().lower() if row and row.get("asm") else ""
+        for v in vals:
+            hi, lo = f"(0x{v:x} >> 16)", f"(0x{v:x} & 0xffff)"
+            if hi not in asm or lo not in asm:
+                print(f"PROBLEM {f.name}: /* const: 0x{v:X} */ but the game's asm does not load 0x{v:X} as a plain "
+                      "immediate here: reference the symbol instead")
+                bad += 1
+    return bad
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="*")
@@ -150,7 +172,7 @@ def main():
         else:
             todo.append(f)
 
-    bad = check_cxx_symbols()
+    bad = check_cxx_symbols() + check_unit_consts()
     for f in stray:
         print(f"PROBLEM {f.name}: only func_XXXXXXXX.cpp files belong in src/funcs")
         bad += 1

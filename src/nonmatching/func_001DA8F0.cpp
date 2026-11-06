@@ -1,0 +1,40 @@
+/* fuzzy: 71.4 */
+// nm: 6 words: f0/f1 swap for 1e7 vs 1.0f in first vector (lane 2 draft); store-order permutations and Set() do not change it
+typedef int qword_001DA8F0 __attribute__((mode(TI)));
+union Vec_001DA8F0 {
+    qword_001DA8F0 q;
+    struct {
+        float x, y, z, w;
+    } f;
+    void Set(float x, float y, float z, float w)
+    {
+        f.x = x;
+        f.y = y;
+        f.z = z;
+        f.w = w;
+    }
+};
+struct Obj_001DA8F0 {
+    Vec_001DA8F0 m0;
+    Vec_001DA8F0 m10;
+    char pad[0xFC0 - 0x20];
+    int mFC0;
+    int mFC4;
+    int mFC8;
+    void Reset();
+};
+
+void Obj_001DA8F0::Reset()
+{
+    Vec_001DA8F0 v;
+    v.f.y = v.f.x = v.f.z = 10000000.0f;
+    v.f.w = 1.0f;
+    m0 = v;
+    v.f.x = -10000000.0f;
+    v.f.y = -10000000.0f;
+    v.f.z = -10000000.0f;
+    m10 = v;
+    mFC0 = 0;
+    mFC4 = 0;
+    mFC8 = 0;
+}

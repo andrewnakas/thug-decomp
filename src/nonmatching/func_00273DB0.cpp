@@ -1,4 +1,4 @@
-/* fuzzy: 65.1 */
+/* fuzzy: 81.5 */
 /* sym: _vt$11Cb_00200C00 = 0x00366B58 */
 /* sym: __12Msg_00273DB0 = 0x001FA800 */
 typedef int qword_00273DB0 __attribute__((mode(TI)));
@@ -45,6 +45,7 @@ struct Board_00273DB0 {
 struct Owner_00273DB0 {
     char pad[0x29C];
     Board_00273DB0* m_board;
+    int BoardId() { return m_board ? m_board->m_5C : -1; }
 };
 
 struct Conn_00273DB0 {
@@ -137,10 +138,18 @@ void Sync_00273DB0::SendUpdate()
     short b[3];
     Msg_00273DB0 msg;
     Bits_00273DB0 bits;
-    unsigned int mask = 0;
-    Bits_00273DB0* out = &bits;
-    func_001FAA08(out);
-    Conn_00273DB0* conn = func_002A39E0(D_00392068, m_skater->m_id);
+    Conn_00273DB0* conn;
+    int v138;
+    int v1C;
+    int v13C;
+    int v20;
+    int v180;
+    unsigned int mask;
+    short boardId;
+    int v1C_comp;
+    mask = 0;
+    func_001FAA08(&bits);
+    conn = func_002A39E0(D_00392068, m_skater->m_id);
     void* comp = func_00185578(m_skater, 0xB1D5A3E1);
     bool online = func_002A1A38(D_00392068);
     bool force = false;
@@ -153,16 +162,14 @@ void Sync_00273DB0::SendUpdate()
             return;
     }
     m_lastTime = conn->m_time;
-    func_001FAA40(out, buf, 0x400);
+    func_001FAA40(&bits, buf, 0x400);
     func_00100498(m_skater->m_matrix, rot);
-    char* st = m_state;
-    int v180 = *(int*)(st + 0x180);
-    int v1C = *(signed char*)(st + 0x1C);
-    int v13C = *(signed char*)(st + 0x13C);
-    int v138 = *(int*)(st + 0x138);
-    int v20 = *(int*)(st + 0x20) == 1;
-    Board_00273DB0* board = m_owner->m_board;
-    short boardId = board ? board->m_5C : (unsigned short)-1;
+    v180 = *(int*)(m_state + 0x180);
+    v1C = *(signed char*)(m_state + 0x1C);
+    v13C = *(signed char*)(m_state + 0x13C);
+    v138 = *(int*)(m_state + 0x138);
+    v20 = *(int*)(m_state + 0x20) == 1;
+    boardId = m_owner->BoardId();
     int i;
     Slot_00273DB0* slot = (Slot_00273DB0*)(m_state + 0x24);
     for (i = 0; i < 23; i++) {
@@ -171,10 +178,10 @@ void Sync_00273DB0::SendUpdate()
         else
             mask &= ~(1 << i);
     }
-    int v1C_comp = func_00290888(comp);
-    func_001FAA70(out, conn->m_time, 32);
+    v1C_comp = func_00290888(comp);
+    func_001FAA70(&bits, conn->m_time, 32);
     unsigned int flags = func_00273A60(this);
-    func_001FAA70(out, flags, 9);
+    func_001FAA70(&bits, flags, 9);
     if (online) {
         if (!D_00394158)
             D_00394158 = 1;
@@ -182,20 +189,21 @@ void Sync_00273DB0::SendUpdate()
         D_00452FB0 = m_skater->m_pos;
     }
     for (i = 0; i < 3; i++) {
+        Skater_00273DB0* sk = m_skater;
         if (i == 1) {
-            a[1] = (int)(m_skater->m_pos.f.y * 4.0f);
+            a[1] = (int)(sk->m_pos.f.y * 4.0f);
         } else {
-            a[i] = (int)((&m_skater->m_pos.f.x)[i] + (&m_skater->m_pos.f.x)[i]);
+            a[i] = (int)((&sk->m_pos.f.x)[i] + (&sk->m_pos.f.x)[i]);
         }
         if (i == 0) {
             if (flags & 1)
-                func_001FAA70(out, a[0], 16);
+                func_001FAA70(&bits, a[0], 16);
         } else if (i == 1) {
             if (flags & 2)
-                func_001FAA70(out, a[1], 16);
+                func_001FAA70(&bits, a[1], 16);
         } else if (i == 2) {
             if (flags & 4)
-                func_001FAA70(out, a[2], 16);
+                func_001FAA70(&bits, a[2], 16);
         }
         m_22[i] = a[i];
     }
@@ -203,13 +211,13 @@ void Sync_00273DB0::SendUpdate()
         b[i] = (int)(rot[i] * 4096.0f);
         if (i == 0) {
             if (flags & 8)
-                func_001FAA70(out, b[0], 16);
+                func_001FAA70(&bits, b[0], 16);
         } else if (i == 1) {
             if (flags & 0x10)
-                func_001FAA70(out, b[1], 16);
+                func_001FAA70(&bits, b[1], 16);
         } else if (i == 2) {
             if (flags & 0x20)
-                func_001FAA70(out, b[2], 16);
+                func_001FAA70(&bits, b[2], 16);
         }
         m_28[i] = b[i];
     }
@@ -222,23 +230,23 @@ void Sync_00273DB0::SendUpdate()
         int v = v1C;
         if (v138)
             v |= -0x80;
-        func_001FAA70(out, v, 4);
-        func_001FAA70(out, v13C, 6);
-        func_001FAA70(out, v20, 1);
-        func_001FAA70(out, v180, 1);
+        func_001FAA70(&bits, v, 4);
+        func_001FAA70(&bits, v13C, 6);
+        func_001FAA70(&bits, v20, 1);
+        func_001FAA70(&bits, v180, 1);
     }
     if (flags & 0x80) {
         m_30 = mask;
         m_34 = v1C_comp;
-        func_001FAA70(out, mask, 5);
-        func_001FAA70(out, v1C_comp, 3);
+        func_001FAA70(&bits, mask, 5);
+        func_001FAA70(&bits, v1C_comp, 3);
     }
     if (flags & 0x100) {
         m_3C = boardId;
-        func_001FAA70(out, boardId, 16);
+        func_001FAA70(&bits, boardId, 16);
     }
-    func_001FAB48(out);
-    msg.m_len = func_001FAA60(out);
+    func_001FAB48(&bits);
+    msg.m_len = func_001FAA60(&bits);
     msg.m_14 = 1;
     msg.m_id = 0x23;
     msg.m_prio = 0x81;

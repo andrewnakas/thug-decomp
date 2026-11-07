@@ -1,4 +1,4 @@
-/* fuzzy: 66.7 */
+/* fuzzy: 77.9 */
 struct Entry_002957A0 {
     int m0;
     char pad[0x2A1];
@@ -22,12 +22,6 @@ struct Obj_002957A0 {
     Entry_002957A0 m20[50];
     int mA5C0;
     void Load(void* params, int flag);
-    Entry_002957A0* GetFree() {
-        for (int k = 0; k < 50; k++) {
-            if (!m20[k].m2A5) return &m20[k];
-        }
-        return 0;
-    }
 };
 
 void Obj_002957A0::Load(void* params, int flag)
@@ -41,19 +35,21 @@ void Obj_002957A0::Load(void* params, int flag)
     for (unsigned int i = 0; i < n; i++) {
         void* s = func_001E9378(a, i);
         if (flag) {
-            if (func_00291E80(s) != (int)0xE8B4B836) continue;
+            if (func_00291E80(s) == (int)0xE8B4B836) goto search;
         } else {
-            if (func_00291E80(s) == (int)0xE8B4B836) continue;
+            if (func_00291E80(s) != (int)0xE8B4B836) goto search;
         }
+        continue;
+    search:
         int k = 0;
     next:
-        if (k < 50) {
-            if (m20[k].m2A5) {
-                k++;
-                goto next;
-            }
-            func_002935C8(&m20[k], s);
+        if (k >= 50)
+            continue;
+        if (m20[k].m2A5) {
+            k++;
+            goto next;
         }
+        func_002935C8(&m20[k], s);
     }
     mA5C0 = 0;
 }

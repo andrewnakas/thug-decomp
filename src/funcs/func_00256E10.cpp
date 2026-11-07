@@ -1,4 +1,3 @@
-/* fuzzy: 71.8 */
 
 typedef int qword __attribute__((mode(TI)));
 
@@ -91,9 +90,13 @@ bool Obj_00256E10::Fn(void* kind, int r, void* filter)
     int type = func_00229E30(kind);
     It_00256E10 it;
     Obj_00256E10* o = it.First(m_owner->GetList());
-    while (o) {
+    if (o) {
+      It_00256E10* p = &it;
+      do {
         Obj_00256E10* s = o;
-        o = it.Next();
+        Obj_00256E10* n = p->Advance(it.cur);
+        o = n;
+
         if (s->m18 == type && s != this) {
             if (filter) {
                 if (func_002577E0(this, s, filter))
@@ -104,6 +107,8 @@ bool Obj_00256E10::Fn(void* kind, int r, void* filter)
                     found = true;
             }
         }
+      } while (o);
     }
     return found;
+
 }

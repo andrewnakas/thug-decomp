@@ -1,4 +1,4 @@
-/* fuzzy: 98.4 */
+/* fuzzy: 99.0 */
 typedef int qword __attribute__((mode(TI)));
 
 /* A stack holder for a reference-counted singleton: Create(1) on entry,
@@ -100,7 +100,7 @@ extern "C" void func_0010B0E8(Heap_00206F68* heap);
 extern "C" void func_00318908(int argc, char** argv, unsigned short* a, unsigned short* b, unsigned short* c,
                               unsigned short* d, unsigned short* e, unsigned short* f, unsigned short* g,
                               unsigned short* h);
-extern "C" void func_00103F28(const char* fmt, ...);
+extern "C" int  func_00103F28(const char* fmt, ...);
 extern "C" void func_0010BBE8();
 extern "C" void func_0010BFC0(const char* name);
 extern "C" void func_0010BFC8();

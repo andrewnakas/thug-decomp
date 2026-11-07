@@ -1,4 +1,3 @@
-/* fuzzy: 95.2 */
 class Ptr_00278638;
 
 extern "C" void func_00183CB8(void* p, Ptr_00278638* ref);
@@ -74,6 +73,7 @@ public:
     Sk_00278638* mC;
     int m10;
     int m14;
+    Sk_00278638* GetSk() { return mC; }
     virtual void V0();
     virtual void V1();
     virtual void V2();
@@ -95,10 +95,10 @@ void Obj_00278638::Fn()
         V6(1);
         return;
     }
-    if (!func_00206A00(mC))
+    if (!func_00206A00(GetSk()))
         return;
     float off = 120.0f;
-    Conn_00278638* c = func_002A52F0(D_00392068, mC->m18);
+    Conn_00278638* c = func_002A52F0(D_00392068, GetSk()->m18);
     if (func_002A49B0(D_00392068) == c)
         off = 96.0f;
     void* p = func_001E6978(func_001190D0(8));
@@ -107,11 +107,11 @@ void Obj_00278638::Fn()
     if (func_0024F540(func_0022E358(D_0038FC78)))
         num = c->m30 + 2;
     else
-        num = mC->m18 + 2;
+        num = GetSk()->m18 + 2;
     char buf[0x40];
-    func_003331D0(buf, D_00391998, num, func_00206A08(mC));
+    func_003331D0(buf, D_00391998, num, func_00206A08(GetSk()));
     func_001E70C0(p, 0xC4745838, buf);
-    func_001E7410(p, 0x4B491900, mC->m50, mC->m54 + off, mC->m58);
+    func_001E7410(p, 0x4B491900, GetSk()->m50, GetSk()->m54 + off, GetSk()->m58);
     void* o = func_0012DB48(D_00389A30, m1C, 0);
     if (o)
         ((Handler_00278638*)o)->Handle(p);

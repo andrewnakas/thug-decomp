@@ -1,4 +1,3 @@
-/* fuzzy: 97.0 */
 struct Trick_00237100 {
     int m0;
     int m4;
@@ -108,9 +107,9 @@ extern "C" void func_0010A9B0(Pool_00237100* p);
 
 void Obj_00237100::Add(char* name, int score, unsigned int flags)
 {
-    int empty = 1;
-    if (*name)
-        empty = 0;
+    int empty = 0;
+    if (!*name)
+        empty = 1;
     void* sk = func_0022DF08(D_0038FC78, m_id);
     Rec_00237100* rec = (Rec_00237100*)func_00185578(sk, 0x270F56E1);
     void* c2 = func_00185578(sk, 0x4FF8DAC6);

@@ -1,4 +1,7 @@
-/* fuzzy: 84.3 */
+/* fuzzy: 86.2 */
+/* sym: _vt$13Link_002DA2C0 = 0x0037CA60 */
+/* sym: _vt$13Head_002DA2C0 = 0x0037CA00 */
+/* sym: __13Prio_002DA2C0 = 0x002DB438 */
 extern char D_0037CA18[];
 extern char D_00392E90[];
 extern char D_00392EC8[];

@@ -2,6 +2,7 @@
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00375F50[];
+extern char D_00371C78[];
 
 struct Msg_002659C8 {
     unsigned char m_type;
@@ -15,13 +16,12 @@ struct Msg_002659C8 {
     void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
 };
 
-class Iter_002659C8 {
-public:
+struct Iter_002659C8 {
     void* m_node;
     int m_index;
-    Iter_002659C8() : m_index(0) {}
-    virtual ~Iter_002659C8() {}
-    virtual void Run();
+    void* m_tag;
+    Iter_002659C8() : m_index(0) { m_tag = D_00371C78; }
+    ~Iter_002659C8() { m_tag = D_00371C78; }
 };
 
 // Per-group notification sent with message 0x4B.

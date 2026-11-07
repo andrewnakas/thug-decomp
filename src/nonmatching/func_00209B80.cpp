@@ -1,4 +1,4 @@
-/* fuzzy: 53.7 */
+/* fuzzy: 65.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00209B80 {
@@ -73,14 +73,9 @@ void Edges_00209B80::Merge()
         int j = i;
         while (j--) {
             Edge_00209B80* b = &m_in[j];
-            bool same = false;
-            if (Near_00209B80(a->pts[0].pos, b->pts[0].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[1].pos, 0.1f)) {
-                same = true;
-            } else if (Near_00209B80(a->pts[0].pos, b->pts[1].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[0].pos, 0.1f)) {
-                same = true;
-            }
-            if (same) {
-                if (0.99f < Dot_00209B80(b->n, a->n))
+            if ((Near_00209B80(a->pts[0].pos, b->pts[0].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[1].pos, 0.1f)) ||
+                (Near_00209B80(a->pts[0].pos, b->pts[1].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[0].pos, 0.1f))) {
+                if (0.99f < b->n.x * a->n.x + b->n.y * a->n.y + b->n.z * a->n.z)
                     used[j] = 1;
             }
         }
@@ -96,9 +91,9 @@ void Edges_00209B80::Merge()
             if (used[j])
                 continue;
             Edge_00209B80* b = &m_in[j];
-            if (Dot_00209B80(cur.n, b->n) < 0.99f)
+            if (cur.n.x * b->n.x + cur.n.y * b->n.y + cur.n.z * b->n.z < 0.99f)
                 continue;
-            if (__builtin_fabsf(Dot_00209B80(dirs[i], dirs[j])) < 0.99f)
+            if (__builtin_fabsf(dirs[i].x * dirs[j].x + dirs[i].y * dirs[j].y + dirs[i].z * dirs[j].z) < 0.99f)
                 continue;
             if (Near_00209B80(cur.pts[0].pos, b->pts[0].pos, 0.1f)) {
                 cur.pts[0] = b->pts[1];

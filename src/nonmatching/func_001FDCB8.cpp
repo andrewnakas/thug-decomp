@@ -1,4 +1,4 @@
-/* fuzzy: 58.3 */
+/* fuzzy: 73.8 */
 /* sym: _vt$17ConnIter_001FDCB8 = 0x00366B58 */
 /* sym: _vt$17NodeIter_001FDCB8 = 0x00366A90 */
 struct Msg_001FDCB8 {
@@ -49,8 +49,21 @@ struct Node_001FDCB8 {
     Item_001FDCB8* m_item;
     int m8;
     Node_001FDCB8* m_next;
-    Node_001FDCB8* Valid() { return ~(int)m_item ? this : 0; }
 };
+
+static inline Node_001FDCB8* Valid_001FDCB8(Node_001FDCB8* n)
+{
+    Node_001FDCB8* r = 0;
+    if ((int)n->m_item != -1) r = n;
+    return r;
+}
+
+static inline Node_001FDCB8* Next_001FDCB8(Node_001FDCB8* n)
+{
+    Node_001FDCB8* r = n->m_next;
+    if ((int)r->m_item == -1) r = 0;
+    return r;
+}
 
 struct Conn_001FDCB8 {
     char pad0[0x48];
@@ -110,27 +123,23 @@ void Mgr_001FDCB8::SendStreams()
         }
         Node_001FDCB8* list = &c->m_list;
         int n = 0;
-        Node_001FDCB8* nd = list->m_next->Valid();
-        while (nd) {
-            nd = nd->m_next->Valid();
+        for (Node_001FDCB8* nd = Valid_001FDCB8(list->m_next); nd; nd = Next_001FDCB8(nd))
             n++;
-        }
         if (n == 0) continue;
         int queued = func_00202950(c);
         if (queued >= maxQueued) continue;
         nit.m_cur = list;
         int budget = maxQueued - queued;
         if (maxSend < budget) budget = maxSend;
-        nit.m_cur = nit.m_cur->m_next->Valid();
+        nit.m_cur = Valid_001FDCB8(nit.m_cur->m_next);
         Item_001FDCB8* item = nit.m_cur ? nit.m_cur->m_item : 0;
         while (item) {
-            nit.m_cur = nit.m_cur->m_next->Valid();
+            nit.m_cur = Valid_001FDCB8(nit.m_cur->m_next);
             Item_001FDCB8* next = nit.m_cur ? nit.m_cur->m_item : 0;
             Buf_001FDCB8* b = item->m18;
             int sent = b->m_cur - b->m_base;
             int total = b->m_total;
-            if (sent < total && budget > 0) {
-                do {
+            while (sent < total && budget > 0) {
                     int len = total - sent;
                     if (len > 0x100) len = 0x100;
                     pkt.m_id = b->m_id;
@@ -147,7 +156,6 @@ void Mgr_001FDCB8::SendStreams()
                     b->m_seq++;
                     func_001FF970(this, c->m48, &msg);
                     b->m_cur += len;
-                } while (sent < total && budget > 0);
             }
             if (sent >= total) {
                 if (b) func_001FA7A0(b, 3);

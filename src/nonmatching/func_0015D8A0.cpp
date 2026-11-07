@@ -1,4 +1,4 @@
-/* fuzzy: 69.2 */
+/* fuzzy: 76.7 */
 /* Grass/ground-cover renderer around (x, z): walks the 33x33 cells of a 128-unit grid near the point, and for
    every cell's (up to 4) blades emits a 0x20-byte vertex record into VU1 packets of 0x50 records. */
 struct Row_0015D8A0 {
@@ -24,9 +24,9 @@ struct Field_0015D8A0 {
     float m_originX;
     float m_originZ;
     char pad46C[0x490 - 0x46C];
-    unsigned char m_blade[4][0x100];
-    unsigned char m_bladeX[4][0x100];
-    unsigned char m_bladeZ[4][0x100];
+    unsigned char m_blade[0x400];
+    unsigned char m_bladeX[0x400];
+    unsigned char m_bladeZ[0x400];
     char pad1090[8];
     long m_tex;
 };
@@ -82,13 +82,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
     unsigned int* rec = 0;
     unsigned int* start = 0;
     for (int zi = z0; zi <= z1; zi++) {
-        int zc;
-        if (zi < 0)
-            zc = 0;
-        else if (zi > o->m_rowCount - 1)
-            zc = o->m_rowCount - 1;
-        else
-            zc = zi;
+int zc = zi >= 0 ? (zi > o->m_rowCount - 1 ? o->m_rowCount - 1 : zi) : 0;
         Row_0015D8A0* row = &o->m_rows[zc];
         if (row->m_start == 0x4000)
             continue;
@@ -109,12 +103,12 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
             wx += 0x800;
             int idx = sub + (xc & 0xF);
             for (int k = 0; k < 4; k++) {
-                int b = o->m_blade[k][idx];
+                int b = o->m_blade[idx];
                 if (b != 0xFF) {
                     int y = base + height[b];
                     int top = y + oy;
-                    int px = wx + spread[o->m_bladeX[k][idx]];
-                    int pz = wz + spread[o->m_bladeZ[k][idx]];
+                    int px = wx + spread[o->m_bladeX[idx]];
+                    int pz = wz + spread[o->m_bladeZ[idx]];
                     if (left == 0) {
                         out[0] = 0x01000102;
                         start = out;
@@ -163,7 +157,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
         out = start;
         D_00394280 -= 0x141;
     } else if (left != 0) {
-        for (int j = left; j > 0; j--) {
+        for (int j = 0; j < left; j++) {
             rec[0] = 0;
             rec[1] = 0;
             rec[2] = 0;

@@ -1,4 +1,4 @@
-/* fuzzy: 61.2 */
+/* fuzzy: 97.2 */
 /* Script member-function dispatcher of the component whose scene object lives at 0x260: one case per command
    checksum; returns 2 for an unknown command, otherwise the command's result as 0/1. */
 /* sym: __12Msg_0018CB18 = 0x001FA800 */
@@ -11,19 +11,41 @@ struct Vec_0018CB18 {
             float x, y, z, w;
         };
     };
+    void Set(float a, float b, float c, float d)
+    {
+        x = a;
+        y = b;
+        z = c;
+        w = d;
+    }
 };
 
 struct Mat_0018CB18 {
     Vec_0018CB18 r[4];
+    void Ident()
+    {
+        r[0].x = 1.0f; r[0].y = 0.0f; r[0].z = 0.0f; r[0].w = 0.0f;
+        r[1].x = 0.0f; r[1].y = 1.0f; r[1].z = 0.0f; r[1].w = 0.0f;
+        r[2].x = 0.0f; r[2].y = 0.0f; r[2].z = 1.0f; r[2].w = 0.0f;
+        r[3].x = 0.0f; r[3].y = 0.0f; r[3].z = 0.0f; r[3].w = 1.0f;
+    }
 };
 
 struct Color_0018CB18 {
     unsigned char r, g, b, a;
+    Color_0018CB18(int r_, int g_, int b_, int a_)
+    {
+        r = r_;
+        g = g_;
+        b = b_;
+        a = a_;
+    }
 };
 
 struct Array_0018CB18 {
     char pad0[0xC];
     unsigned int m_size;
+    unsigned int GetSize() { return m_size; }
 };
 
 struct Script_0018CB18 {
@@ -34,6 +56,7 @@ struct Script_0018CB18 {
 struct Owner_0018CB18 {
     char pad0[0x18];
     int m_id;
+    int GetId() { return m_id; }
 };
 
 /* script structure built from a parameter (ctor func_0011F880, dtor func_0011F8C8) */
@@ -64,6 +87,11 @@ struct FadeData_0018CB18 {
     unsigned char m_id;
     int m_flag;
     unsigned char m_mask;
+};
+
+/* payload of message 0x8C */
+struct StopData_0018CB18 {
+    unsigned char m_id;
 };
 
 extern void* D_00392068;
@@ -112,6 +140,24 @@ extern "C" void func_00200C00(void* conn, Msg_0018CB18* msg);
 extern "C" void func_0018DCB0(Track_0018CB18* t);
 extern "C" void func_0018DD00(Track_0018CB18* t, unsigned int now, int type, int flag, float time, float start, float range);
 
+static inline void RotateX_0018CB18(Vec_0018CB18& v, float ang)
+{
+    float s = func_00341068(ang);
+    float c = func_00340F60(ang);
+    float y = c * v.y - s * v.z;
+    v.z = s * v.y + c * v.z;
+    v.y = y;
+}
+
+static inline void RotateY_0018CB18(Vec_0018CB18& v, float ang)
+{
+    float s = func_00341068(ang);
+    float c = func_00340F60(ang);
+    float x = c * v.x + s * v.z;
+    v.z = -s * v.x + c * v.z;
+    v.x = x;
+}
+
 /* shared component base: fields 0x0-0x17, vptr at 0x18 */
 class Base_0018CB18 {
 public:
@@ -154,50 +200,6 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
 {
     int result = 1;
     switch (id) {
-    case 0x721184C7:
-        m244 = 1;
-        break;
-    case 0x4AF3B1F7:
-        m244 = 0;
-        break;
-    case 0x4D8E11AB:
-        func_0018BAF8(this, params);
-        break;
-    case 0x07D0C128: {
-        unsigned int anim;
-        func_001E8398(params, 0, &anim, 1);
-        func_0018C230(this, anim, 0, 1);
-        break;
-    }
-    case 0xE48FD084: {
-        unsigned int anim;
-        func_001E8398(params, 0, &anim, 1);
-        func_0018C230(this, anim, 1, 1);
-        break;
-    }
-    case 0xE7FA7DD0: {
-        unsigned int name;
-        func_001E8398(params, 0, &name, 1);
-        if (func_0018C320(this, name))
-            func_001E7200(script->m_params, 0x77A21642, 1);
-        else
-            func_001E7200(script->m_params, 0x77A21642, 0);
-        break;
-    }
-    case 0x452FB315: {
-        float a;
-        func_001E7EB0(params, 0, &a, 1);
-        Vec_0018CB18 c;
-        c.x = 0.0f;
-        c.w = a;
-        c.y = 0.0f;
-        c.z = 0.0f;
-        func_0018CAC8(this, &c);
-        break;
-    }
-    case 0x5B41DA8F:
-        func_0018CAC8(this, &m20);
-        break;
     case 0x347FF11B:
         if (m_scene)
             func_0013EE48(m_scene, 1);
@@ -209,10 +211,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
     case 0x657FF1ED:
         if (m_scene) {
             Vec_0018CB18 c;
-            c.w = 1.0f;
-            c.x = 1.0f;
-            c.y = 1.0f;
-            c.z = 1.0f;
+            c.Set(1.0f, 1.0f, 1.0f, 1.0f);
             if (func_00131288(&c, params)) {
                 func_0013EDD0(m_scene, &c);
                 func_0013EE48(m_scene, 1);
@@ -222,10 +221,6 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
     case 0x6052480A:
         if (m_scene)
             func_0013DDE0(m_scene, 0xC4E78E22);
-        break;
-    case 0xBD18E2E3:
-        if (m_scene)
-            func_0013EA58(m_scene);
         break;
     case 0x76ECFA1C: {
         int a, b, c;
@@ -239,7 +234,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         int a, b;
         result = 0;
         if (func_001E8248(params, 0x5EF31148, &list, 0)) {
-            for (unsigned int i = 0; i < list->m_size; i++) {
+            for (unsigned int i = 0; i < list->GetSize(); i++) {
                 void* item = func_001E9378(list, i);
                 func_001E8870(item, 0x9FBBDB72, &a, 1);
                 func_001E8870(item, 0x7799D66C, &b, 1);
@@ -271,6 +266,10 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             result = 0;
         break;
     }
+    case 0xBD18E2E3:
+        if (m_scene)
+            func_0013EA58(m_scene);
+        break;
     case 0xE11F85E8:
         return func_0013D8A8(m_scene) != 0;
     case 0x1C16332E:
@@ -296,32 +295,13 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         func_001E7DE8(params, 0x93F60062, &r, 0);
         func_001E7DE8(params, 0xFE2BE489, &g, 0);
         func_001E7DE8(params, 0x8E411006, &b, 0);
-        Color_0018CB18 c;
-        c.r = r;
-        c.g = g;
-        c.b = b;
-        c.a = 0x80;
+        Color_0018CB18 c(r, g, b, 0x80);
         func_00137A98(func_0013D8A8(m_scene), &c);
     }
         /* fall through */
     case 0xA14D6372:
         func_00137B98(func_0013D8A8(m_scene), 1);
         break;
-    case 0x70E6466B: {
-        int i, r, g, b;
-        func_001E7DE8(params, 0x7F8C98FE, &i, 0);
-        func_001E7DE8(params, 0x93F60062, &r, 0);
-        func_001E7DE8(params, 0xFE2BE489, &g, 0);
-        func_001E7DE8(params, 0x8E411006, &b, 0);
-        Color_0018CB18 c;
-        c.r = r;
-        c.a = 0x80;
-        c.g = g;
-        c.b = b;
-        func_00137B18(func_0013D8A8(m_scene), i, &c);
-        func_00137BC0(func_0013D8A8(m_scene), i, 1);
-        break;
-    }
     case 0x46A1F4A4: {
         int i;
         float yaw, pitch;
@@ -334,22 +314,21 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         if (func_001E7FA8(params, 0xC1B52E4C, &v, 0)) {
             v.w = 0.0f;
         } else if (func_001E7EB0(params, 0xFD4BC03E, &yaw, 0) && func_001E7EB0(params, 0xD8604126, &pitch, 0)) {
-            float a = pitch * 0.017453294f;
-            float s = func_00341068(a);
-            float c = func_00340F60(a);
-            float y = v.y;
-            float z = v.z;
-            v.z = s * y + c * z;
-            v.y = c * y - s * z;
-            a = yaw * 0.017453294f;
-            s = func_00341068(a);
-            c = func_00340F60(a);
-            float x = v.x;
-            z = v.z;
-            v.z = -s * x + c * z;
-            v.x = c * x + s * z;
+            RotateX_0018CB18(v, pitch * 0.017453294f);
+            RotateY_0018CB18(v, yaw * 0.017453294f);
         }
         func_00137AF0(func_0013D8A8(m_scene), i, &v);
+        break;
+    }
+    case 0x70E6466B: {
+        int i, r, g, b;
+        func_001E7DE8(params, 0x7F8C98FE, &i, 0);
+        func_001E7DE8(params, 0x93F60062, &r, 0);
+        func_001E7DE8(params, 0xFE2BE489, &g, 0);
+        func_001E7DE8(params, 0x8E411006, &b, 0);
+        Color_0018CB18 c(r, g, b, 0x80);
+        func_00137B18(func_0013D8A8(m_scene), i, &c);
+        func_00137BC0(func_0013D8A8(m_scene), i, 1);
         break;
     }
     case 0x57EB306E: {
@@ -370,26 +349,13 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         func_001E8398(params, 0x83418A6A, &name, 0);
         func_001E7DE8(params, 0x318F2BDB, &flag, 0);
         Mat_0018CB18 m;
-        m.r[0].x = 1.0f;
-        m.r[0].y = 0.0f;
-        m.r[0].z = 0.0f;
-        m.r[0].w = 0.0f;
-        m.r[1].x = 0.0f;
-        m.r[1].y = 1.0f;
-        m.r[1].z = 0.0f;
-        m.r[1].w = 0.0f;
-        m.r[2].x = 0.0f;
-        m.r[2].y = 0.0f;
-        m.r[2].z = 1.0f;
-        m.r[2].w = 0.0f;
-        m.r[3].x = 0.0f;
-        m.r[3].y = 0.0f;
-        m.r[3].z = 0.0f;
-        m.r[3].w = 1.0f;
+        m.Ident();
+        Mat_0018CB18* pm = &m;
         float sx = 1.0f;
         float sy = 1.0f;
         int gotX = func_001E7EB0(params, 0x3FB610B7, &sx, 0);
-        if (func_001E7EB0(params, 0xB9226219, &sy, 0) || gotX) {
+        gotX = func_001E7EB0(params, 0xB9226219, &sy, 0) || gotX;
+        if (gotX) {
             m.r[0].x *= sx;
             m.r[1].y *= sy;
         }
@@ -401,11 +367,42 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         float u = 0.0f;
         float v = 0.0f;
         int gotU = func_001E7EB0(params, 0x56A7F41C, &u, 0);
-        if (func_001E7EB0(params, 0x44125BF2, &v, 0) || gotU) {
+        gotU = func_001E7EB0(params, 0x44125BF2, &v, 0) || gotU;
+        if (gotU) {
             m.r[3].x = u;
             m.r[3].y = v;
         }
-        func_0013E108(m_scene, name, flag, &m);
+        func_0013E108(m_scene, name, flag, pm);
+        break;
+    }
+    case 0x721184C7:
+        m244 = 1;
+        break;
+    case 0x4AF3B1F7:
+        m244 = 0;
+        break;
+    case 0x4D8E11AB:
+        func_0018BAF8(this, params);
+        break;
+    case 0xE48FD084: {
+        unsigned int anim;
+        func_001E8398(params, 0, &anim, 1);
+        func_0018C230(this, anim, 1, 1);
+        break;
+    }
+    case 0x07D0C128: {
+        unsigned int anim;
+        func_001E8398(params, 0, &anim, 1);
+        func_0018C230(this, anim, 0, 1);
+        break;
+    }
+    case 0xE7FA7DD0: {
+        unsigned int name;
+        func_001E8398(params, 0, &name, 1);
+        if (func_0018C320(this, name))
+            func_001E7200(script->m_params, 0x77A21642, 1);
+        else
+            func_001E7200(script->m_params, 0x77A21642, 0);
         break;
     }
     case 0x98ED5C8B:
@@ -425,6 +422,20 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             func_0011F8C8(&s, 2);
         }
         break;
+    case 0x452FB315: {
+        float a;
+        func_001E7EB0(params, 0, &a, 1);
+        Vec_0018CB18 c;
+        c.x = 0.0f;
+        c.w = a;
+        c.y = 0.0f;
+        c.z = 0.0f;
+        func_0018CAC8(this, &c);
+        break;
+    }
+    case 0x5B41DA8F:
+        func_0018CAC8(this, &m20);
+        break;
     case 0xA4C25C2F: {
         float time = 0.0f;
         func_001E7EB0(params, 0x79A07F3F, &time, 0);
@@ -439,10 +450,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         func_001E7EB0(params, 0x8C9946A9, &end, 0);
         int type = 0;
         func_001E7DE8(params, 0xF164F03D, &type, 0);
-        m30.x = 0.0f;
-        m30.y = 30.0f;
-        m30.w = 1.0f;
-        m30.z = 0.0f;
+        m30.Set(0.0f, 30.0f, 0.0f, 1.0f);
         func_001E7FA8(params, 0x8F38F109, &m30, 0);
         int flag = func_001E8708(params, 0xE14BC9AC);
         unsigned int now = func_0010FC30();
@@ -468,7 +476,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             data.m_type = type;
             data.m_start = (int)start;
             data.m_range = (int)(end - start);
-            data.m_id = m_owner->m_id;
+            data.m_id = m_owner->GetId();
             data.m_flag = flag;
             data.m_mask = mask;
             msg.m_size = sizeof(data);
@@ -486,10 +494,10 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         void* player = func_002A52F0(net, (unsigned short)m_owner->m_id);
         if (player && func_002B1FC8(player)) {
             Msg_0018CB18 msg;
-            unsigned char data;
+            StopData_0018CB18 data;
             void* conn = func_002A39E0(net, func_002B30A0(player));
             msg.m_data = &data;
-            data = m_owner->m_id;
+            data.m_id = m_owner->GetId();
             msg.m_type = 0x8C;
             msg.m_size = 1;
             func_00200C00(conn, &msg);

@@ -1,4 +1,4 @@
-/* fuzzy: 63.6 */
+/* fuzzy: 90.6 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -61,7 +61,7 @@ struct Obj_001CC6B0 {
     void UpdateRail();
 };
 
-extern "C" void func_0026B1B0(Vec_001CC6B0* out, void* rails, Node_001CC6B0* node);
+extern "C" Vec_001CC6B0 func_0026B1B0(void* rails, Node_001CC6B0* node);
 extern "C" void* func_001E5548(unsigned int key, int create);
 extern "C" bool func_001E7EB0(void* params, unsigned int name, float* out, int required);
 extern "C" float func_00340F60(float a);
@@ -77,25 +77,17 @@ static inline float GetF_001CC6B0(unsigned int id)
 
 void Obj_001CC6B0::UpdateRail()
 {
-    m954 = GetF_001CC6B0(0x0AB2DB54) * mB0 * func_00340F60(mA28->m290);
-    float step = m954 * m98;
+    float step = GetF_001CC6B0(0x0AB2DB54) * mB0;
+    step *= func_00340F60(mA28->m290);
+    m954 = step;
+    step *= m98;
     Node_001CC6B0* next = mA1C->m50;
     if (!next)
         next = mA1C->m54;
-    Vec_001CC6B0 d;
-    Vec_001CC6B0 a;
-    func_0026B1B0(&a, mA24, next);
-    Vec_001CC6B0 b;
-    func_0026B1B0(&b, mA24, mA1C);
-    d.x = a.x - b.x;
-    d.y = a.y - b.y;
-    d.z = a.z - b.z;
-    d.w = a.w - b.w;
+    Vec_001CC6B0 d = func_0026B1B0(mA24, next) - func_0026B1B0(mA24, mA1C);
     float len = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
     step = step / len;
-    int forward = 1;
-    if (!(0.0f < step))
-        forward = 0;
+    int forward = 0.0f < step;
     mBF0 += step;
     if (mBF0 < GetF_001CC6B0(0x5296E3FD) / len) {
         func_001CCA18(this);
@@ -105,8 +97,11 @@ void Obj_001CC6B0::UpdateRail()
         func_001CCC00(this);
         return;
     }
-    float t = mBF0;
-    t = 1.0f < t ? 1.0f : t;
+    float t;
+    if (1.0f < mBF0)
+        t = 1.0f;
+    else
+        t = mBF0;
     if (t < 0.0f)
         t = 0.0f;
     mBF0 = t;
@@ -116,10 +111,7 @@ void Obj_001CC6B0::UpdateRail()
     } else {
         m90 = forward ? 0xAF5ABC82 : 0xFEC9DDED;
     }
-    Vec_001CC6B0 c;
-    func_0026B1B0(&c, mA24, mA1C);
-    Vec_001CC6B0 pos = c + d * mBF0;
-    Vec_001CC6B0 res = pos - m60 * GetF_001CC6B0(0x35B3BBDA);
+    Vec_001CC6B0 res = func_0026B1B0(mA24, mA1C) + d * mBF0 - m60 * GetF_001CC6B0(0x35B3BBDA);
     m954 = __builtin_fabsf(m954);
     m30 = res;
 }

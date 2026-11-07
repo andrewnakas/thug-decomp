@@ -1,4 +1,4 @@
-/* fuzzy: 63.9 */
+/* fuzzy: 66.6 */
 /* Texture dictionary loader: reads a texture file image from the D_00394320 stream (format version in
    D_00394324), inserts the dictionary into the priority-sorted list D_003942F4/D_003942F8, then for every texture
    computes the GS memory layout of its mip levels (VRAM double-buffered through D_00394304), swizzles 8/4-bit
@@ -121,7 +121,7 @@ static inline unsigned int Read()
 
 static inline unsigned int* Align16(unsigned int* p)
 {
-    return (unsigned int*)(((unsigned int)p + 15) & ~15);
+    return (unsigned int*)(((int)p + 15) & -16);
 }
 
 extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8* dict, int front, int overlay,
@@ -149,13 +149,16 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
             dict->m54 = 0x800080;
     }
 
-    unsigned char* end = (unsigned char*)(((unsigned int)D_00394274 + 15) & ~15);
+    unsigned char* p = D_00394274;
+    unsigned char* end = (unsigned char*)(((int)p + 15) & -16);
     dict->m30 = 0;
     dict->m34 = 0;
-    while (D_00394274 < end)
-        *D_00394274++ = 0;
-    dict->m10 = D_00394274;
+    while (p < end) {
+        *p++ = 0;
+        D_00394274 = p;
+    }
     dict->m14 = D_00394274;
+    dict->m10 = D_00394274;
 
     dict->m_group = Read() + groupBase;
     if (D_00394324 >= 2)
@@ -170,15 +173,20 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         D_00394320++;
     } else {
         if (keep) {
-            int type = dict->m_type & 3;
-            if (type == 1)
-                dict->m_priority = 7500.0f;
-            else if (type == 0)
+            switch (dict->m_type & 3) {
+            case 0:
                 dict->m_priority = 0.0f;
-            else if (type == 2)
+                break;
+            case 2:
                 dict->m_priority = -100.0f;
-            else if (type == 3)
+                break;
+            case 1:
+                dict->m_priority = 7500.0f;
+                break;
+            case 3:
                 dict->m_priority = -99.0f;
+                break;
+            }
         }
         if (front)
             dict->m_priority = (float)(D_0038C178 + 5000);
@@ -202,9 +210,11 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         D_003942F8->m_next = dict;
         D_003942F8 = dict;
     } else {
-        Dict_001804E8* n = head;
-        while (n && !(dict->m_priority < n->m_priority))
-            n = n->m_next;
+        Dict_001804E8* n;
+        for (n = head; n; n = n->m_next) {
+            if (dict->m_priority < n->m_priority)
+                break;
+        }
         dict->m_next = n;
         dict->m_prev = n->m_prev;
         n->m_prev->m_next = dict;
@@ -233,7 +243,7 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         t->m_clut = 0;
         t->m_dataSize = 0;
         t->m_clutSize = 0;
-        if (logW == -1) {
+        if ((unsigned int)logW == 0xFFFFFFFF) {
             func_00103F28(D_003612F0, index);
             continue;
         }

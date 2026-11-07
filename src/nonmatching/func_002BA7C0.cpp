@@ -1,4 +1,4 @@
-/* fuzzy: 58.8 */
+/* fuzzy: 72.7 */
 struct Ent_002BA7C0 {
     int a;
     int b;
@@ -18,11 +18,9 @@ bool Obj_002BA7C0::Check(int n)
     int lo = 0;
     int hi = 0;
     func_002BA688(this, n, &lo, &hi);
-    for (int i = lo; i <= hi; i++) {
-        Ent_002BA7C0* e = ents;
-        e += i;
-        if (!e->a) return true;
-        if (e->b) return true;
+    Ent_002BA7C0* e = &ents[lo];
+    for (int i = lo; i <= hi; i++, e++) {
+        if (!e->a || e->b) return true;
     }
     return false;
 }

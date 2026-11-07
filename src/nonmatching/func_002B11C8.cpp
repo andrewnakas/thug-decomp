@@ -1,4 +1,4 @@
-/* fuzzy: 64.0 */
+/* fuzzy: 74.0 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -110,6 +110,7 @@ struct Score_002B11C8 : Node_002B11C8 {
     int m_flags;
     int m_color;
     int m_score;
+    int m_team;
     static void* operator new(unsigned int size) { return func_001046B0(size); }
     Score_002B11C8() : Node_002B11C8(this) {}
     void Key();
@@ -134,7 +135,7 @@ struct ListIt_002B11C8 {
     int m0;
     Node_002B11C8* cur;
     void* vt;
-    ListIt_002B11C8(Node_002B11C8* h) { cur = h; vt = D_00372F58; }
+    ListIt_002B11C8() { cur = 0; vt = D_00372F58; }
     ~ListIt_002B11C8() { vt = D_00372F58; }
     Score_002B11C8* Next()
     {
@@ -142,6 +143,11 @@ struct ListIt_002B11C8 {
         if (!cur)
             return 0;
         return (Score_002B11C8*)cur->data;
+    }
+    Score_002B11C8* First(Node_002B11C8* h)
+    {
+        cur = h;
+        return Next();
     }
 };
 
@@ -177,7 +183,7 @@ void Obj_002B11C8::UpdateScores()
 {
     PlayerIt_002B11C8 pit;
     Head_002B11C8 list;
-    ListIt_002B11C8 lit(&list);
+    ListIt_002B11C8 lit;
     void* game = D_0038FC78;
     void* net = m_net;
     void* root = D_00389A30;
@@ -199,16 +205,23 @@ void Obj_002B11C8::UpdateScores()
         for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
             if (func_002A1DA8(net, i) > 0) {
                 unsigned int name;
-                if (i == 0)
+                switch (i) {
+                case 0:
                     name = 0x3224348D;
-                else if (i == 1)
+                    break;
+                case 1:
                     name = 0xB4B04623;
-                else if (i == 2)
+                    break;
+                case 2:
                     name = 0x7FEC9586;
-                else if (i == 3)
+                    break;
+                case 3:
                     name = 0x62E9A53E;
-                else
+                    break;
+                default:
                     name = 0;
+                    break;
+                }
                 teams[i] = new Score_002B11C8;
                 func_00331A9C(teams[i]->m_name, func_001E5488(name, 0));
                 teams[i]->m_king = 0;
@@ -268,7 +281,7 @@ void Obj_002B11C8::UpdateScores()
     }
 
     int rank = 0;
-    Score_002B11C8* s = lit.Next();
+    Score_002B11C8* s = lit.First(&list);
     while (s) {
         char line[0x40];
         char tag[0x10];
@@ -290,10 +303,10 @@ void Obj_002B11C8::UpdateScores()
         Score_002B11C8* next = lit.Next();
         if (ranked) {
             if (timed) {
-                unsigned int secs = (unsigned int)s->key / 1000;
-                if ((int)secs >= 3600)
+                int secs = (unsigned int)s->key / 1000;
+                if (secs >= 3600)
                     func_003331D0(line, D_003795B0, tag, s->m_color, s->m_name, s->m_color,
-                                  secs / 3600, secs / 60 % 60, secs % 60);
+                                  secs / 3600, secs % 3600 / 60, secs % 60);
                 else
                     func_003331D0(line, D_003795D0, tag, s->m_color, s->m_name, s->m_color, secs / 60, secs % 60);
             } else {

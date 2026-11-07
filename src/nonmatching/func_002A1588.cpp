@@ -1,5 +1,4 @@
-/* fuzzy: 66.3 */
-/* nonmatch func_002A1588: best earlier draft (thug-claude-lane3/work/w53/p7/func_002A1588.fail), 149 of 171 words differ (size 0x2a8, want 0x2ac). */
+/* fuzzy: 73.7 */
 extern char D_00371C78[];
 extern char D_00366B58[];
 extern char D_00378218[];
@@ -90,8 +89,8 @@ void Obj_002A1588::Check()
                         func_002A5A88(t, e, 5);
                         if (!b) func_0022CF98(sk, id);
                     }
-                } else {
-                    kick = func_002026D0(e->m1C) > 60000;
+                } else if (func_002026D0(e->m1C) > 60000) {
+                    kick = 1;
                 }
                 if (kick) {
                     int id = e->m18;

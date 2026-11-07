@@ -1,4 +1,4 @@
-/* fuzzy: 69.0 */
+/* fuzzy: 72.4 */
 /* sym: _vt$13Node_0022F500 = 0x00373000 */
 /* sym: _vt$14Score_0022F500 = 0x00372FE8 */
 /* sym: _vt$13Head_0022F500 = 0x00372F70 */
@@ -117,7 +117,6 @@ struct Node_0022F500 {
     }
 };
 
-/* One line of the score board: a team or a player. */
 struct Score_0022F500 : Node_0022F500 {
     char m_name[0x20];
     int m_king;
@@ -177,14 +176,10 @@ static inline void FreeParams_0022F500(void* params)
         func_001E6AE8(params, 3);
 }
 
-static inline bool Timed_0022F500(void* game)
-{
-    return func_0024F938(func_0022E358(game)) == func_001F0D78(D_0038FCF0) ||
-           func_0024F938(func_0022E358(game)) == func_001F0D78(D_0038FCF8);
-}
+#define TIMED_0022F500(game) \
+    (func_0024F938(func_0022E358(game)) == func_001F0D78(D_0038FCF0) || \
+     func_0024F938(func_0022E358(game)) == func_001F0D78(D_0038FCF8))
 
-/* Fills the end-of-game score menu: one line per team (with its players under it) or one per
-   player, sorted by score, shown as mm:ss in timed modes. */
 bool func_0022F500()
 {
     PlayerIt_0022F500 pit;
@@ -196,7 +191,6 @@ bool func_0022F500()
     void* net = D_00392068;
     func_0010A950(D_00388A70, D_00388A70->m_E4);
     bool special = func_0024F938(func_0022E358(game)) == func_001F0D78(D_00372DD8);
-    int line = 0;
     if (func_0024F540(func_0022E358(game))) {
         for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
             if (!func_002A1DA8(net, i))
@@ -213,6 +207,7 @@ bool func_0022F500()
             t->key = func_002B0FB8(net, i);
             list.InsertSorted(t);
         }
+        int line = 0;
         Score_0022F500* t = lit.First(&list);
         while (t) {
             Score_0022F500* next = lit.Next();
@@ -235,7 +230,7 @@ bool func_0022F500()
                 func_001F0370(D_00372E40, params, 0, 0);
                 FreeParams_0022F500(params);
                 params = NewParams_0022F500();
-                if (Timed_0022F500(game))
+                if (TIMED_0022F500(game))
                     func_003331D0(buf, D_00372E58, score / 1000 / 60, score / 1000 % 60);
                 else
                     func_003331D0(buf, D_0038FC18, score);
@@ -254,7 +249,7 @@ bool func_0022F500()
             func_001F0370(D_00372E40, params, 0, 0);
             FreeParams_0022F500(params);
             params = NewParams_0022F500();
-            if (Timed_0022F500(game))
+            if (TIMED_0022F500(game))
                 func_003331D0(buf, D_00372EA8, t->m_color, (unsigned int)t->key / 1000 / 60,
                               (unsigned int)t->key / 1000 % 60);
             else
@@ -282,6 +277,7 @@ bool func_0022F500()
             s->key = score;
             list.InsertSorted(s);
         }
+        int line = 0;
         Score_0022F500* s = lit.First(&list);
         while (s) {
             Score_0022F500* next = lit.Next();
@@ -291,7 +287,7 @@ bool func_0022F500()
             func_001F0370(D_00372E40, params, 0, 0);
             FreeParams_0022F500(params);
             params = NewParams_0022F500();
-            if (Timed_0022F500(game))
+            if (TIMED_0022F500(game))
                 func_003331D0(buf, D_00372E58, (unsigned int)s->key / 1000 / 60, (unsigned int)s->key / 1000 % 60);
             else
                 func_003331D0(buf, D_0038FC18, s->key);

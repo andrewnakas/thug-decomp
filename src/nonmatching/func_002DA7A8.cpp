@@ -1,4 +1,4 @@
-/* fuzzy: 66.0 */
+/* fuzzy: 95.5 */
 extern char D_0037C9D0[];
 extern char D_0037C9E8[];
 
@@ -11,7 +11,7 @@ struct Node_002DA7A8 {
     Node_002DA7A8* next;
     Node_002DA7A8* prev;
     Data_002DA7A8* GetData() { return data; }
-    Node_002DA7A8* Valid(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }
+    Node_002DA7A8* Valid() { return data == (Data_002DA7A8*)-1 ? 0 : this; }
 };
 
 struct List_002DA7A8 : Node_002DA7A8 {

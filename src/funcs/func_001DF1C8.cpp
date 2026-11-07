@@ -1,4 +1,4 @@
-/* fuzzy: 95.9 */
+/* cflags: -fno-rerun-loop-opt */
 struct Pos_001DF1C8 {
     float x;
     float y;

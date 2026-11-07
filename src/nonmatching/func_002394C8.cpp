@@ -1,4 +1,4 @@
-/* fuzzy: 71.3 */
+/* fuzzy: 76.1 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00373720[];
@@ -15,13 +15,14 @@ struct Msg_002394C8 {
     void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
 };
 
-class Iter_002394C8 {
-public:
+extern char D_00371C78[];
+
+struct Iter_002394C8 {
     void* m_node;
     int m_index;
-    Iter_002394C8() : m_index(0) {}
-    virtual ~Iter_002394C8() {}
-    virtual void Run();
+    void* m_tag;
+    Iter_002394C8() : m_index(0) { m_tag = D_00371C78; }
+    ~Iter_002394C8() { m_tag = D_00371C78; }
 };
 
 struct Conn_002394C8 {
@@ -90,13 +91,14 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
     if (broadcast) {
         void* client = func_002A39D8(net);
         void* target = func_00239358(obj);
-        for (int k = 7; k >= 0; k--)
-            flags[k] = 0;
+        int g;
+        for (g = 7; g >= 0; g--)
+            flags[g] = 0;
         n = func_002657A0(func_0022E048(game), n, ids, flags, owner, time);
         if (n == 0)
             return;
 
-        for (int g = 0; g < 8; g++) {
+        for (g = 0; g < 8; g++) {
             if (!flags[g])
                 continue;
             GroupInfo_002394C8 info;
@@ -106,8 +108,8 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
             info.m_net = func_002A7660(net);
             Conn_002394C8* from = func_002A52F0(net, owner);
             Conn_002394C8* to = func_002A52F0(net, g);
-            if (func_0024F540(func_0022E358(game)) && to && from)
-                send = to->m_team != from->m_team;
+            if (func_0024F540(func_0022E358(game)) && to && from && to->m_team == from->m_team)
+                send = 0;
             if (send) {
                 Msg_002394C8 infoMsg;
                 func_001FA800(&infoMsg);

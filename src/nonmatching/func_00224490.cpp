@@ -1,5 +1,4 @@
-/* fuzzy: 79.1 */
-/* NEAR MISS: switch/jump table and classify chain match; final if(start) table / range tail comes out inverted (bnez->table at end); ~19 words. */
+/* fuzzy: 86.4 */
 struct Glyph_00224490 {
     unsigned short code;
     unsigned short pad;
@@ -85,8 +84,12 @@ unsigned short Glyph_00224490(unsigned char c)
         func_00103F28(D_00371CB0, c);
         return 0;
     }
+    unsigned short r;
     if (start) {
-        return D_00354D28[c - 0x20 - (start - 1)].code;
+        r = D_00354D28[c - 0x20 - (start - 1)].code;
+    } else {
+        r = D_00354DB0[set].base + c - D_00354DB0[set].first;
     }
-    return D_00354DB0[set].base + c - D_00354DB0[set].first;
+    return r;
+
 }

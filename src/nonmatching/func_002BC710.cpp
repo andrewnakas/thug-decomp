@@ -1,5 +1,6 @@
-/* fuzzy: 72.2 */
-/* nonmatch func_002BC710: best earlier draft (thug-claude-lane3/work/w53/p1/func_002BC710.fail), 45 of 151 words differ. */
+/* fuzzy: 84.8 */
+/* sym: __12Box_002BC710UcScUcUcUcUc = 0x002BAA28 */
+/* NEAR MISS: only this ($s1 in game, $s0 here) swaps with the array/loop-counter pseudos, plus one sched pair in the key loop. */
 struct Box_002BC710 {
     unsigned char m[6];
     Box_002BC710(unsigned char x = 0, signed char y = 0, unsigned char z = 0,
@@ -12,8 +13,6 @@ struct Keys_002BC710 {
     int c;
 };
 
-extern "C" Box_002BC710* func_002BAA28(Box_002BC710* b, unsigned char x, signed char y, unsigned char z,
-                                        unsigned char w, unsigned char h, unsigned char d);
 extern "C" void* func_0010A638(void* pool, unsigned int size, int a, int b);
 extern "C" void* func_002B7218(void* p);
 extern "C" void func_003331D0(char* buf, char* fmt, ...);

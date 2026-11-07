@@ -1,4 +1,4 @@
-/* fuzzy: 70.1 */
+/* fuzzy: 75.9 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0029D068 {
@@ -72,7 +72,16 @@ static inline Vec_0029D068 Cross_0029D068(const Vec_0029D068& a, const Vec_0029D
 
 struct Mat_0029D068 {
     Vec_0029D068 r[4];
+    Mat_0029D068& operator=(const Mat_0029D068& o)
+    {
+        r[0].q = o.r[0].q;
+        r[1].q = o.r[1].q;
+        r[2].q = o.r[2].q;
+        r[3].q = o.r[3].q;
+        return *this;
+    }
 };
+
 
 extern "C" void func_00183CB8(void* p, void* pp);
 

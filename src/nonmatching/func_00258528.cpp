@@ -1,10 +1,10 @@
-/* fuzzy: 77.2 */
-/* near miss: structure right; start-index movn/slti form, s5/s6 swap (arr vs i+1), i=next copy placement (35 words) */
+/* fuzzy: 83.2 */
 struct Arr_00258528 {
     int m0;
     int m4;
     int m8;
     int mC;
+    int GetSize() { return mC; }
 };
 
 extern char D_003755A0[];
@@ -19,9 +19,8 @@ int Fn_00258528(int type, int* out, int start)
     int n = 0;
     Arr_00258528* arr = func_001E55B8(0xC472ECC5, 0);
     if (!arr) return 0;
-    int i;
-    if (start < 0) i = 0;
-    else i = start + 1;
+    int i = 0;
+    if (start >= 0) i = start + 1;
     for (; i < arr->mC; i++) {
         void* item = func_001E9378(arr, i);
         if (func_002584A0(item)) {
@@ -30,7 +29,7 @@ int Fn_00258528(int type, int* out, int start)
             } else {
                 Arr_00258528* sub;
                 if (func_001E82B8(item, D_003755A0, &sub, 0)) {
-                    for (int j = 0; j < sub->mC; j++) {
+                    for (int j = 0; j < sub->GetSize(); j++) {
                         if (func_001E9300(sub, j) == type) out[n++] = i;
                     }
                 }

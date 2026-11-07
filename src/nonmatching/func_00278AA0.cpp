@@ -1,4 +1,4 @@
-/* fuzzy: 78.3 */
+/* fuzzy: 69.3 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -45,13 +45,14 @@ struct Msg_00278AA0 {
     void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
 };
 
-class Iter_00278AA0 {
-public:
+extern char D_00371C78[];
+
+struct Iter_00278AA0 {
     void* m_node;
     int m_index;
-    Iter_00278AA0() : m_index(0) {}
-    virtual ~Iter_00278AA0() {}
-    virtual void Run();
+    void* m_tag;
+    Iter_00278AA0() : m_index(0) { m_tag = D_00371C78; }
+    ~Iter_00278AA0() { m_tag = D_00371C78; }
 };
 
 struct Conn_00278AA0 {

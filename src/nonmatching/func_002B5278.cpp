@@ -1,4 +1,4 @@
-/* fuzzy: 73.5 */
+/* fuzzy: 91.8 */
 extern char D_00371C78[];
 
 struct LNode_002B5278 {
@@ -21,6 +21,13 @@ struct Iter_002B5278 {
     void* m8;
     Iter_002B5278() { m8 = D_00371C78; }
     ~Iter_002B5278() { m8 = D_00371C78; }
+    void* Advance(LNode_002B5278* c) {
+        m_cur = c->Next();
+        if (m_cur) {
+            return m_cur->m_data;
+        }
+        return 0;
+    }
 };
 
 struct List_002B5278 {
@@ -55,11 +62,13 @@ void Obj_002B5278::RemoveAll()
 {
     Iter_002B5278 it;
     void* s = D_00392068;
-    Iter_002B5278* pi = &it;
     void* p = m_list.First(&it);
-    while (p) {
-        void* next = m_list.Next(pi);
-        func_002A47D8(s, p);
-        p = next;
+    if (p) {
+        Iter_002B5278* pi = &it;
+        do {
+            void* next = pi->Advance(it.m_cur);
+            func_002A47D8(s, p);
+            p = next;
+        } while (p);
     }
 }

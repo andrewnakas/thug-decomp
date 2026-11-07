@@ -1,4 +1,4 @@
-/* fuzzy: 54.0 */
+/* fuzzy: 65.2 */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 
@@ -25,7 +25,12 @@ static inline Vec_0014B1B0 operator-(const Vec_0014B1B0& a, const Vec_0014B1B0& 
 
 static inline Vec_0014B1B0 operator-(const Vec_0014B1B0& a)
 {
-    return Vec_0014B1B0(-a.x, -a.y, -a.z, -a.w);
+    Vec_0014B1B0 r;
+    r.x = -a.x;
+    r.y = -a.y;
+    r.z = -a.z;
+    r.w = -a.w;
+    return r;
 }
 
 struct Light_0014B1B0 {
@@ -44,12 +49,12 @@ struct Model_0014B1B0 {
     Vec_0014B1B0 m_col;
     char pad70[0x30];
     Vec_0014B1B0 m_baseCol;
-    void SetDir(Vec_0014B1B0 v)
+    void SetDir(const Vec_0014B1B0& v)
     {
         m_flags |= 8;
         m_dir = v;
     }
-    void SetColor(Vec_0014B1B0 v)
+    void SetColor(const Vec_0014B1B0& v)
     {
         m_col = v;
         if (!(m_flags & 0x80)) {

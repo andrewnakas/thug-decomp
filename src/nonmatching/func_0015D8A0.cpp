@@ -1,4 +1,4 @@
-/* fuzzy: 69.2 */
+/* fuzzy: 79.7 */
 /* Grass/ground-cover renderer around (x, z): walks the 33x33 cells of a 128-unit grid near the point, and for
    every cell's (up to 4) blades emits a 0x20-byte vertex record into VU1 packets of 0x50 records. */
 struct Row_0015D8A0 {
@@ -74,7 +74,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
     int oy = (int)(o->m_y * 16.0f);
     int n = o->m_steps;
     for (int i = 0xFE - n; i < 0x100; i++)
-        height[i] = (int)((o->m_height - (float)(i + n - 0xFE) / (float)n * o->m_height) * 16.0f);
+        height[i] = (int)((o->m_height - (float)(i - 0xFE + n) / (float)n * o->m_height) * 16.0f);
     for (int i = 0; i < 0x100; i++)
         spread[i] = (int)((float)i * (2048.0f / 255.0f));
 
@@ -82,13 +82,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
     unsigned int* rec = 0;
     unsigned int* start = 0;
     for (int zi = z0; zi <= z1; zi++) {
-        int zc;
-        if (zi < 0)
-            zc = 0;
-        else if (zi > o->m_rowCount - 1)
-            zc = o->m_rowCount - 1;
-        else
-            zc = zi;
+        int zc = zi < 0 ? 0 : (zi > o->m_rowCount - 1 ? o->m_rowCount - 1 : zi);
         Row_0015D8A0* row = &o->m_rows[zc];
         if (row->m_start == 0x4000)
             continue;
@@ -163,7 +157,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
         out = start;
         D_00394280 -= 0x141;
     } else if (left != 0) {
-        for (int j = left; j > 0; j--) {
+        for (int j = 0; j < left; j++) {
             rec[0] = 0;
             rec[1] = 0;
             rec[2] = 0;

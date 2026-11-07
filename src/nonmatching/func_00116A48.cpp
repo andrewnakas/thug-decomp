@@ -1,4 +1,4 @@
-/* fuzzy: 63.2 */
+/* fuzzy: 84.0 */
 typedef int qword_00116A48 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 
@@ -6,13 +6,11 @@ struct QKey_00116A48 {
     short time : 15;
     unsigned short neg : 1;
     short x, y, z;
-    unsigned char* Read(unsigned char* p);
 };
 
 struct TKey_00116A48 {
     short time;
     short x, y, z;
-    unsigned char* Read(unsigned char* p);
 };
 
 struct Pack_00116A48 {
@@ -56,23 +54,13 @@ struct Quat_00116A48 {
 };
 
 struct Vec_00116A48 {
-    float x, y, z, w;
-    qword_00116A48 align[0];
+    union {
+        qword_00116A48 q;
+        struct {
+            float x, y, z, w;
+        };
+    };
     Vec_00116A48() {}
-    Vec_00116A48(const TKey_00116A48& k, float scale)
-    {
-        x = k.x / scale;
-        y = k.y / scale;
-        z = k.z / scale;
-        w = 1.0f;
-    }
-    void Set(const TKey_00116A48& k, float scale)
-    {
-        x = k.x / scale;
-        y = k.y / scale;
-        z = k.z / scale;
-        w = 1.0f;
-    }
     Vec_00116A48(float ax, float ay, float az, float aw = 1.0f) { x = ax; y = ay; z = az; w = aw; }
 };
 
@@ -104,68 +92,68 @@ struct Ctx_00116A48 {
     int bit;
 };
 
-inline unsigned char* QKey_00116A48::Read(unsigned char* p)
+static inline unsigned char* ReadQKey(QKey_00116A48* k, unsigned char* p)
 {
     short raw = p[0] | (p[1] << 8);
     p += 2;
-    time = raw & 0x3FFF;
-    neg = (raw & 0x8000) != 0;
+    k->time = raw & 0x3FFF;
+    k->neg = (raw & 0x8000) != 0;
     if (raw & 0x4000) {
         if (!(raw & 0x3800)) {
             Pack_00116A48* e = &D_003BD8E8[*p++];
-            time &= 0x7FF;
-            x = e->x;
-            y = e->y;
-            z = e->z;
+            k->time &= 0x7FF;
+            k->x = e->x;
+            k->y = e->y;
+            k->z = e->z;
         } else {
             if (raw & 0x2000) {
-                x = *p++;
+                k->x = *p++;
             } else {
-                x = p[0] | (p[1] << 8);
+                k->x = p[0] | (p[1] << 8);
                 p += 2;
             }
             if (raw & 0x1000) {
-                y = *p++;
+                k->y = *p++;
             } else {
-                y = p[0] | (p[1] << 8);
+                k->y = p[0] | (p[1] << 8);
                 p += 2;
             }
             if (raw & 0x800) {
-                z = *p++;
+                k->z = *p++;
             } else {
-                z = p[0] | (p[1] << 8);
+                k->z = p[0] | (p[1] << 8);
                 p += 2;
             }
-            time &= 0x7FF;
+            k->time &= 0x7FF;
         }
     } else {
-        x = p[0] | (p[1] << 8);
-        y = p[2] | (p[3] << 8);
-        z = p[4] | (p[5] << 8);
+        k->x = p[0] | (p[1] << 8);
+        k->y = p[2] | (p[3] << 8);
+        k->z = p[4] | (p[5] << 8);
         p += 6;
     }
     return p;
 }
 
-inline unsigned char* TKey_00116A48::Read(unsigned char* p)
+static inline unsigned char* ReadTKey(TKey_00116A48* k, unsigned char* p)
 {
     unsigned char b = *p++;
     bool packed = (b & 0x80) ? true : false;
     if (b & 0x40) {
-        time = b & 0x3F;
+        k->time = b & 0x3F;
     } else {
-        time = p[0] | (p[1] << 8);
+        k->time = p[0] | (p[1] << 8);
         p += 2;
     }
     if (packed) {
         Pack_00116A48* e = &D_003BE0E8[*p++];
-        x = e->x;
-        y = e->y;
-        z = e->z;
+        k->x = e->x;
+        k->y = e->y;
+        k->z = e->z;
     } else {
-        x = p[0] | (p[1] << 8);
-        y = p[2] | (p[3] << 8);
-        z = p[4] | (p[5] << 8);
+        k->x = p[0] | (p[1] << 8);
+        k->y = p[2] | (p[3] << 8);
+        k->z = p[4] | (p[5] << 8);
         p += 6;
     }
     return p;
@@ -216,8 +204,16 @@ static inline void InterpT(Vec_00116A48* t, const TKey_00116A48& j0, const TKey_
         t->z = j1.z / scale;
         t->w = 1.0f;
     } else {
-        Vec_00116A48 a(j0.x / scale, j0.y / scale, j0.z / scale);
-        Vec_00116A48 b(j1.x / scale, j1.y / scale, j1.z / scale);
+        Vec_00116A48 a;
+        Vec_00116A48 b;
+        a.x = j0.x / scale;
+        a.y = j0.y / scale;
+        a.z = j0.z / scale;
+        a.w = 1.0f;
+        b.x = j1.x / scale;
+        b.y = j1.y / scale;
+        b.z = j1.z / scale;
+        b.w = 1.0f;
         *t = a + (b - a) * g;
     }
 }
@@ -246,6 +242,10 @@ bool Anim_00116A48::GetFrame(Quat_00116A48* q, Vec_00116A48* t, Ctx_00116A48* ct
 {
     QKey_00116A48 k0, k1;
     TKey_00116A48 j0, j1;
+    QKey_00116A48* pk0 = &k0;
+    QKey_00116A48* pk1 = &k1;
+    TKey_00116A48* pj0 = &j0;
+    TKey_00116A48* pj1 = &j1;
     time *= 60.0f;
     unsigned char* qdata = m_qdata;
     unsigned char* tdata = m_tdata;
@@ -281,42 +281,42 @@ bool Anim_00116A48::GetFrame(Quat_00116A48* q, Vec_00116A48* t, Ctx_00116A48* ct
                 if (ctx) {
                     ctx->qpos[i] = qp;
                 }
-                unsigned char* p = k0.Read(qp);
+                unsigned char* p = ReadQKey(pk0, qp);
                 if (p >= qend) {
-                    k1 = k0;
+                    *pk1 = *pk0;
                     f = 0.0f;
                     goto done_f;
                 }
                 qp = p;
-                k1.Read(p);
-                if (k0.time <= time && time <= k1.time) {
+                ReadQKey(pk1, p);
+                if (pk0->time <= time && time <= pk1->time) {
                     break;
                 }
             } while (1);
-            f = (time - k0.time) / ((float)k1.time - (float)k0.time);
+            f = (time - pk0->time) / ((float)pk1->time - (float)pk0->time);
         done_f:
-            InterpQ(q, k0, k1, f);
+            InterpQ(q, *pk0, *pk1, f);
 
             float g;
             do {
                 if (ctx) {
                     ctx->tpos[i] = tp;
                 }
-                unsigned char* p = j0.Read(tp);
+                unsigned char* p = ReadTKey(pj0, tp);
                 if (p >= tend) {
-                    j1 = j0;
+                    *pj1 = *pj0;
                     g = 0.0f;
                     goto done_g;
                 }
                 tp = p;
-                j1.Read(p);
-                if (j0.time <= time && time <= j1.time) {
+                ReadTKey(pj1, p);
+                if (pj0->time <= time && time <= pj1->time) {
                     break;
                 }
             } while (1);
-            g = (time - j0.time) / ((float)j1.time - (float)j0.time);
+            g = (time - pj0->time) / ((float)pj1->time - (float)pj0->time);
         done_g:
-            InterpT(t, j0, j1, g, 32.0f);
+            InterpT(t, *pj0, *pj1, g, 32.0f);
         }
         qdata += *qsizes;
         tdata += *tsizes;

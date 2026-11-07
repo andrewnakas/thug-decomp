@@ -1,4 +1,4 @@
-/* fuzzy: 59.4 */
+/* fuzzy: 72.6 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -103,11 +103,12 @@ int C_0011B6C0::Apply(Pose11B6C0* pose)
         Quat11B6C0 quats[64];
         Vec11B6C0 vecs[64];
         int n = func_0011D9E8(skel);
-        for (int k = 0; k < n; k++)
-            quats[k] = pose->q[k];
-        for (int m = 0; m < n; m++)
-            vecs[m] = pose->v[m];
-        for (int i = 0; i < n; i++) {
+        int i;
+        for (i = 0; i < n; i++)
+            quats[i] = pose->q[i];
+        for (i = 0; i < n; i++)
+            vecs[i] = pose->v[i];
+        for (i = 0; i < n; i++) {
             int j = func_0011D7D0(skel, i);
             if (j != -1) {
                 pose->v[i] = vecs[j];

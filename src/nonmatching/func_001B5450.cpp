@@ -1,9 +1,28 @@
-/* fuzzy: 72.2 */
+/* fuzzy: 92.3 */
 typedef int qword_001B5450 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
+extern "C" int abs(int);
+struct V_001B5450;
+extern "C" void func_003233B8(V_001B5450* dst, V_001B5450* src);
 
 struct V_001B5450 {
+    union {
+        qword_001B5450 q;
+        struct {
+            float x, y, z, w;
+        };
+    };
+    V_001B5450() {}
+    V_001B5450(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    V_001B5450& operator=(const V_001B5450& o) { x = o.x; y = o.y; z = o.z; w = o.w; return *this; }
+    float Length() const { return sqrtf(x * x + y * y + z * z); }
+    V_001B5450 Normalize() { func_003233B8(this, this); return *this; }
+};
+static inline V_001B5450 operator*(const V_001B5450& a, float s) { return V_001B5450(a.x * s, a.y * s, a.z * s, a.w * s); }
+static inline V_001B5450 operator+(const V_001B5450& a, const V_001B5450& b) { return V_001B5450(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
+
+struct R_001B5450 {
     union {
         qword_001B5450 q;
         struct {
@@ -13,7 +32,7 @@ struct V_001B5450 {
 };
 
 struct M_001B5450 {
-    V_001B5450 r[4];
+    R_001B5450 r[4];
 };
 
 struct Target_001B5450 {
@@ -53,14 +72,14 @@ extern "C" int func_001E8398(void* params, unsigned int id, int* out, int requir
 extern "C" void* func_00185578(void* obj, unsigned int name);
 extern "C" bool func_001A2CE0(void* comp);
 extern "C" int func_00100030(int range);
-extern "C" float func_00101BC8(const void* a, const V_001B5450* b);
-extern "C" void func_003233B8(V_001B5450* dst, V_001B5450* src);
+extern "C" float func_00101BC8(const R_001B5450* a, const V_001B5450* b);
 
 /* sets up a jump: computes launch velocity (to the target, or straight up) and the spin, and fills the result struct */
 void* Jump_001B5450::Launch(void* params, int toTarget)
 {
     func_001B5E78(this);
-    m_flags = m_flags & ~0x200 & ~0x400;
+    m_flags &= ~0x200;
+    m_flags &= ~0x400;
     m120 = 0;
     m_heading = 0.0f;
     mD4 = 0;
@@ -73,11 +92,7 @@ void* Jump_001B5450::Launch(void* params, int toTarget)
 
     if (toTarget || func_001E8708(params, 0xB02567AE)) {
         Target_001B5450* t = m_target;
-        V_001B5450 d;
-        d.x = m_pos[0] - t->x;
-        d.y = 0.0f;
-        d.z = m_pos[2] - t->z;
-        d.w = m_pos[3] - t->w;
+        V_001B5450 d(m_pos[0] - t->x, 0.0f, m_pos[2] - t->z, m_pos[3] - t->w);
         if (t->y + height < m_pos[1])
             height = (m_pos[1] - t->y) + func_001E5318(0x23F14B13, 1);
         float h = height;
@@ -86,31 +101,16 @@ void* Jump_001B5450::Launch(void* params, int toTarget)
         float dist = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
         time = up + down;
         float hspeed = dist / time;
-        float vspeed = h / up - gravity * (up * 0.5f);
+        float halfUp = up * 0.5f;
+        float vspeed = h / up - gravity * halfUp;
         func_003233B8(&d, &d);
 
-        V_001B5450 hv;
-        hv.x = d.x * hspeed;
-        hv.y = d.y * hspeed;
-        hv.z = d.z * hspeed;
-        hv.w = d.w * hspeed;
-        V_001B5450 axis;
-        axis.x = 0.0f;
-        axis.y = 1.0f;
-        axis.z = 0.0f;
-        axis.w = 1.0f;
-        V_001B5450 vv;
-        vv.x = axis.x * vspeed;
-        vv.y = axis.y * vspeed;
-        vv.z = axis.z * vspeed;
-        vv.w = axis.w * vspeed;
+        V_001B5450 hv = d * hspeed;
+        V_001B5450 vv = V_001B5450(0.0f, 1.0f, 0.0f, 1.0f) * vspeed;
         V_001B5450 vel;
-        vel.x = hv.x + vv.x;
-        vel.y = hv.y + vv.y;
-        vel.z = hv.z + vv.z;
-        vel.w = hv.w + vv.w;
-        float speed = sqrtf(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        func_003233B8(&vel, &vel);
+        vel = hv + vv;
+        float speed = vel.Length();
+        vel.Normalize();
         func_001E7528(out, 0xFD4BC03E, &vel);
         func_001E72B0(out, 0x1C4C5690, speed);
         func_001E72B0(out, 0x66CED87B, time);
@@ -131,8 +131,7 @@ void* Jump_001B5450::Launch(void* params, int toTarget)
         if (func_001E7EB0(params, 0x96FB50D9, &f, 0))
             spin = (int)(f + 0.01f);
     }
-    if (spin < 0)
-        spin = -spin;
+    spin = abs(spin);
     if (spin > 0) {
         int dir;
         func_001E8398(params, 0xEF0B71A0, &dir, 1);
@@ -163,16 +162,13 @@ void* Jump_001B5450::Launch(void* params, int toTarget)
         func_001E7360(out, 0, 0x8868E76A);
     }
     if (rotate) {
-        V_001B5450 up;
-        up.x = 0.0f;
-        up.w = 1.0f;
         m_flags |= 0x400;
-        up.y = 1.0f;
-        up.z = 0.0f;
+        V_001B5450 up(0.0f, 1.0f, 0.0f, 1.0f);
         m_heading = func_00101BC8(&m_matrix.r[2], &up) + func_001E5318(0x95E91D23, 0);
     }
-    if (m_flags & 0x600) {
-        m_startMatrix = m_matrix;
+    if ((m_flags & 0x200) || (m_flags & 0x400)) {
+        M_001B5450* start = &m_startMatrix;
+        *start = m_matrix;
         m_spinTime = time * func_001E5318(0xC1DFC97B, 1);
         mDC = 0;
     }

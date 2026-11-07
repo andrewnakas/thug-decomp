@@ -1,4 +1,4 @@
-/* fuzzy: 76.8 */
+/* fuzzy: 82.0 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0015CF50 {
@@ -238,7 +238,7 @@ extern "C" void func_0015CF50(Obj_0015CF50* o, float x, float z)
     float bz = o->m_z0;
     int i;
     for (i = 0xFE - n; i < 0x100; i++) {
-        fade[i] = o->m_fadeH - (i + n - 0xFE) / (float)n * o->m_fadeH;
+        fade[i] = o->m_fadeH - (i - 0xFE + n) / (float)n * o->m_fadeH;
     }
     for (i = 0; i < 0x100; i++) {
         lin[i] = i * 0.2509804f;

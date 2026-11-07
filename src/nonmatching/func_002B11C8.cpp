@@ -1,4 +1,4 @@
-/* fuzzy: 74.0 */
+/* fuzzy: 87.2 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -110,7 +110,7 @@ struct Score_002B11C8 : Node_002B11C8 {
     int m_flags;
     int m_color;
     int m_score;
-    int m_team;
+    char pad4C[0x50 - 0x4C];
     static void* operator new(unsigned int size) { return func_001046B0(size); }
     Score_002B11C8() : Node_002B11C8(this) {}
     void Key();
@@ -121,7 +121,8 @@ struct Head_002B11C8 : Node_002B11C8 {
     void Key();
     void InsertSorted(Score_002B11C8* s)
     {
-        for (Node_002B11C8* n = next->Valid(); n; n = n->next->Valid()) {
+        Node_002B11C8* n = this;
+        while ((n = ~(int)n->next->data ? n->next : 0) != 0) {
             if (s->key >= n->key) {
                 n->InsertBefore(s);
                 return;
@@ -137,17 +138,13 @@ struct ListIt_002B11C8 {
     void* vt;
     ListIt_002B11C8() { cur = 0; vt = D_00372F58; }
     ~ListIt_002B11C8() { vt = D_00372F58; }
+    void Begin(Node_002B11C8* h) { cur = h; }
     Score_002B11C8* Next()
     {
         cur = cur->next->Valid();
         if (!cur)
             return 0;
         return (Score_002B11C8*)cur->data;
-    }
-    Score_002B11C8* First(Node_002B11C8* h)
-    {
-        cur = h;
-        return Next();
     }
 };
 
@@ -280,17 +277,16 @@ void Obj_002B11C8::UpdateScores()
         }
     }
 
+    lit.Begin(&list);
     int rank = 0;
-    Score_002B11C8* s = lit.First(&list);
+    Score_002B11C8* s = lit.Next();
     while (s) {
         char line[0x40];
         char tag[0x10];
         tag[0] = 0;
         if (s->m_king) {
             func_003331D0(tag, D_00392370);
-        } else if (!s->m_hasFlags) {
-            tag[0] = 0;
-        } else {
+        } else if (s->m_hasFlags) {
             if (s->m_flags & 1)
                 func_00331678(tag, D_00392378);
             if (s->m_flags & 2)
@@ -299,6 +295,8 @@ void Obj_002B11C8::UpdateScores()
                 func_00331678(tag, D_00392388);
             if (s->m_flags & 8)
                 func_00331678(tag, D_00392390);
+        } else {
+            tag[0] = 0;
         }
         Score_002B11C8* next = lit.Next();
         if (ranked) {
@@ -316,24 +314,35 @@ void Obj_002B11C8::UpdateScores()
             func_003331D0(line, D_00392398, s->m_color, s->m_name);
         }
         unsigned int id;
-        if (rank == 0)
+        switch (rank) {
+        case 0:
             id = 0x2B083809;
-        else if (rank == 1)
+            break;
+        case 1:
             id = 0xB20169B3;
-        else if (rank == 2)
+            break;
+        case 2:
             id = 0xC5065925;
-        else if (rank == 3)
+            break;
+        case 3:
             id = 0x5B62CC86;
-        else if (rank == 4)
+            break;
+        case 4:
             id = 0x2C65FC10;
-        else if (rank == 5)
+            break;
+        case 5:
             id = 0xB56CADAA;
-        else if (rank == 6)
+            break;
+        case 6:
             id = 0xC26B9D3C;
-        else if (rank == 7)
+            break;
+        case 7:
             id = 0x52D480AD;
-        else
+            break;
+        default:
             id = 0;
+            break;
+        }
         void* params = func_001E6978(func_001190D0(8));
         func_001E7A30(params, 0xC4745838, 3, line);
         func_001E7A68(params, 0x40C698AF, 0xD, id);

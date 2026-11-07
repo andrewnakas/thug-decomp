@@ -1,6 +1,13 @@
-/* fuzzy: 56.8 */
 struct Vec_001983F0 {
     float x, y, z, w;
+    Vec_001983F0() {}
+    Vec_001983F0(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
 };
 
 static inline void Scale_001983F0(Vec_001983F0* r, const Vec_001983F0* v, float s)
@@ -9,21 +16,6 @@ static inline void Scale_001983F0(Vec_001983F0* r, const Vec_001983F0* v, float 
     r->y = v->y * s;
     r->z = v->z * s;
     r->w = v->w * s;
-}
-
-static inline Vec_001983F0 Add_001983F0(const Vec_001983F0& a, const Vec_001983F0& b)
-{
-    Vec_001983F0 r;
-    r.x = a.x + b.x;
-    r.y = a.y + b.y;
-    r.z = a.z + b.z;
-    r.w = a.w + b.w;
-    return r;
-}
-
-static inline bool Elapsed_001983F0(unsigned int ms, unsigned int now, unsigned int start)
-{
-    return now - start > ms;
 }
 
 extern "C" unsigned int func_0010FC30();
@@ -57,11 +49,7 @@ void Obj_001983F0::ApplyGravity()
     if (m1380) {
         Vec_001983F0 end;
         Vec_001983F0 sc;
-        Vec_001983F0 v;
-        v.x = 0.0f;
-        v.y = -386.4f / m180;
-        v.z = 0.0f;
-        v.w = 1.0f;
+        Vec_001983F0 v(0.0f, -386.4f / m180, 0.0f, 1.0f);
         Scale_001983F0(&sc, &v, 0.05f);
         end.x = m20.x + sc.x;
         end.y = m20.y + sc.y;

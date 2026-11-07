@@ -1,4 +1,3 @@
-/* fuzzy: 61.1 */
 /* Skater trick/score component script member functions: trick-name lists, recent-event queries,
    pending trick bookkeeping (spin, landing), score blocks. Returns 2 for names it does not handle. */
 extern "C" float fabsf(float);
@@ -109,8 +108,7 @@ struct TrickComponent_001AFE68 {
     char timer[1];              /* 0x1404 */
 
     int CallMemberFunction(unsigned int name, void* params, Script_001AFE68* script);
-    void ReadList(TrickList_001AFE68* list, void* params);
-    bool IsSwitch() const;
+    int IsSwitch() const;
 };
 
 extern char D_00362A28[];
@@ -171,21 +169,11 @@ extern "C" void func_002910E8(void* balance);
 extern "C" void func_00331A9C(char* dst, const char* src);   /* strcpy */
 extern "C" int func_0033ECA8(float f);
 
-inline void TrickComponent_001AFE68::ReadList(TrickList_001AFE68* list, void* params)
+inline int TrickComponent_001AFE68::IsSwitch() const
 {
-    list->count = 0;
-    for (Param_001AFE68* p = func_001E6E90(params, 0); p; p = func_001E6E90(params, p)) {
-        if (p->name == 0 && p->type == 0xD)
-            list->ids[list->count++] = p->value;
-    }
-}
-
-inline bool TrickComponent_001AFE68::IsSwitch() const
-{
-    State_001AFE68* st = skater->state;
     if (skater->profile->regular)
-        return st->flipped;
-    return st->flipped ^ 1;
+        return skater->state->flipped;
+    return skater->state->flipped ^ 1;
 }
 
 /* the score block finished: send the "score landed" event to the object */
@@ -203,19 +191,7 @@ static inline void SendScoreEvent(TrickComponent_001AFE68* self, Score_001AFE68*
 int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params, Script_001AFE68* script)
 {
     switch (name) {
-    case 0x86928082: {
-        Array_001AFE68* list = 0;
-        if (func_001E8248(params, 0xBCA37A49, &list, 0)) {
-            int flags = 0;
-            func_001E7DE8(params, 0xCDCFEE8A, &flags, 0);
-            int n = list->size;
-            for (int i = 0; i < n; i++)
-                func_001ABA28(this, func_001E9300(list, i), flags);
-        } else {
-            func_001AB758(this);
-        }
-        return 1;
-    }
+    case 0x72C926CA: func_001AF7E0(this); break;
 
     case 0xEDA2772E: {
         Array_001AFE68* list = 0;
@@ -242,12 +218,91 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         return func_001ABFF8(this, id) == 0;
     }
 
+    case 0xCB30572D:
+    {
+        Param_001AFE68* p = 0;
+        while ((p = func_001E6E90(params, p)) != 0) {
+            if (p->name == 0 && p->type == 0xD)
+                func_001ADDC8(this, p->value);
+        }
+    }
+        break;
+
+    case 0xD8C79BB0:
+        list1.count = 0;
+        {
+            Param_001AFE68* p = 0;
+            while ((p = func_001E6E90(params, p)) != 0) {
+                if (p->name == 0 && p->type == 0xD)
+                    list1.ids[list1.count++] = p->value;
+            }
+        }
+        if (list1.count == 1 && !func_001E55B8(list1.ids[0], 0))
+            list1.ids[0] = 0x9E22D268;
+        list1.flag = 0;
+        func_001E8398(params, 0xB394C01C, &list1.flag, 0);
+        break;
+
+    case 0xD4099D35:
+        padding = 8;
+        break;
+
+    case 0xDE98DE7A: func_001AE488(this); break;
+
+    case 0x54C33B20: func_001ADCF0(this); break;
+
+    case 0x788F9A4E: func_001AE520(this, params); break;
+
+    case 0x1FCF080A:
+        list2.count = 0;
+        {
+            Param_001AFE68* p = 0;
+            while ((p = func_001E6E90(params, p)) != 0) {
+                if (p->name == 0 && p->type == 0xD)
+                    list2.ids[list2.count++] = p->value;
+            }
+        }
+        list2.flag = 0;
+        func_001E8398(params, 0xB394C01C, &list2.flag, 0);
+        break;
+
+    case 0x8E3D3BEC: func_001AB788(this); break;
+
+    case 0x6BA35AB4:
+        list3.count = 0;
+        {
+            Param_001AFE68* p = 0;
+            while ((p = func_001E6E90(params, p)) != 0) {
+                if (p->name == 0 && p->type == 0xD)
+                    list3.ids[list3.count++] = p->value;
+            }
+        }
+        list3.flag = 0;
+        func_001E8398(params, 0xB394C01C, &list3.flag, 0);
+        break;
+
+    case 0xAB6B8DD9: func_001AEE68(this); break;
+
+    case 0x86928082: {
+        Array_001AFE68* list = 0;
+        if (func_001E8248(params, 0xBCA37A49, &list, 0)) {
+            int flags = 0;
+            func_001E7DE8(params, 0xCDCFEE8A, &flags, 0);
+            int n = list->size;
+            for (int i = 0; i < n; i++)
+                func_001ABA28(this, func_001E9300(list, i), flags);
+        } else {
+            func_001AB758(this);
+        }
+        break;
+    }
+
     case 0x070E934D:
         for (int i = 0; i < numEvents; i++) {
             if (events[i].type == 0x7323E97C)
                 events[i].flags = 1;
         }
-        return 1;
+        break;
 
     case 0x54D43789: {
         /* clear a flag on every event newer than the given time */
@@ -264,7 +319,8 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         }
         int idx = lastEvent;
         for (int n = 0; n < numEvents; n++) {
-            if (func_0010FC30() - events[idx].time >= (unsigned int)timeout)
+            unsigned int t = events[idx].time;
+            if (func_0010FC30() - t >= (unsigned int)timeout)
                 break;
             if (events[idx].flags & mask)
                 events[idx].flags &= ~mask;
@@ -272,48 +328,12 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
             if (idx < 0)
                 idx += 100;
         }
-        return 1;
+        break;
     }
 
-    case 0xCB30572D:
-        for (Param_001AFE68* p = func_001E6E90(params, 0); p; p = func_001E6E90(params, p)) {
-            if (p->name == 0 && p->type == 0xD)
-                func_001ADDC8(this, p->value);
-        }
-        return 1;
+    case 0x7627DC71: func_001AEC48(this, params, script); break;
 
-    case 0xD8C79BB0:
-        ReadList(&list1, params);
-        if (list1.count == 1 && !func_001E55B8(list1.ids[0], 0))
-            list1.ids[0] = 0x9E22D268;
-        list1.flag = 0;
-        func_001E8398(params, 0xB394C01C, &list1.flag, 0);
-        return 1;
-
-    case 0x1FCF080A:
-        ReadList(&list2, params);
-        list2.flag = 0;
-        func_001E8398(params, 0xB394C01C, &list2.flag, 0);
-        return 1;
-
-    case 0x6BA35AB4:
-        ReadList(&list3, params);
-        list3.flag = 0;
-        func_001E8398(params, 0xB394C01C, &list3.flag, 0);
-        return 1;
-
-    case 0xD4099D35:
-        padding = 8;
-        return 1;
-
-    case 0x72C926CA: func_001AF7E0(this); return 1;
-    case 0xDE98DE7A: func_001AE488(this); return 1;
-    case 0x54C33B20: func_001ADCF0(this); return 1;
-    case 0x788F9A4E: func_001AE520(this, params); return 1;
-    case 0x8E3D3BEC: func_001AB788(this); return 1;
-    case 0xAB6B8DD9: func_001AEE68(this); return 1;
-    case 0x7627DC71: func_001AEC48(this, params, script); return 1;
-    case 0xD5813251: func_001AEE60(this); return 1;
+    case 0xD5813251: func_001AEE60(this); break;
 
     case 0xB42A1230: {
         unsigned int a = 0;
@@ -321,7 +341,7 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         unsigned int b = 0;
         func_001E8398(params, 0x270F56E1, &b, 0);
         func_001E7B18(trickStruct, a, 13.0f, (float)b);
-        return 1;
+        break;
     }
 
     case 0xABFF7889: {
@@ -333,17 +353,17 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
                 func_001E6AC8(trickStruct, src);
             }
         }
-        return 1;
+        break;
     }
 
     case 0xD872002D:
         manualOk = 1;
         func_001AB758(this);
-        return 1;
+        break;
 
     case 0x290F6010:
         manualOk = 0;
-        return 1;
+        break;
 
     case 0x4B2EE2BC: {
         const char* s = 0;
@@ -352,22 +372,23 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
             func_00331A9C(trickName, s);
         else
             trickName[0] = 0;
-        return 1;
+        break;
     }
 
     case 0xCB3A8FD2:
         func_001E7DE8(params, 0, &trickScore, 0);
-        return 1;
+        break;
 
     case 0x4BA7719F: {
-        float f = fabsf(spin) + func_002032A0(0x50C5CC2F, 0);
+        float f = fabsf(spin);
+        f += func_002032A0(0x50C5CC2F, 0);
         func_001E72B0(script->params, 0xEDF5DB70, (float)((int)f / 180) * 180.0f);
-        return 1;
+        break;
     }
 
     case 0xE50D471E:
         spin = 0.0f;
-        return 1;
+        break;
 
     case 0xF32E8D5C: {
         /* do a trick: score it now or keep it pending until landing */
@@ -424,7 +445,7 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         }
         if (trickName[0])
             graffiti = 0;
-        return 1;
+        break;
     }
 
     case 0x11CA5C42: {
@@ -432,15 +453,14 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         Score_001AFE68* s = score;
         if (object->active) {
             if (pendingName[0]) {
-                float f;
                 if (skater->vert) {
-                    f = fabsf(spin);
+                    float f = fabsf(spin);
                     if (360.0f - func_002032A0(0x50C5CC2F, 0) + 0.1f <= f) {
                         func_00237100(s, pendingName, pendingScore, pendingFlags);
                         func_00237728(s, (int)spin);
                     }
                 } else {
-                    f = fabsf(spin);
+                    float f = fabsf(spin);
                     if (180.0f - func_002032A0(0x50C5CC2F, 0) + 0.1f <= f) {
                         func_00237100(s, pendingName, pendingScore, pendingFlags);
                         func_00237728(s, (int)spin);
@@ -462,7 +482,7 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         func_002910A8(balance);
         func_002910E8(balance);
         skater->pending = 0;
-        return 1;
+        break;
     }
 
     case 0xB8045433:
@@ -472,8 +492,8 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
             func_00238088(score, 0);
         }
         func_00184920(object, 0x6045A960, 0.0f, 0);
-        done = 1;
         landed = 1;
+        done = 1;
         func_001B0EB8(this, 0);
         bailed = 0;
         func_002910E8(balance);
@@ -483,7 +503,7 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         func_00266698(timer);
         func_002714B0(func_00185578(object, 0x11B4C67F));
         func_001F49F8(stats);
-        return 1;
+        break;
 
     case 0x36B2BE57: {
         unsigned int id;
@@ -491,6 +511,9 @@ int TrickComponent_001AFE68::CallMemberFunction(unsigned int name, void* params,
         func_001B0EF0(this, id);
         return 1;
     }
+
+    default:
+        return 2;
     }
-    return 2;
+    return 1;
 }

@@ -1,7 +1,7 @@
-/* fuzzy: 64.9 */
+/* fuzzy: 63.4 */
 extern unsigned int D_0034DEF0[256];
 
-static inline unsigned char Nibble_00165EF8(unsigned char* src, int a)
+static inline unsigned char Nibble_00165EF8(unsigned char* src, unsigned int a)
 {
     int s = (a & 1) * 4;
     return (src[a >> 1] & (0xF << s)) >> s;

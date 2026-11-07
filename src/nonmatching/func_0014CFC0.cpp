@@ -1,14 +1,14 @@
-/* fuzzy: 65.6 */
+/* fuzzy: 82.3 */
 struct Ent_0014CFC0 {
     int m0;
-    short* m4;
+    unsigned short* m4;
 };
 
 class Snd_0014CFC0 {
 public:
     char pad[0xC0];
     unsigned long mC0 : 32;
-    unsigned long mFlag0 : 1;
+    bool mFlag0 : 1;
     unsigned long mFlag1 : 1;
     void* mC8;
     char mCC[0x10];

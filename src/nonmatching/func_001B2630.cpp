@@ -1,4 +1,4 @@
-/* fuzzy: 64.5 */
+/* fuzzy: 84.7 */
 typedef int qword_001B2630 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 
@@ -8,13 +8,6 @@ struct Vec_001B2630 {
         qword_001B2630 q;
     };
     Vec_001B2630() {}
-    void operator-=(const Vec_001B2630& o)
-    {
-        x -= o.x;
-        y -= o.y;
-        z -= o.z;
-        w -= o.w;
-    }
     Vec_001B2630(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
 };
 
@@ -71,10 +64,8 @@ void C_001B2630::Track()
     Vec_001B2630 p = mC->m50;
     p.y = 0.0f;
     float k = func_001E5318(0xA876AA2C, 1);
-    Vec_001B2630 ab = b;
-    ab -= a;
-    Vec_001B2630 ap = p;
-    ap -= a;
+    Vec_001B2630 ab = Sub_001B2630(b, a);
+    Vec_001B2630 ap = Sub_001B2630(p, a);
     Vec_001B2630 c = Cross_001B2630(ab, ap);
     float t = Dot_001B2630(ap, ab) / Dot_001B2630(ab, ab);
     Vec_001B2630 q(ab.x * t + m50.x, ab.y * t + m50.y, ab.z * t + m50.z, ab.w * t + m50.w);

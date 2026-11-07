@@ -1,4 +1,4 @@
-/* fuzzy: 51.7 */
+/* fuzzy: 82.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00203370 {
@@ -16,14 +16,6 @@ struct Mtx_00203370 {
         row[1].x = 0.0f; row[1].y = 1.0f; row[1].z = 0.0f; row[1].w = 0.0f;
         row[2].x = 0.0f; row[2].y = 0.0f; row[2].z = 1.0f; row[2].w = 0.0f;
         row[3].x = 0.0f; row[3].y = 0.0f; row[3].z = 0.0f; row[3].w = 1.0f;
-    }
-    Mtx_00203370& operator=(const Mtx_00203370& o)
-    {
-        row[0].q = o.row[0].q;
-        row[1].q = o.row[1].q;
-        row[2].q = o.row[2].q;
-        row[3].q = o.row[3].q;
-        return *this;
     }
 };
 
@@ -76,8 +68,7 @@ void Obj_00203370::Place(int node)
     m->Identity();
     if (node < 0) return;
     int s = func_001E9378(func_001E55B8(0xC472ECC5, 0), node);
-    Vec_00203370* pos = &m50;
-    func_0022A090(node, pos);
+    func_0022A090(node, &m50);
     m60.q = m50.q;
     m2E0->mA0.q = m60.q;
     func_00186398(this, 1);
@@ -91,8 +82,9 @@ void Obj_00203370::Place(int node)
         { Mtx_00203370 t; func_00323318(m, func_001009C0(&t, r->z), m); }
     }
     m2E0->m20 = m2E0->mC->m70;
-    m2E0->m60.q = m2E0->m80.q = m2E0->m70.q = m70.row[1].q;
-    func_001B6BC0(m2B8, pos);
-    func_001B6BD0(m2B8, &m70.row[1]);
+    Vec_00203370* up = &m70.row[1];
+    m2E0->m60 = m2E0->m80 = m2E0->m70 = *up;
+    func_001B6BC0(m2B8, &m50);
+    func_001B6BD0(m2B8, up);
     mC0 = m2E0->m20;
 }

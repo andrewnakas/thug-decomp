@@ -1,4 +1,3 @@
-/* fuzzy: 67.6 */
 struct Skater_001A2480 {
     long m0;
     char pad8[0x1B0 - 0x8];
@@ -9,10 +8,7 @@ struct Skater_001A2480 {
     bool Bit2() const { return m_b2; }
     bool Check() const
     {
-        bool c = false;
-        if (Bit1())
-            c = !Bit2();
-        return c;
+        return Bit1() && !Bit2();
     }
 };
 
@@ -31,9 +27,7 @@ bool Obj_001A2480::Fn()
 {
     Skater_001A2480* s = m70->m260;
     bool r = false;
-    if (s) {
-        bool c = s->Check();
-        r = c;
-    }
+    if (s)
+        r = s->Check();
     return r;
 }

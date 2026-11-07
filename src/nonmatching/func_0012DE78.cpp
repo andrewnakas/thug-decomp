@@ -1,4 +1,10 @@
-/* fuzzy: 84.6 */
+/* fuzzy: 88.8 */
+/* sym: Find__10C_0012E438ii = 0x0012DB48 */
+/* sym: Add__10C_0012E438P15Handle_0012DE78i = 0x0012ECE0 */
+/* sym: Remove__10C_0012E438P15Handle_0012DE78ii = 0x0012EE60 */
+/* sym: Unmark__10C_0012E438P15Handle_0012DE78 = 0x0012F058 */
+/* sym: Visit__10C_0012E438P13Node_0012DE78 = 0x0012F180 */
+/* sym: IsFocusEvent__10C_0012E438Ui = 0x0012F188 */
 struct Obj_0012DE78;
 struct Handle_0012DE78;
 

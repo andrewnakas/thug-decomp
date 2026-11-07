@@ -1,4 +1,8 @@
 /* fuzzy: 94.9 */
+/* sym: __15Feeler_001BDE80 = 0x00209240 */
+/* sym: SetStart__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209360 */
+/* sym: SetEnd__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209370 */
+/* sym: GetCollision__15Feeler_001BDE80ii = 0x002093E8 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001BDE80 {

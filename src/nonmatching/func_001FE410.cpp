@@ -1,4 +1,11 @@
 /* fuzzy: 97.8 */
+/* sym: __17TaskBase_001FE410i = 0x001047F8 */
+/* sym: _vt$12Net_001FE410 = 0x00366B70 */
+/* sym: _vt$13Slot_001FE410 = 0x00366C50 */
+/* sym: _vt$13Head_001FE410 = 0x003668A0 */
+/* sym: _vt$14ListA_001FE410 = 0x00366BC8 */
+/* sym: _vt$14ListB_001FE410 = 0x00366BB0 */
+/* sym: _vt$13Task_001FE410 = 0x003669E0 */
 extern "C" void* func_001046B0(int size);
 extern "C" void func_001FE018();
 extern "C" void func_001FDFA8();

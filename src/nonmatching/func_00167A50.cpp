@@ -1,4 +1,4 @@
-/* fuzzy: 31.5 */
+/* fuzzy: 43.8 */
 typedef int qword_00167A50 __attribute__((mode(TI)));
 
 struct V_00167A50 {
@@ -60,7 +60,7 @@ struct Obj_00167A50 {
     char pad0[0x54];
     Lights_00167A50* m_lights;          /* 0x54 */
     char pad58[0xF0 - 0x58];
-    M_00167A50 m_lightMatrix;           /* 0xF0 */
+    V_00167A50 m_lightRows[3];          /* 0xF0: the 4x4 product's last row lands on m_ambient */
     V_00167A50 m_ambient;               /* 0x120 */
     V_00167A50 m_color[3];              /* 0x130 */
     void UpdateLights();
@@ -92,7 +92,7 @@ void Obj_00167A50::UpdateLights()
         m.r[2] = *((m_lights->flags & 8) ? &m_lights->dir[2] : &D_003DD9F0.dir[2]);
         func_00323318(&m, D_003E1080, &m);
         m.Transpose();
-        func_00323318(&m_lightMatrix, &m, this);
+        func_00323318(m_lightRows, &m, this);
         SetColor(&m_ambient, (m_lights->flags & 0x11) ? &m_lights->ambient : &D_003DD9F0.ambient);
         SetColor(&m_color[0], (m_lights->flags & 0x22) ? &m_lights->color[0] : &D_003DD9F0.color[0]);
         SetColor(&m_color[1], (m_lights->flags & 0x44) ? &m_lights->color[1] : &D_003DD9F0.color[1]);
@@ -103,7 +103,7 @@ void Obj_00167A50::UpdateLights()
         m.r[2] = D_003DD9F0.dir[2];
         func_00323318(&m, D_003E1080, &m);
         m.Transpose();
-        func_00323318(&m_lightMatrix, &m, this);
+        func_00323318(m_lightRows, &m, this);
         SetColor(&m_ambient, &D_003DD9F0.ambient);
         SetColor(&m_color[0], &D_003DD9F0.color[0]);
         SetColor(&m_color[1], &D_003DD9F0.color[1]);

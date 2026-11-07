@@ -1,4 +1,4 @@
-/* fuzzy: 79.6 */
+/* fuzzy: 80.6 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -180,6 +180,7 @@ struct Wheel_00192F80 {
     char padDC[0x140 - 0xDC];
     Sub_00192F80 m140;
     Wheel_00192F80() { func_00209240(&m140); }
+    ~Wheel_00192F80();
     static void* operator new[](unsigned int size) { return func_0010A638(D_00388A70, size, 1, 0); }
 };
 

@@ -1,4 +1,4 @@
-/* fuzzy: 51.0 */
+/* fuzzy: 67.9 */
 /* sym: _vt$11It_001FD9C8 = 0x00366AA8 */
 
 struct Obj_001FD9C8;
@@ -59,14 +59,18 @@ struct Info_001FD9C8 {
     int m_4;
 };
 
-struct Obj_001FD9C8 {
-    char pad0[0x19];
+/* vptr at 0x14; the destructor is the first virtual slot */
+struct ObjBase_001FD9C8 {
+    char pad0[0x14];
+    virtual ~ObjBase_001FD9C8();
+};
+struct Obj_001FD9C8 : ObjBase_001FD9C8 {
+    char pad18[0x19 - 0x18];
     unsigned char m_slot;
     char pad1A[0x24 - 0x1A];
     int m_seq;
     char pad28[4];
     Info_001FD9C8* m_info;
-    virtual void V0();
     virtual ~Obj_001FD9C8();
 };
 

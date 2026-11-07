@@ -1,77 +1,99 @@
-/* fuzzy: 71.5 */
+/* fuzzy: 94.9 */
+extern char D_00361AA0[];
+
 struct Obj_00186E80;
 
-struct Link_00186E80 {
+struct Node_00186E80 {
     int m0;
-    Obj_00186E80* m_data;
+    Obj_00186E80* m4;
     int m8;
-    Link_00186E80* m_next;
+    Node_00186E80* mC;
+    Node_00186E80* Valid() { return (int)m4 != -1 ? this : 0; }
+    Obj_00186E80* GetData() { return m4; }
 };
 
-struct Obj_00186E80 {
+struct It_00186E80 {
     int m0;
-    Link_00186E80 m_children;
-    int m14[2];
-    unsigned int m_used;
-    unsigned int m_marks;
+    Node_00186E80* cur;
+    void* vt;
+    It_00186E80()
+    {
+        vt = D_00361AA0;
+        cur = 0;
+    }
+    ~It_00186E80() { vt = D_00361AA0; }
+    Obj_00186E80* Next()
+    {
+        cur = cur->mC->Valid();
+        if (!cur) return 0;
+        return cur->GetData();
+    }
+    Obj_00186E80* First(Node_00186E80* h)
+    {
+        cur = h;
+        return Next();
+    }
+    Obj_00186E80* Advance(Node_00186E80* c)
+    {
+        cur = c->mC->Valid();
+        if (!cur) return 0;
+        return cur->GetData();
+    }
 };
 
 extern "C" void func_00185058(Obj_00186E80* o);
 
-class Node1873E0 {
-public:
-    int m0;
-    Link_00186E80* m_cur;
-    Node1873E0() : m_cur(0) {}
-    virtual ~Node1873E0() {}
-    virtual void Run();
-    Obj_00186E80* Next()
+struct Bits_00186E80 {
+    unsigned int m;
+    unsigned int Alloc()
     {
-        Link_00186E80* n = m_cur->m_next;
-        m_cur = (n->m_data == (Obj_00186E80*)-1) ? 0 : n;
-        Obj_00186E80* r;
-        if (m_cur) {
-            r = m_cur->m_data;
-        } else {
-            r = 0;
+        unsigned int b;
+        for (b = 1; m & b; b <<= 1) {
         }
-        return r;
+        m |= b;
+        return b;
     }
+    void Free(unsigned int b) { m &= ~b; }
 };
 
-static inline unsigned int AllocBit(unsigned int& mask)
-{
-    unsigned int bit = 1;
-    while (mask & bit) {
-        bit <<= 1;
-    }
-    mask |= bit;
-    return bit;
-}
+struct Obj_00186E80 {
+    int m0;
+    Node_00186E80 m4;
+    int m14, m18;
+    Bits_00186E80 m1C;
+    unsigned int m20;
+    char pad[0x104 - 0x24];
+    int m104;
+    void Propagate();
+};
 
-extern "C" void func_00186E80(Obj_00186E80* self)
+void Obj_00186E80::Propagate()
 {
-    Node1873E0 it;
-    unsigned int bit = AllocBit(self->m_used);
-    it.m_cur = &self->m_children;
-    for (Obj_00186E80* o = it.Next(); o; o = it.Next()) {
-        o->m_marks &= ~bit;
+    It_00186E80 it;
+    unsigned int bit = m1C.Alloc();
+    Obj_00186E80* o = it.First(&m4);
+    if (o) {
+        It_00186E80* p = &it;
+        do {
+            o->m20 &= ~bit;
+            o = p->Advance(it.cur);
+        } while (o);
     }
-    do {
-        self->m_marks &= ~bit;
-        it.m_cur = &self->m_children;
-        Obj_00186E80* o = it.Next();
-        while (o) {
-            Obj_00186E80* cur = o;
-            o = it.Next();
-            if (!(cur->m_marks & bit)) {
-                cur->m_marks |= bit;
-                func_00185058(cur);
-                if (self->m_marks & bit) {
-                    break;
-                }
+restart:
+    m20 &= ~bit;
+    Obj_00186E80* d = it.First(&m4);
+    if (d) {
+        It_00186E80* q = &it;
+        do {
+            Obj_00186E80* x = d;
+            d = q->Advance(it.cur);
+            if (!(x->m20 & bit)) {
+                x->m20 |= bit;
+                func_00185058(x);
+                if (m20 & bit) goto restart;
             }
-        }
-    } while (self->m_marks & bit);
-    self->m_used &= ~bit;
+        } while (d);
+    }
+    if (m20 & bit) goto restart;
+    m1C.Free(bit);
 }

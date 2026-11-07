@@ -1,4 +1,4 @@
-/* fuzzy: 50.0 */
+/* fuzzy: 67.5 */
 struct Box_002C03B8 {
     unsigned char x;
     unsigned char y;
@@ -10,11 +10,7 @@ struct Box_002C03B8 {
 
 static inline bool Overlap_002C03B8(const Box_002C03B8* a, const Box_002C03B8* b)
 {
-    if (b->x >= a->x + a->w) return false;
-    if (a->x >= b->x + b->w) return false;
-    if (b->z >= a->z + a->d) return false;
-    if (a->z >= b->z + b->d) return false;
-    return true;
+    return b->x < a->x + a->w && a->x < b->x + b->w && b->z < a->z + a->d && a->z < b->z + b->d;
 }
 
 struct Obj_002C03B8 {

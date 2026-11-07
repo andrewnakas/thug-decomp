@@ -1,4 +1,4 @@
-/* fuzzy: 63.0 */
+/* fuzzy: 72.4 */
 struct Ent_001121A0 {
     int m0;
     int m_id;
@@ -24,7 +24,7 @@ extern "C" void func_001121A0()
     func_0031D0D0(D_004652D0, 16);
     func_0031D0E8(1, func_00112048, 0);
     func_00320490();
-    for (int i = 0; i < 64; i++) {
+    for (unsigned int i = 0; i < 64; i++) {
         D_00464DD0[i].m_free = 1;
         D_00464DD0[i].m_id = -1;
         D_00464DD0[i].m_next = -1;

@@ -1,4 +1,4 @@
-/* fuzzy: 66.5 */
+/* fuzzy: 74.9 */
 /* sym: __9Prm_284B0 = 0x001E6978 */
 /* sym: _$_9Prm_284B0 = 0x001E6AE8 */
 /* sym: _vt$14ListHead_284B0 = 0x003724F8 */
@@ -84,7 +84,7 @@ public:
         m_prev = this;
     }
     virtual void Run();
-    ListNode_284B0* Valid(unsigned int k = 0) { return k < ~(unsigned int)m_data ? this : 0; }
+    ListNode_284B0* Valid() { return ~(unsigned int)m_data ? this : 0; }
 };
 
 class ListHead_284B0 : public ListNode_284B0 {
@@ -93,6 +93,14 @@ public:
     virtual ~ListHead_284B0() {}
     virtual void Run();
     ListNode_284B0* First() { return m_next->Valid(); }
+    ListNode_284B0* Nth(unsigned int k)
+    {
+        for (ListNode_284B0* n = First(); n; n = n->m_next->Valid()) {
+            if (k-- == 0)
+                return n;
+        }
+        return 0;
+    }
 };
 
 extern "C" int func_00106810();
@@ -143,9 +151,6 @@ static inline void MarkDamaged_284B0(Prm_284B0* s, const char* name)
 
 bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* script)
 {
-    ListHead_284B0 files;
-    Prm_284B0* entries[75];
-    char path[0x70];
     unsigned int fileType;
 
     func_001E6C28(script->m_params, D_00372388);
@@ -158,6 +163,9 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
     if (!card)
         return true;
 
+    ListHead_284B0 files;
+    Prm_284B0* entries[75];
+    char path[0x70];
     func_00113430(card, D_0038FA38, &files);
     int resume = 0;
     func_00229058();
@@ -177,17 +185,11 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
 
     int total = 0;
     for (int i = 0; i < numFiles; i++) {
-        ListNode_284B0* n = files.First();
-        int k = i;
-        while (n) {
-            if (k-- == 0)
-                break;
-            n = n->m_next->Valid();
-        }
-        CardFile_284B0* file = n ? n->m_data : 0;
+        CardFile_284B0* file = files.Nth(i)->m_data;
 
+        int platform = D_00388814;
         bool ours = true;
-        if (D_00388814 != 4) {
+        if (platform != 4) {
             for (int j = 0; j < prefixLen; j++) {
                 if (file->m_name[j] != prefix[j]) {
                     ours = false;
@@ -200,10 +202,9 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
         total++;
 
         unsigned int type = 0;
-        int platform = D_00388814;
         if (platform == 1 || platform == 2 || platform == 3 || platform == 5)
             type = func_00224400(file->m_name[prefixLen + 7]);
-        if (fileType != 0 && type != fileType)
+        if (!(fileType == 0 && type != 0) && type != fileType)
             continue;
         if (count >= 75)
             continue;

@@ -1,4 +1,4 @@
-/* fuzzy: 60.9 */
+/* cflags: -O1 */
 struct Node_001241C0 {
     char pad[0x60];
     Node_001241C0* m_next;

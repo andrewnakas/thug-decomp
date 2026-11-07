@@ -1,4 +1,4 @@
-/* fuzzy: 59.6 */
+/* fuzzy: 86.8 */
 struct Hdr_00115848 {
     int m_count;
     unsigned short m_4;
@@ -34,11 +34,19 @@ extern "C" int func_00115840(Obj_00115848* self, int a, int b, int c);
 extern "C" void* func_0010BDE0(int size);
 extern "C" void* func_00118DF0(char** p);
 
+static inline int Read32_00115848(char*& p)
+{
+    int v = *(int*)p;
+    p += 4;
+    return v;
+}
+
 static inline void Align4_00115848(char*& p)
 {
     int r = (int)p & 3;
     if (r) {
-        p = p + 4 - r;
+        p += 4;
+        p -= r;
     }
 }
 
@@ -48,10 +56,8 @@ extern "C" int func_00115848(Obj_00115848* self, Hdr_00115848* hdr)
     self->m_count = hdr->m_count;
     self->m_3C = hdr->m_4;
     self->m_3E = hdr->m_8;
-    int size0 = *(int*)p;
-    p += 4;
-    int size1 = *(int*)p;
-    p += 4;
+    int size0 = Read32_00115848(p);
+    int size1 = Read32_00115848(p);
     self->m_34 = (unsigned short*)p;
     self->m_38 = self->m_34 + self->m_count;
     p = (char*)(self->m_38 + self->m_count);
@@ -63,8 +69,8 @@ extern "C" int func_00115848(Obj_00115848* self, Hdr_00115848* hdr)
     }
     if (self->m_flags & 0x80000) {
         self->m_28 = p;
-        int bits = *(int*)p;
-        p += 4 + ((bits - 1) / 32 + 1) * 4;
+        int bits = Read32_00115848(p);
+        p += ((bits - 1) / 32 + 1) * 4;
     }
     Align4_00115848(p);
     if (!func_00115CC8(self)) {

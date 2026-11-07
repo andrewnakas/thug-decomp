@@ -1,4 +1,4 @@
-/* fuzzy: 94.9 */
+/* fuzzy: 95.7 */
 extern "C" char* func_00336208(char*, int);
 extern "C" void func_00332088(char*, char*, int);
 extern "C" int func_00331950(char*, char*);
@@ -7,7 +7,7 @@ extern "C" int func_003331D0(char*, char*, ...);
 extern "C" int func_00103F28(char*, ...);
 extern "C" void func_003288E0(int);
 extern "C" void func_003291C0(int);
-extern "C" void func_00328DB8(int);
+extern "C" int func_00328DB8(int);
 extern "C" void func_00329388(int, int, unsigned int);
 extern "C" int func_00328438(void*, char*);
 extern "C" void func_003293B8(int, char*);

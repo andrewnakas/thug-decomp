@@ -1,4 +1,4 @@
-/* fuzzy: 66.4 */
+/* fuzzy: 80.6 */
 struct Ring_001F5EB8 {
     int m_buf;
     int m_desc;
@@ -46,7 +46,8 @@ int func_001F5EB8(Ring_001F5EB8* r)
     }
     for (int i = 0; i < blocks; i++) {
         func_001F5B68(r->m_desc + idx * 16, r->m_buf + (idx << 11), (i != blocks - 1) ? 3 : 0, 0x80);
-        idx = (idx + 1) % r->m_count;
+        idx = idx + 1;
+        idx = idx % r->m_count;
     }
     r->m_avail = r->m_avail + blocks;
     if (r->m_avail) {

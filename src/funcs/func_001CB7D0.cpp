@@ -1,4 +1,3 @@
-/* fuzzy: 96.8 */
 typedef int qword_001CB7D0 __attribute__((mode(TI)));
 
 struct Vec_001CB7D0 {
@@ -122,7 +121,8 @@ bool Skater_001CB7D0::Bail(bool alt)
         a = t;
     } else {
         float t;
-        func_001E7EB0(func_001E5548(0x6775E538, 0), 0xA2735DD9, &t, 1);
+        void* params = func_001E5548(0x6775E538, 0);
+        func_001E7EB0(params, 0xA2735DD9, &t, 1);
         a = t;
     }
     float b;
@@ -139,8 +139,8 @@ bool Skater_001CB7D0::Bail(bool alt)
     }
     m50 = 0;
     m40.Set(0.0f, 0.0f, 0.0f, 1.0f);
-    mC30 = out;
     mC10 = m30;
+    mC30 = out;
     mC84 = D_0038D810[0];
     mC44 = 0;
     mC40 = mC4;

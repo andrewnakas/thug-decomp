@@ -1,4 +1,4 @@
-/* fuzzy: 68.3 */
+/* fuzzy: 79.2 */
 /* sym: AddLines__15Goals_0024C590i = 0x0024C590 */
 // Adds `count` message lines to an on-screen goal/trick list. Each line takes a free slot of the
 // 30-entry table at this+0xA4, builds its text from script params (a random entry of a list, or
@@ -190,15 +190,11 @@ void Goals_0024C590::AddLines(int count)
 
     int group = 0;
     if (grouped) {
-        if (m_groupUsed[0] == 0) {
-            m_groupUsed[0] = 1;
-        } else {
-            for (int i = 1; i < 30; i++) {
-                if (m_groupUsed[i] == 0) {
-                    group = i;
-                    m_groupUsed[i] = 1;
-                    break;
-                }
+        for (int i = 0; i < 30; i++) {
+            if (m_groupUsed[i] == 0) {
+                group = i;
+                m_groupUsed[i] = 1;
+                break;
             }
         }
     }
@@ -212,21 +208,19 @@ void Goals_0024C590::AddLines(int count)
         unsigned int checksum = 0;
         unsigned int descName = 0;
         for (int i = 0; i < 30; i++) {
-            Slot_0024C590* s = &m_slots[i];
-            if (s->m_free == 1) {
-                s->m_free = 0;
-                s->m_group = group;
-                s->m_checksum = 0;
-                s->m_name = 0;
-                s->m_name2 = 0;
-                s->m_rotations = 0;
-                s->m_mode = 1;
+            if (m_slots[i].m_free == 1) {
+                m_slots[i].m_free = 0;
+                m_slots[i].m_group = group;
+                m_slots[i].m_checksum = 0;
+                m_slots[i].m_name = 0;
+                m_slots[i].m_name2 = 0;
+                m_slots[i].m_rotations = 0;
+                m_slots[i].m_mode = 1;
                 index = i;
-                s->m_perfect = 0;
+                m_slots[i].m_perfect = 0;
                 break;
             }
         }
-        Slot_0024C590* slot = &m_slots[index];
         const char* altText = 0;
         int mode = 1;
 
@@ -240,12 +234,12 @@ void Goals_0024C590::AddLines(int count)
                 char buf[0x80];
                 *(Str4_0024C590*)buf = D_00390350;
                 func_00331678(buf, name);
-                slot->m_name = func_001F0D78(buf);
+                m_slots[index].m_name = func_001F0D78(buf);
                 *(Str4_0024C590*)buf = D_00390358;
                 func_00331678(buf, name);
-                slot->m_name2 = func_001F0D78(buf);
+                m_slots[index].m_name2 = func_001F0D78(buf);
             } else {
-                slot->m_name = func_001F0D78(name);
+                m_slots[index].m_name = func_001F0D78(name);
             }
             const char* str;
             func_001E7C80(entry, 0xC4745838, &str, 1);
@@ -265,16 +259,16 @@ void Goals_0024C590::AddLines(int count)
                 if (func_001E7DE8(entry, 0x8C8ABD19, &angle, 0)) {
                     if (angle < 360)
                         angle = 360;
-                    slot->m_rotations = func_00100030(angle / 180) + 1;
-                    if (slot->m_rotations == 1)
-                        slot->m_rotations = 0;
+                    m_slots[index].m_rotations = func_00100030(angle / 180) + 1;
+                    if (m_slots[index].m_rotations == 1)
+                        m_slots[index].m_rotations = 0;
                 }
                 if (func_001E7DE8(entry, 0xEDF5DB70, &angle, 0))
-                    slot->m_rotations = angle / 180;
+                    m_slots[index].m_rotations = angle / 180;
                 if (func_001E8708(entry, 0x1C39F1B9))
-                    slot->m_perfect = 1;
+                    m_slots[index].m_perfect = 1;
                 if (func_001E7DE8(entry, 0xA4BEE6A1, &mode, 0))
-                    slot->m_mode = mode;
+                    m_slots[index].m_mode = mode;
             }
 
             void* players = D_0038FC78;
@@ -286,7 +280,7 @@ void Goals_0024C590::AddLines(int count)
                 Players_0024C590* active = func_0022DD38(players);
                 if (active) {
                     func_001E7C80(*active->m_params[which], 0xA1DC81F9, &desc, 1);
-                    slot->m_mode = 1;
+                    m_slots[index].m_mode = 1;
                 }
             }
             if (desc == 0) {
@@ -305,13 +299,13 @@ void Goals_0024C590::AddLines(int count)
             }
 
             text[0] = D_00390360[0];
-            if (slot->m_rotations) {
-                if (slot->m_perfect)
+            if (m_slots[index].m_rotations) {
+                if (m_slots[index].m_perfect)
                     func_003331D0(text, D_003743F0);
-                func_003331D0(text, D_00374400, slot->m_rotations * 180);
+                func_003331D0(text, D_00374400, m_slots[index].m_rotations * 180);
             }
             func_00331678(text, desc);
-            slot->m_checksum = checksum;
+            m_slots[index].m_checksum = checksum;
         }
 
         // the line's container element
@@ -345,7 +339,7 @@ void Goals_0024C590::AddLines(int count)
 
         // optional second text
         if (altText || checksum) {
-            void* strings = func_001E5548(slot->m_mode == 2 ? 0xE7ABFB95 : 0x8856C817, 1);
+            void* strings = func_001E5548(m_slots[index].m_mode == 2 ? 0xE7ABFB95 : 0x8856C817, 1);
             if (altText == 0)
                 func_001E7C80(strings, checksum, &altText, 0);
             props = NewParams_0024C590();
@@ -361,7 +355,7 @@ void Goals_0024C590::AddLines(int count)
                 func_001E6AE8(props, 3);
         }
 
-        slot->m_elemId = line->m_id;
+        m_slots[index].m_elemId = line->m_id;
         m_shown++;
 
         props = NewParams_0024C590();

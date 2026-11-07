@@ -1,5 +1,4 @@
-/* fuzzy: 68.4 */
-/* NM 44/58 (lane 2 draft): game puts the success block first and jumps to the loop test at entry (b); for(;;)/while/goto shapes tried */
+/* fuzzy: 69.0 */
 struct Paren_001F2A88 {
     int m_open;
     int m4;
@@ -34,17 +33,16 @@ bool Expr_001F2A88::Finish(void* out)
             return false;
         }
         if (!m_num_ops) {
-            if (m_num_values || m_depth) {
-                func_001F13F8(this, D_00366098);
-                return false;
-            }
+            if (m_num_values || m_depth)
+                break;
             func_001E6360(out, m_result);
             func_001E6250(m_result);
             return true;
         }
         func_001F1478(this);
-        if (m_error) {
+        if (m_error)
             return false;
-        }
     }
+    func_001F13F8(this, D_00366098);
+    return false;
 }

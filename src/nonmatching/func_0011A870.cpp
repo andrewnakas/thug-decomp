@@ -1,4 +1,4 @@
-/* fuzzy: 54.8 */
+/* fuzzy: 72.0 */
 class Node_0011A870 {
 public:
     int m_0;
@@ -8,19 +8,31 @@ public:
     Node_0011A870* m_prev;
     virtual void V0();
     virtual int V1(int flag, float a, float b);
-
-    Node_0011A870* Next()
-    {
-        Node_0011A870* n = m_next;
-        if (n->m_pri == -1) {
-            return 0;
-        }
-        return n;
-    }
 };
+
+static inline Node_0011A870* Valid_0011A870(Node_0011A870* n)
+{
+    Node_0011A870* r = 0;
+    if (n->m_pri != -1) r = n;
+    return r;
+}
+
+static inline Node_0011A870* Next_0011A870(Node_0011A870* n)
+{
+    Node_0011A870* r = n->m_next;
+    if (r->m_pri == -1) r = 0;
+    return r;
+}
 
 class Head_0011A870 : public Node_0011A870 {
 public:
+    int Count()
+    {
+        int c = 0;
+        for (Node_0011A870* n = Valid_0011A870(m_next); n; n = Next_0011A870(n))
+            c++;
+        return c;
+    }
     Node_0011A870* First()
     {
         Node_0011A870* n = m_next;
@@ -29,24 +41,12 @@ public:
         }
         return n;
     }
-    int Count()
-    {
-        int c = 0;
-        Node_0011A870* n = First();
-        while (n) {
-            n = n->Next();
-            c++;
-        }
-        return c;
-    }
-    Node_0011A870* GetItem(int index)
+    Node_0011A870* GetItem(unsigned int index)
     {
         Node_0011A870* n = First();
-        while (n) {
-            if (index-- == 0) {
+        for (; n; n = Valid_0011A870(n->m_next)) {
+            if (index-- == 0)
                 return n;
-            }
-            n = n->Next();
         }
         return 0;
     }
@@ -73,20 +73,20 @@ extern "C" void func_0011A870(Ctrl_0011A870* self, float a, float b)
     }
     a *= 60.0f;
     b *= 60.0f;
-    bool reset;
     if (!self->m_28) {
-        reset = b < a;
+        if (b < a) {
+            func_0011A7A0(self);
+            a = self->m_18;
+        }
     } else {
-        reset = a < b;
+        if (a < b) {
+            func_0011A7A0(self);
+            a = self->m_18;
+        }
     }
-    if (reset) {
-        func_0011A7A0(self);
-        a = self->m_18;
-    }
-    Head_0011A870* head = &self->m_list;
-    int count = head->Count();
+    int count = self->m_list.Count();
     for (int i = 0; i < count; i++) {
-        Node_0011A870* n = head->GetItem(i);
+        Node_0011A870* n = self->m_list.GetItem(i);
         if (n->V1(0, a, b)) {
             func_00118350(n, func_0011AB18(self));
         }

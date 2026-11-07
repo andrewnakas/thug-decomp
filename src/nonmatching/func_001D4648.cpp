@@ -1,4 +1,4 @@
-/* fuzzy: 95.5 */
+/* fuzzy: 96.1 */
 typedef int qword_001D4648 __attribute__((mode(TI)));
 
 extern void* D_00388A70;
@@ -87,14 +87,13 @@ Obj_001D4648* func_001D4648(Obj_001D4648* src, int arg)
     head->m_prev = head;
     p->m_list = head;
 
-    void* nvt = D_00363ED8;
     Node_001D4648* it = Valid_001D4648(src->m_list->m_next);
     if (it) do {
         Node_001D4648* n = (Node_001D4648*)func_001046B0(0x18);
         Obj_001D4648* o = (Obj_001D4648*)it->m_data;
         VtSlot_001D4648* s = (VtSlot_001D4648*)((char*)o->m_vt + 0x68);
         void* c = s->fn((char*)o + s->delta, arg);
-        InitNode_001D4648(n, c, nvt);
+        InitNode_001D4648(n, c, D_00363ED8);
         Insert_001D4648(n, p->m_list);
         it = Valid_001D4648(it->m_next);
     } while (it);

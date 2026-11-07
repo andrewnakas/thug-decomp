@@ -1,4 +1,4 @@
-/* fuzzy: 49.5 */
+/* fuzzy: 55.0 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00234CF0 {
     qword q;
@@ -6,7 +6,20 @@ union Vec_00234CF0 {
         float x, y, z, w;
     };
     float c[4];
+    Vec_00234CF0() {}
+    Vec_00234CF0(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
+    Vec_00234CF0 operator-(const Vec_00234CF0& b) const
+    {
+        return Vec_00234CF0(x - b.x, y - b.y, z - b.z, w - b.w);
+    }
 };
+
 
 struct Mat_00234CF0 {
     Vec_00234CF0 row[4];
@@ -86,15 +99,15 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
     do {
         if ((mask >> i) & 1) {
             unsigned short time = func_001FAB88(&bits, 16);
-            int f7C = 0;
-            int f78 = 0;
+            char f7C = 0;
+            char f78 = 0;
             unsigned int flags = func_001FAB88(&bits, 9);
-            int f84 = 0;
+            signed char f84 = 0;
             int f70 = f7C;
             int f74 = f7C;
-            int f7D = 0;
-            int f7E = 0;
-            int f88 = -1;
+            char f7D = 0;
+            char f7E = 0;
+            short f88 = -1;
             if (flags & 1)
                 pos[0] = func_001FAC80(&bits, 16);
             if (flags & 2)
@@ -169,10 +182,7 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
                 func_00100200(&mat, rot[0], rot[1], rot[2]);
                 frames[cur].m_mat = mat;
                 frames[cur].m_posF = posF;
-                ang.x = frames[cur].m_posF.x - frames[prev].m_posF.x;
-                ang.y = frames[cur].m_posF.y - frames[prev].m_posF.y;
-                ang.z = frames[cur].m_posF.z - frames[prev].m_posF.z;
-                ang.w = frames[cur].m_posF.w - frames[prev].m_posF.w;
+                ang = frames[cur].m_posF - frames[prev].m_posF;
 
                 if (!(flags & 0x40)) {
                     f7E = frames[prev].m_7E;

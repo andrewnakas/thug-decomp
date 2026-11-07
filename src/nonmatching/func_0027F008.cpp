@@ -1,50 +1,62 @@
-/* fuzzy: 57.4 */
+/* fuzzy: 84.9 */
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
 
 typedef int qword __attribute__((mode(TI)));
 union Vec_0027F008 {
     qword q;
-    struct {
-        float x, y, z, w;
-    };
+    float c[4];
+    float& operator[](int i) { return c[i]; }
+    float operator[](int i) const { return c[i]; }
     Vec_0027F008() {}
-    Vec_0027F008(float a, float b, float c, float d)
+    Vec_0027F008(float a, float b, float x, float d)
     {
-        x = a;
-        y = b;
-        z = c;
-        w = d;
+        c[0] = a;
+        c[1] = b;
+        c[2] = x;
+        c[3] = d;
     }
     void operator+=(const Vec_0027F008& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        c[0] += o[0];
+        c[1] += o[1];
+        c[2] += o[2];
+        c[3] += o[3];
     }
     void operator*=(float k)
     {
-        x *= k;
-        y *= k;
-        z *= k;
-        w *= k;
+        c[0] *= k;
+        c[1] *= k;
+        c[2] *= k;
+        c[3] *= k;
     }
-    float Length() const { return sqrtf(x * x + y * y + z * z); }
+    float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }
 };
 
-inline Vec_0027F008 operator*(const Vec_0027F008& a, float k) { return Vec_0027F008(a.x * k, a.y * k, a.z * k, a.w * k); }
+inline Vec_0027F008 operator*(const Vec_0027F008& a, float k) { return Vec_0027F008(a[0] * k, a[1] * k, a[2] * k, a[3] * k); }
 inline Vec_0027F008 operator+(const Vec_0027F008& a, const Vec_0027F008& b)
 {
-    return Vec_0027F008(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_0027F008(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 inline Vec_0027F008 operator-(const Vec_0027F008& a, const Vec_0027F008& b)
 {
-    return Vec_0027F008(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_0027F008(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 struct Mat_0027F008 {
-    Vec_0027F008 row[4];
+    Vec_0027F008 r0;
+    Vec_0027F008 r1;
+    Vec_0027F008 r2;
+    Vec_0027F008 r3;
+    const Vec_0027F008& operator[](int i) const { return (&r0)[i]; }
+    Mat_0027F008& operator=(const Mat_0027F008& o)
+    {
+        r0 = o[0];
+        r1 = o[1];
+        r2 = o[2];
+        r3 = o[3];
+        return *this;
+    }
 };
 
 extern "C" void func_00323318(Mat_0027F008* dst, const Mat_0027F008* a, const Mat_0027F008* b);
@@ -112,7 +124,7 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
     func_003233B8(&dir, &dir);
 
     Body_0027F008* body = m_body;
-    Vec_0027F008 up = body->m_mat.row[1] * func_002032A0(0xD4205C9B, 0);
+    Vec_0027F008 up = body->m_mat[1] * func_002032A0(0xD4205C9B, 0);
 
     float angle;
     float turn = func_00284AA8(this, normal, 1.0f, &angle);
@@ -125,15 +137,16 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
         vel *= scale;
         if (func_002032A0(0xBE0A58A0, 0) < speed) {
             int side = m_5B0->m_34;
-            bool same;
-            if (turn < 0.0f)
-                same = side == 1;
-            else
-                same = side == 0;
-            if (same)
+            if (turn < 0.0f) {
+                if (side == 1)
+                    func_001848F0(m_body, 0x756A7535, 0);
+                else
+                    func_001848F0(m_body, 0xB4101D70, 0);
+            } else if (side == 0) {
                 func_001848F0(m_body, 0x756A7535, 0);
-            else
+            } else {
                 func_001848F0(m_body, 0xB4101D70, 0);
+            }
             func_00270DD8(m_59C, m_11C, speed / func_00203D40(m_body, 0xCC5F87AA));
         }
     }
@@ -145,15 +158,14 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
     float dist = moved.Length();
     dir = m_body->m_vel;
     func_003233B8(&dir, &dir);
-    Vec_0027F008 step = dir * dist;
+    Vec_0027F008 step;
+    step = dir * dist;
 
     m_270 = m_body->m_pos + up;
     m_270 += up;
 
-    Vec_0027F008 base = m_body->m_pos + up;
-    Vec_0027F008 ahead = base + step;
-    Vec_0027F008 look = dir * func_002032A0(0x20102726, 0);
-    m_280 = ahead + look;
+    Vec_0027F008 ahead = m_body->m_pos + up + step;
+    m_280 = ahead + dir * func_002032A0(0x20102726, 0);
 
     if (!func_0028E1C0(this, 0x10, 0))
         return;
@@ -164,10 +176,11 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
     float a = 3.141593f - angle;
     float s = func_00341068(a);
     float c = func_00340F60(a);
-    float vx = body->m_vel.x;
-    float vz = body->m_vel.z;
-    body->m_vel.x = c * vx + s * vz;
-    body->m_vel.z = -s * vx + c * vz;
+    Vec_0027F008& vel = body->m_vel;
+    float vx = vel[0];
+    float vz = vel[2];
+    vel[0] = c * vx + s * vz;
+    vel[2] = -s * vx + c * vz;
 
     body = m_body;
     body->m_mat = body->m_mat * *func_00100928((Mat_0027F008*)0x70003FC0, 3.141593f - angle);

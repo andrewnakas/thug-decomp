@@ -1,43 +1,54 @@
-/* fuzzy: 69.8 */
+/* fuzzy: 86.4 */
 extern "C" float sqrtf(float);
 extern "C" int func_0010FC30();
 
 typedef int qword __attribute__((mode(TI)));
 union Vec_0027CD28 {
     qword q;
-    struct {
-        float x, y, z, w;
-    };
+    float c[4];
+    float& operator[](int i) { return c[i]; }
+    float operator[](int i) const { return c[i]; }
     Vec_0027CD28() {}
-    Vec_0027CD28(float a, float b, float c, float d)
+    Vec_0027CD28(float a, float b, float x, float d)
     {
-        x = a;
-        y = b;
-        z = c;
-        w = d;
+        c[0] = a;
+        c[1] = b;
+        c[2] = x;
+        c[3] = d;
+    }
+    void Set(float a, float b, float x, float d)
+    {
+        c[0] = a;
+        c[1] = b;
+        c[2] = x;
+        c[3] = d;
     }
     void operator+=(const Vec_0027CD28& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        c[0] += o[0];
+        c[1] += o[1];
+        c[2] += o[2];
+        c[3] += o[3];
     }
-    float Length() const { return sqrtf(x * x + y * y + z * z); }
+    float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }
 };
 
-inline Vec_0027CD28 operator*(const Vec_0027CD28& a, float k) { return Vec_0027CD28(a.x * k, a.y * k, a.z * k, a.w * k); }
+inline Vec_0027CD28 operator*(const Vec_0027CD28& a, float k) { return Vec_0027CD28(a[0] * k, a[1] * k, a[2] * k, a[3] * k); }
 inline Vec_0027CD28 operator+(const Vec_0027CD28& a, const Vec_0027CD28& b)
 {
-    return Vec_0027CD28(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_0027CD28(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 inline Vec_0027CD28 operator-(const Vec_0027CD28& a, const Vec_0027CD28& b)
 {
-    return Vec_0027CD28(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_0027CD28(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 struct Mat_0027CD28 {
-    Vec_0027CD28 row[4];
+    Vec_0027CD28 r0;
+    Vec_0027CD28 r1;
+    Vec_0027CD28 r2;
+    Vec_0027CD28 r3;
+    const Vec_0027CD28& operator[](int i) const { return (&r0)[i]; }
 };
 
 // Time-stamped state flag.
@@ -89,6 +100,7 @@ struct Contact_0027CD28 {
 };
 
 extern void* D_00388A70;
+extern "C" bool func_0020A760(Contact_0027CD28* c, Vec_0027CD28* pos);
 extern "C" void func_0010A8D8(void* pool, void* p);
 extern "C" void func_00183CB8(void* p, void* ref);
 
@@ -102,8 +114,22 @@ struct Ground_0027CD28 {
         m_contact = 0;
         m_lostTime = func_0010FC30();
     }
-    void Release()
+    bool HasObject()
     {
+        if (!m_contact)
+            return false;
+        if (!m_contact->m_obj) {
+            Drop();
+            return false;
+        }
+        return true;
+    }
+    bool StillOn(Vec_0027CD28* pos)
+    {
+        if (!HasObject())
+            return false;
+        if (func_0020A760(m_contact, pos))
+            return true;
         Contact_0027CD28* c = m_contact;
         if (c) {
             if (c->m_obj) {
@@ -114,6 +140,7 @@ struct Ground_0027CD28 {
             m_contact = 0;
             m_lostTime = func_0010FC30();
         }
+        return false;
     }
 };
 
@@ -197,7 +224,6 @@ extern "C" void func_001B0EB8(void* p, int a);
 extern "C" void func_001B0EF0(void* p, int a);
 extern "C" unsigned int func_001E53A0(unsigned int name, int a);
 extern "C" float func_002032A0(unsigned int name, int def);
-extern "C" bool func_0020A760(Contact_0027CD28* c, Vec_0027CD28* pos);
 extern "C" void func_00260A28(void* p);
 extern "C" bool func_00263BD8(void* panel, unsigned int name);
 extern "C" void func_00263C18(void* panel, unsigned int text);
@@ -237,8 +263,8 @@ void Skater_0027CD28::DoAirPhysics()
         func_00101730(&m_body->m_vel, &m_normal);
 
     Vec_0027CD28 gravity(0.0f, func_002032A0(0x6618A713, 0), 0.0f, 1.0f);
-    if (m_3B4 != 0.0f && m_body->m_vel.y > 0.0f)
-        gravity.y = m_3C4;
+    if (m_3B4 != 0.0f && m_body->m_vel[1] > 0.0f)
+        gravity[1] = m_3C4;
     func_001016A8(&gravity, &m_normal);
     Vec_0027CD28 step = gravity * m_dt;
     m_body->m_vel += step;
@@ -253,16 +279,6 @@ void Skater_0027CD28::DoAirPhysics()
                 func_0027DAC8(this);
         }
         break;
-    case 0x3506CE64:
-        func_00260A28(m_trick->m1B0);
-        if (func_00263BD8(D_0038FC78->m_panel, 0x69A1CE96)) {
-            void* panel = D_0038FC78->m_panel;
-            func_00263C18(panel, func_001E53A0(0x69A1CE96, 0));
-            m_trick->m_1EC = 0;
-            m_trick->m_1F0 = 0;
-            D_00390EF8 = 1;
-        }
-        break;
     case 0x0AC90769:
     case 0xEF24413B:
         m_388 = 0;
@@ -273,6 +289,16 @@ void Skater_0027CD28::DoAirPhysics()
             func_00263C18(panel, func_001E53A0(0xB38341C9, 0));
             m_trick->m_6C = 0;
             m_trick->m_70 = 0;
+            D_00390EF8 = 1;
+        }
+        break;
+    case 0x3506CE64:
+        func_00260A28(m_trick->m1B0);
+        if (func_00263BD8(D_0038FC78->m_panel, 0x69A1CE96)) {
+            void* panel = D_0038FC78->m_panel;
+            func_00263C18(panel, func_001E53A0(0x69A1CE96, 0));
+            m_trick->m_1EC = 0;
+            m_trick->m_1F0 = 0;
             D_00390EF8 = 1;
         }
         break;
@@ -289,24 +315,14 @@ void Skater_0027CD28::DoAirPhysics()
         Contact_0027CD28* c = m_ground->m_contact;
         if (c && c->m_obj)
             body->m_vel = c->m_obj->m_vel * func_002032A0(0xDEF25B34, 0);
-        step = Vec_0027CD28(0.0f, 0.0f, 0.0f, 1.0f);
+        step.Set(0.0f, 0.0f, 0.0f, 1.0f);
         func_0027E7A8(this);
     }
 
     // Is the skater still standing on a moving object?
     Ground_0027CD28* ground = m_ground;
     Vec_0027CD28* pos = &m_body->m_pos;
-    bool onMover = false;
-    if (ground->m_contact) {
-        if (!ground->m_contact->m_obj) {
-            ground->Drop();
-        } else if (!func_0020A760(ground->m_contact, pos)) {
-            ground->Release();
-        } else {
-            onMover = true;
-        }
-    }
-    if (onMover && !m_state->m_onRail) {
+    if (ground->StillOn(pos) && !m_state->m_onRail) {
         Contact_0027CD28* c = m_ground->m_contact;
         m_body->m_pos += c->m_delta;
         m_body->m_oldPos = m_body->m_pos;
@@ -330,8 +346,8 @@ void Skater_0027CD28::DoAirPhysics()
             func_0027ECE0(this);
         if (m_state->m_onRail) {
             Body_0027CD28* b = m_body;
-            m_rayStart = b->m_pos + b->m_mat.row[1] * 36.0f;
-            m_rayEnd = b->m_pos - b->m_mat.row[1] * 200.0f;
+            m_rayStart = b->m_pos + b->m_mat[1] * 36.0f;
+            m_rayEnd = b->m_pos - b->m_mat[1] * 200.0f;
             if (func_0028E1C0(this, 0x10, 0)) {
                 m_state->m_13C = m_11C;
                 m_59C->m_20 = m_11C;
@@ -339,7 +355,8 @@ void Skater_0027CD28::DoAirPhysics()
         } else {
             func_0027F6B0(this);
         }
-        Vec_0027CD28 moved = m_body->m_pos - start;
+        Vec_0027CD28 moved;
+        moved = m_body->m_pos - start;
         float want = step.Length();
         float got = moved.Length();
         if (!retried && !m_state->m_1C && got < want - 0.1f) {

@@ -1,4 +1,4 @@
-/* fuzzy: 54.4 */
+/* fuzzy: 55.3 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00199298 {
@@ -86,8 +86,7 @@ struct Obj_00199298 {
 
 bool Obj_00199298::Slide(Hit_00199298* hit, Mesh_00199298* mesh, int arg, int skipFace, int skipEdge)
 {
-    int i = mesh->numFaces - 1;
-    if (i != -1) do {
+    for (int i = mesh->numFaces; --i != -1;) {
         Vec_00199298* d = &mesh->faces[skipFace].edges[skipEdge].dir;
         if (i == skipFace) continue;
         Face_00199298* f = &mesh->faces[i];
@@ -113,6 +112,6 @@ bool Obj_00199298::Slide(Hit_00199298* hit, Mesh_00199298* mesh, int arg, int sk
                 return true;
             }
         }
-    } while (--i != -1);
+    }
     return false;
 }

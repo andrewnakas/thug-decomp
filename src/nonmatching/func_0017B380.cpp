@@ -1,4 +1,4 @@
-/* fuzzy: 77.2 */
+/* fuzzy: 97.5 */
 struct Pkt_0017B380 {
     Pkt_0017B380* next;
     int m4;
@@ -7,7 +7,7 @@ struct Pkt_0017B380 {
     unsigned int m10[2];
     unsigned int m18[2];
     char pad20[0x28 - 0x20];
-    int m28[2];
+    float m28[2];
 };
 
 extern Pkt_0017B380 D_003E26A0;
@@ -32,14 +32,11 @@ extern "C" void func_0017B380()
     D_003942EC = D_003942E8 = D_003942F4;
     if (D_0038BFF8) {
         Pkt_0017B380* p = D_003942E8;
-        if (p->next) {
-            int i = 0;
-            int idx = D_00394094 ? 0 : 1;
-            do {
-                i++;
-                if (i >= 3 && i != D_0038BFF8) p->m28[idx] = 0;
-                p = p->next;
-            } while (p->next);
+        int i = 0;
+        while (p->next) {
+            i++;
+            if (i >= 3 && i != D_0038BFF8) p->m28[D_00394094 ? 0 : 1] = 0.0f;
+            p = p->next;
         }
     }
     D_00393F30 = 0;

@@ -1,4 +1,4 @@
-/* fuzzy: 60.0 */
+/* fuzzy: 81.3 */
 /* Loads a .HED index (from cdrom0: in uppercase, or host: on a dev kit) and builds a lookup table grouped by
    the first key func_001124E8 derives from each file name: one 12-byte group header per distinct key, a 0xFFFFFFFF
    terminator, then each group's {offset or name, size, key2} entries. With `keepNames` the index stays loaded,
@@ -9,7 +9,7 @@ struct HedEntry_00112728 {
     char m_name[4];
     HedEntry_00112728* Next(int len)
     {
-        return (HedEntry_00112728*)((char*)this + ((len + 4) & ~3) + 8);
+        return (HedEntry_00112728*)((char*)this + (((len + 4) & ~3) + 8));
     }
 };
 
@@ -57,7 +57,7 @@ extern "C" int func_0031EC88(int fd, int offset, int whence);
 extern "C" int func_0031EEC0(int fd, void* buf, int size);
 extern "C" int func_0031EB08(int fd);
 extern "C" void* func_00110E38(const char* name, const char* mode);
-extern "C" int func_00110980(void* f);
+extern "C" long func_00110980(void* f);
 extern "C" int func_001110F8(void* f, int offset, int whence);
 extern "C" int func_00110F68(void* buf, int size, int count, void* f);
 extern "C" int func_00110EF8(void* f);
@@ -66,10 +66,7 @@ extern "C" void* func_0010BDE0(int size);
 extern "C" void func_0010A8D8(Mem_00112728* mem, void* p);
 extern "C" void func_001124E8(const char* name, unsigned int* key, unsigned int* key2);
 
-static inline int SectorAlign(int n)
-{
-    return (n + 0x7FF) & ~0x7FF;
-}
+#define SECTOR_ALIGN(n) (((n) + 0x7FF) & ~0x7FF)
 
 Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
 {
@@ -81,28 +78,34 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
         int len = func_00331BB8(name);
         int i;
         for (i = 0; i < len; i++) {
-            char c = name[i];
-            upper[i] = (D_00385971[c] & 2) ? c - 0x20 : c;
+            int c = name[i];
+            int u = c - 0x20;
+            if (!(D_00385971[c] & 2))
+                u = c;
+            upper[i] = u;
         }
         upper[i] = 0;
         func_0010FE68();
         func_003331D0(path, D_0035BFD0, func_00106818(), upper);
         int fd;
         int tries = 0;
-        while ((fd = func_0031E880(path, 1)) < 0) {
+        do {
+            fd = func_0031E880(path, 1);
+            if (fd >= 0)
+                break;
             func_00103F28(D_0035BFE8, path);
             if (++tries == 10)
                 return 0;
-        }
+        } while (1);
         func_00103F28(D_0035C000, upper);
-        int size = func_0031EC88(fd, 0, 2);
+        long size = func_0031EC88(fd, 0, 2);
         if (keepNames)
-            data = (HedEntry_00112728*)func_0010A638(D_00388A70, SectorAlign(size), 1, D_00388A70->m_11C);
+            data = (HedEntry_00112728*)func_0010A638(D_00388A70, (int)(SECTOR_ALIGN(size) >> 2) * 4, 1, D_00388A70->m_11C);
         else
-            data = (HedEntry_00112728*)func_0010BDE0(SectorAlign(size));
+            data = (HedEntry_00112728*)func_0010BDE0(SECTOR_ALIGN(size));
         tries = 0;
         if (size) {
-            for (;;) {
+            do {
                 func_0031EC88(fd, 0, 0);
                 if (func_0031EEC0(fd, data, size) == size)
                     break;
@@ -112,11 +115,14 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
                     func_0010A8D8(D_00388A70, data);
                     return 0;
                 }
-            }
+            } while (1);
         }
         func_0031EB08(fd);
     } else {
-        func_003331D0(path, keepNames ? D_0035C068 : D_0035C078, name);
+        if (keepNames)
+            func_003331D0(path, D_0035C068, name);
+        else
+            func_003331D0(path, D_0035C078, name);
         void* f = func_00110E38(path, D_00388ED8);
         if (!f) {
             func_00103F28(D_0035C088, path);
@@ -125,9 +131,9 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
         int size = func_00110980(f);
         func_001110F8(f, 0, 0);
         if (keepNames)
-            data = (HedEntry_00112728*)func_0010A638(D_00388A70, SectorAlign(size), 1, D_00388A70->m_11C);
+            data = (HedEntry_00112728*)func_0010A638(D_00388A70, SECTOR_ALIGN(size), 1, D_00388A70->m_11C);
         else
-            data = (HedEntry_00112728*)func_0010BDE0(SectorAlign(size));
+            data = (HedEntry_00112728*)func_0010BDE0(SECTOR_ALIGN(size));
         func_00110F68(data, 1, size, f);
         func_00110EF8(f);
     }

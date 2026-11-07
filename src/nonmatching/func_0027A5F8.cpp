@@ -1,5 +1,4 @@
-/* fuzzy: 31.6 */
-extern float D_00387F88, D_00387F8C, D_00387F90, D_00387F94, D_00387F98, D_00387F9C;   /* the game's .lit4 constants this function loads */
+/* fuzzy: 88.5 */
 typedef int qword_0027A5F8 __attribute__((mode(TI)));
 
 union Vec_0027A5F8 {
@@ -37,6 +36,13 @@ union Vec_0027A5F8 {
         c[3] *= k;
     }
     float Length2() const { return c[0] * c[0] + c[1] * c[1] + c[2] * c[2]; }
+    void Set(float x, float y, float z, float w)
+    {
+        c[0] = x;
+        c[1] = y;
+        c[2] = z;
+        c[3] = w;
+    }
 };
 
 static inline Vec_0027A5F8 operator*(const Vec_0027A5F8& a, float k)
@@ -58,11 +64,21 @@ static inline Vec_0027A5F8 Cross_0027A5F8(const Vec_0027A5F8& a, const Vec_0027A
 
 struct Mat_0027A5F8 {
     Vec_0027A5F8 r[4];
+    const Vec_0027A5F8& operator[](int i) const { return r[i]; }
+    Mat_0027A5F8& operator=(const Mat_0027A5F8& o)
+    {
+        r[0] = o[0];
+        r[1] = o[1];
+        r[2] = o[2];
+        r[3] = o[3];
+        return *this;
+    }
 };
 
 extern "C" float sqrtf(float);
 extern "C" unsigned int func_0010FC30();
 extern "C" void func_003233B8(Vec_0027A5F8* d, Vec_0027A5F8* s);
+static inline unsigned int TimeSince(unsigned int t) { return func_0010FC30() - t; }
 
 /* A value plus the time it last changed; func_0026FDA0 gives the time since. */
 struct Flag_0027A5F8 {
@@ -76,6 +92,8 @@ struct Flag_0027A5F8 {
             time = func_0010FC30();
         }
     }
+    bool IsSet() const { return value != 0; }
+    int Age();
 };
 
 struct Phys_0027A5F8 {
@@ -102,6 +120,7 @@ struct Phys_0027A5F8 {
     int m124;
     char pad128[0x184 - 0x128];
     float m184;
+    int GetState() const { return state; }
 };
 
 struct Info_0027A5F8 {
@@ -248,13 +267,9 @@ struct Skater_0027A5F8 {
     int CallMemberFunction(unsigned int name, void* params, Script_0027A5F8* script);
     unsigned int StateTime()
     {
-        switch (m5B0->state) {
-        case 1:
-        case 2:
-            return func_0010FC30() - m3F8;
-        default:
-            return m3FC - m3F8;
-        }
+        if (m5B0->GetState() == 1 || m5B0->GetState() == 2)
+            return TimeSince(m3F8);
+        return m3FC - m3F8;
     }
 };
 
@@ -270,6 +285,7 @@ extern "C" void func_001E7410(void* params, unsigned int name, float x, float y,
 extern "C" float func_001E9298(List_0027A5F8* l, int i);
 extern "C" unsigned int func_0033EBE0(float f);
 extern "C" int func_0026FDA0(Flag_0027A5F8* f);
+inline int Flag_0027A5F8::Age() { return func_0026FDA0(this); }
 extern "C" void func_0027C720(Skater_0027A5F8* self, int state);
 extern "C" int func_0027D9F0(Skater_0027A5F8* self);
 extern "C" void func_0027FDB0(Skater_0027A5F8* self, Vec_0027A5F8* dir);
@@ -292,279 +308,25 @@ extern "C" void func_00291AD8(void* c);
 int Skater_0027A5F8::CallMemberFunction(unsigned int name, void* params, Script_0027A5F8* script)
 {
     switch (name) {
-    case 0x68BF6C13:
-        m370 = 0;
-        return 1;
-    case 0x0E1D5168:
-        return m3D8 != 0;
-    case 0x01BAA1D9:
-        return m364 == 0;
-    case 0x02F66333:
-        return func_0027D9F0(this) != 0;
-    case 0x0257947E:
-        m364 = 0;
-        return 1;
-    case 0x0C7A712C:
-        return m5B0->f30.value != 0;
-    case 0x065A559A:
-        m424 = 0;
-        return 1;
-    case 0x05144783:
-        func_001E72B0(script->params, 0x7323E97C, mC->mat.r[1][0]);
-        func_001E72B0(script->params, 0x0424D9EA, mC->mat.r[1][1]);
-        func_001E72B0(script->params, 0x9D2D8850, mC->mat.r[1][2]);
-        return 1;
-    case 0x0E2998B9:
-        m3D4 = 0;
-        return 1;
-    case 0x133E1293:
-        m3E4 = 1;
-        return 1;
-    case 0x0F922431:
-        m3E4 = 0;
-        return 1;
-    case 0x1996B797: {
-        Model_0027A5F8* m = mC;
-        float y = m->pos[1];
-        void* out = script->params;
-        float h = func_00282C38(this, y - m5B0->m184, y, m->vel[1]);
-        if (h < 0.0f)
-            h = 0.0f;
-        func_001E72B0(out, 0x7E2A8993, h);
-        return 1;
-    }
-    case 0x1F8BBD05:
-        return m388 != 0;
-    case 0x1D1FD4F0: {
-        Model_0027A5F8* m = mC;
-        m60 = m->mat.r[1];
-        Vec_0027A5F8 dir = m160;
-        m70 = m->mat.r[1];
-        func_0027FDB0(this, &dir);
-        return 1;
-    }
-    case 0x19D0E5FB:
-        m3DC = 1;
-        return 1;
-    case 0x17846595: {
-        float vy = mC->vel[1];
-        if (vy < 0.0f)
-            vy = 0.0f;
-        mC->vel[1] = vy;
-        mC->vel[1] = mC->vel[1] + func_002032A0(0xCB49B3F2, 0);
-        Vec_0027A5F8 h = mC->vel;
-        h[1] = 0.0f;
-        if (h[0] * h[0] + h[2] * h[2] < 100.0f) {
-            h = mC->mat.r[2];
-            h[1] = 0.0f;
-            if (h[0] * h[0] + h[2] * h[2] < D_00387F8C) {
-                h[3] = 1.0f;
-                h[0] = 1.0f;
-                h[2] = 1.0f;
-            }
-        }
-        func_003233B8(&h, &h);
-        mC->vel += h * func_002032A0(0xB7422173, 0);
-        return 1;
-    }
-    case 0x4ADC6C2A:
-        return m5B0->m28 != 0;
-    case 0x315D9ED4:
-        return m2B8 != 0;
-    case 0x262D42D5:
-        return m5B0->m124 != 0;
-    case 0x32DCC9CF:
-        func_0028EAC0(this);
-        return 1;
-    case 0x3527FC07:
-        return m5B0->state == 1;
-    case 0x448E3630:
-        return m3E0 != 0;
-    case 0x461E5B92: {
-        Model_0027A5F8* m = mC;
-        if (m->vel.Length2() < D_00387F94)
-            return 1;
-        m->mat.r[2] = m->vel;
-        func_003233B8(&mC->mat.r[2], &mC->mat.r[2]);
-        m = mC;
-        m->mat.r[0] = Cross_0027A5F8(m->mat.r[1], m->mat.r[2]);
-        func_003233B8(&mC->mat.r[0], &mC->mat.r[0]);
-        m = mC;
-        m->mat.r[1] = Cross_0027A5F8(m->mat.r[2], m->mat.r[0]);
-        func_003233B8(&mC->mat.r[1], &mC->mat.r[1]);
-        m20 = mC->mat;
-        return 1;
-    }
-    case 0x383B939B:
-        m364 = 1;
-        return 1;
-    case 0x34DCFC97: {
-        float speed = 0.0f;
-        func_001E7EB0(params, 0, &speed, 0);
-        Model_0027A5F8* m = mC;
-        float len2 = m->vel.Length2();
-        if (len2 < D_00387F88)
-            m->vel = m->mat.r[2];
-        else
-            m->vel *= 1.0f / sqrtf(len2);
-        mC->vel *= speed;
-        return 1;
-    }
-    case 0x510F983B:
-        func_001E7EB0(params, 0, &m378, 0);
-        if (func_001E8708(params, 0x1CA1FF20) && m384 == 0.0f)
-            m378 = func_002032A0(0x78F80EC4, 0);
-        return 1;
-    case 0x55934543: {
-        Vec_0027A5F8 a;
-        Vec_0027A5F8 b;
-        if (func_001E8708(params, 0xA549B57B)) {
-            float k = func_002032A0(0xB92CBE3B, 0);
-            float dy = func_002032A0(0xEFDFE781, 0);
-            Model_0027A5F8* m = mC;
-            m280 = m->pos;
-            m280[1] -= dy;
-            b = m->mat.r[1] * k;
-            m270 = m280 - b;
-            if (func_0028E1C0(this, 0x10, 0))
-                return m294 != 0;
-            k = func_002032A0(0x108613CB, 0);
-            dy = func_002032A0(0xF9DC446D, 0);
-            m = mC;
-            b = m->mat.r[1] * k;
-            a = m->pos - b;
-            m280 = a;
-            m270 = a;
-            m280[1] -= dy;
-        } else {
-            float k = func_002032A0(0xC78EBE56, 0);
-            Model_0027A5F8* m = mC;
-            b = m->mat.r[0] * k;
-            a = m->pos + b;
-            float k2 = 2.0f * k;
-            a[1] -= func_002032A0(0xFCA3378C, 0);
-            Vec_0027A5F8 c = mC->mat.r[0] * k2;
-            b = a - c;
-            if (func_001E8708(params, 0x85981897)) {
-                m270 = a;
-                m280 = b;
-            } else {
-                m270 = b;
-                m280 = a;
-            }
-        }
-        if (!func_0028E1C0(this, 0x10, 0))
-            return 0;
-        return m294 != 0;
-    }
-    case 0x54EF2B79:
-        m3D4 = 1;
-        m5B0->f90.Set(0);
-        return 1;
-    case 0x5CB1FBD8:
-        return m5B0->state == 3;
-    case 0x5EA287F2:
-        return m5B0->state == 0;
-    case 0x5E8F9E77:
-        m5B0->f108.Set(1);
-        return 1;
-    case 0x5E8D9B80: {
-        List_0027A5F8* l = 0;
-        func_001E8248(params, 0, &l, 0);
-        if (m37C >= l->size)
-            m37C = l->size - 1;
-        m378 = func_001E9298(l, m37C);
-        if (m37C == 0)
-            m380 = func_0010FC30();
-        m37C++;
-        func_001E7EB0(params, 0x79A07F3F, &m384, 0);
-        return 1;
-    }
     case 0x584CF9E9:
         func_0028E2F0(this, params);
-        return 1;
-    case 0x259CB90D: {
-        Info_0027A5F8* info = m594;
-        Vec_0027A5F8 f = mC->mat.r[2];
-        f[1] = 0.0f;
-        func_003233B8(&f, &f);
-        Vec_0027A5F8 side;
-        side[0] = f[2];
-        side[1] = 0.0f;
-        side[2] = -f[0];
-        side[3] = 0.0f;
-        if (info->m98)
-            return 0;
-        if (info->mE0 || info->m14C) {
-            mC->vel += f * func_002032A0(0x1F96C224, 0);
-            return 1;
-        }
-        if (info->f70.value && func_0026FDA0(&info->f70) > func_00203300(0x3080E9E7, 0)) {
-            mC->vel += f * func_002032A0(0xDC818B7E, 0);
-            return 1;
-        }
-        if (info->f28.value && func_0026FDA0(&info->f28) > func_00203300(0x9B25142A, 0)) {
-            mC->vel -= side * func_002032A0(0x1AB3809F, 0);
-            return 1;
-        }
-        if (!info->f4C.value)
-            return 0;
-        if (func_0026FDA0(&info->f4C) > func_00203300(0x9B25142A, 0)) {
-            mC->vel += side * func_002032A0(0x1AB3809F, 0);
-            return 1;
-        }
-        return 0;
-    }
-    case 0x6C8A1316:
-        if (func_001E8708(params, 0x47953F00)) {
-            if (!m5B0->f30.value)
-                return m428 != 0;
-            return m428 == 0;
-        }
-        if (func_001E8708(params, 0x996D5512)) {
-            if (m5B0->f30.value)
-                return m428 != 0;
-            return m428 == 0;
-        }
-        return 1;
-    case 0x71B993B7:
-        func_001E7DE8(params, 0, &m42C, 0);
-        return 1;
-    case 0x6FC5AAE0:
-        m5B0->f9C.Set(1);
-        return 1;
-    case 0x8C3D7864:
-        m3D8 = 0;
-        return 1;
-    case 0x947FCCF4: {
-        unsigned int v = 0;
-        func_001E8398(params, 0, &v, 1);
-        if (v != 0x8D10119D) {
-            m5B0->f78.Set(0);
-            m59C->m28 = 0;
-        } else {
-            m5B0->f78.Set(1);
-            m59C->m28 = 1;
-        }
-        return 1;
-    }
-    case 0x90F1D8D5:
-        if (func_001E8708(params, 0xFF03CC4E)) {
-            m3B4 = 0.0f;
-            return 1;
-        }
-        func_001E7EB0(params, 0x6289DD76, &m3B8, 1);
-        m3BC = m3B8;
-        func_001E7EB0(params, 0x73A19E3A, &m3BC, 0);
-        m3B4 = D_00387F98;
-        func_001E7EB0(params, 0x906B67BA, &m3B4, 0);
-        m3C0 = D_00387F9C;
-        func_001E7EB0(params, 0xEDF3E7F4, &m3C0, 0);
-        m3C4 = func_002032A0(0x6618A713, 0);
-        func_001E7EB0(params, 0xA5E2DA58, &m3C4, 0);
-        if (func_001E8708(params, 0xDF312928))
-            m3B4 = -1.0f;
-        return 1;
+        break;
+    case 0x0C7A712C:
+        return m5B0->f30.value != 0;
+    case 0x0E1D5168:
+        return m3D8 != 0;
+    case 0x1F8BBD05:
+        return m388 != 0;
+    case 0x315D9ED4:
+        return m2B8 != 0;
+    case 0x448E3630:
+        return m3E0 != 0;
+    case 0xE0760055:
+        return m3DC != 0;
+    case 0xBE371B7B:
+        return m2BC != 0;
+    case 0xF37CE040:
+        return m3E4 != 0;
     case 0x8F66B80B: {
         int v;
         if (mC->m164)
@@ -573,99 +335,33 @@ int Skater_0027A5F8::CallMemberFunction(unsigned int name, void* params, Script_
             v = m5B0->f30.value ^ 1;
         return v != 0;
     }
-    case 0x8819DD8B: {
-        Comp_0027A5F8* c = (Comp_0027A5F8*)func_00185578(mC, 0x0A015E17);
-        Model_0027A5F8* m = mC;
-        int ok = c->CallMember(0x8819DD8B, params, script) != 0;
-        m20 = m->mat;
-        void* body = func_00185578(mC, 0x8A897DD2);
-        func_001B6BC0(body, &mC->pos);
-        func_001B6BD0(body, &mC->mat.r[1]);
-        m = mC;
-        mA0 = m->pos;
-        m->oldPos = m->pos;
-        func_00186398(mC, 1);
-        m = mC;
-        if (m->m31C) {
-            void* p = func_00203EE0(m);
-            if (p)
-                func_00185058(p);
-        }
-        if (!func_001E8708(params, 0xD607E2E6)) {
-            m = mC;
-            m219 = 0;
-            m->vel = Vec_0027A5F8(0.0f, 0.0f, 0.0f, 1.0f);
-            func_0027C720(this, 0);
-            m5B0->f30.Set(mC->m164 ^ 1);
-            func_00291AD8(func_00185578(mC, 0x488AF07A));
-            return ok;
-        }
-        if (!func_001E8708(params, 0x90A91232))
-            return ok;
-        float vy = mC->vel[1];
-        mC->vel[1] = 0.0f;
-        m = mC;
-        float speed = sqrtf(m->vel.Length2());
-        m->vel = m->mat.r[2] * speed;
-        mC->vel[1] = vy;
-        return ok;
-    }
-    case 0xA64DCF8B:
-        return m5B0->state == 5;
-    case 0x9C6A7E41:
-        return m5B0->mC4 != 0;
+    case 0x4ADC6C2A:
+        return m5B0->m28 != 0;
+    case 0x5EA287F2:
+        return m5B0->state == 0;
+    case 0x3527FC07:
+        return m5B0->state == 1;
     case 0xA32C1A15:
         return m5B0->state == 2;
-    case 0x9FCFDFEB:
-        m364 = D_0038FC78->slots[mC->m320].m0;
-        return 1;
-    case 0xA901A50C:
-        return m5B0->f9C.value != 0;
-    case 0xB48EC756:
-        m3DC = 0;
-        return 1;
-    case 0xB94BC0C6:
-        m5B0->fCC.Set(func_001E8708(params, 0xD443A2BC) ^ 1);
-        return 1;
-    case 0xACB82C02:
-        m400 = func_001E8708(params, 0xF649D637);
-        return 1;
-    case 0x948EBF96: {
-        unsigned int v = 0;
-        func_001E8398(params, 0, &v, 0);
-        int st = m5B0->state;
-        if (st == 3 && v != 0xA549B57B)
-            func_0028DF70(this, 8);
-        if (st != 3 || m5B0->state != st) {
-            if (v == 0xA549B57B)
-                m29C = 0;
-        }
-        if (m5B0->state == 2) {
-            Vec_0027A5F8 up(0.0f, 1.0f, 0.0f, 1.0f);
-            func_0027FDB0(this, &up);
-            m20 = mC->mat;
-        }
-        switch (v) {
-        case 0x58007C97:
-            m219 = 0;
-            func_0027C720(this, 0);
-            break;
-        case 0x439F4704:
-            func_0027C720(this, 1);
-            break;
-        case 0xA549B57B:
-            func_0027C720(this, 3);
-            break;
-        }
-        return 1;
-    }
-    case 0xB9EEBFF6:
-        m3EC = 0;
-        return 1;
-    case 0xE0760055:
-        return m3DC != 0;
-    case 0xBE371B7B:
-        return m2BC != 0;
+    case 0x5CB1FBD8:
+        return m5B0->state == 3;
+    case 0xE9851E62:
+        return m5B0->state == 4;
+    case 0xA64DCF8B:
+        return m5B0->state == 5;
+    case 0x262D42D5:
+        return m5B0->m124 != 0;
+    case 0xCA6B3809:
+        func_0028E830(this);
+        break;
+    case 0x9C6A7E41:
+        return m5B0->mC4 != 0;
+    case 0x32DCC9CF:
+        func_0028EAC0(this);
+        break;
+    case 0x5E8F9E77:
+        m5B0->f108.Set(1);
+        break;
     case 0x0C890A84:
     case 0xBBF2B570: {
         float t = 0.0f;
@@ -683,31 +379,313 @@ int Skater_0027A5F8::CallMemberFunction(unsigned int name, void* params, Script_
             return elapsed < limit;
         return limit < elapsed;
     }
-    case 0xBD4303F4:
-        m5B0->f9C.Set(0);
-        return 1;
+    case 0xDE583E34:
+        func_001E72B0(script->params, 0xAD6BCDB4, (float)StateTime() * 0.001f);
+        break;
+    case 0x1996B797: {
+        Model_0027A5F8* m = mC;
+        float y = m->pos[1];
+        void* out = script->params;
+        float h = func_00282C38(this, y - m5B0->m184, y, m->vel[1]);
+        if (h < 0.0f)
+            h = 0.0f;
+        func_001E72B0(out, 0x7E2A8993, h);
+        break;
+    }
+    case 0xEBBCF455:
+        m374 = 0;
+        break;
     case 0xBC19E291:
         m374 = 1;
-        return 1;
-    case 0xC5B4B390:
-        m3EC = 1;
-        return 1;
-    case 0xDE583E34:
-        func_001E72B0(script->params, 0xAD6BCDB4, (float)StateTime() * D_00387F90);
-        return 1;
-    case 0xDFB8F052:
-        return m5B0->m40 != 0;
-    case 0xCA6B3809:
-        func_0028E830(this);
-        return 1;
-    case 0xE9851E62:
-        return m5B0->state == 4;
-    case 0xE0DF1F0A:
-        m3D8 = 1;
-        return 1;
+        break;
+    case 0x02F66333:
+        return func_0027D9F0(this) != 0;
+    case 0x68BF6C13:
+        m370 = 0;
+        break;
     case 0xE8DEB0D7:
         m370 = 1;
-        return 1;
+        break;
+    case 0x34DCFC97:
+        m364 = 1;
+        break;
+    case 0x0257947E:
+        m364 = 0;
+        break;
+    case 0x01BAA1D9:
+        return m364 == 0;
+    case 0x9FCFDFEB:
+        m364 = D_0038FC78->slots[mC->m320].m0;
+        break;
+    case 0x17846595: {
+        float vy = mC->vel[1];
+        if (vy < 0.0f)
+            vy = 0.0f;
+        mC->vel[1] = vy;
+        mC->vel[1] = mC->vel[1] + func_002032A0(0xCB49B3F2, 0);
+        Vec_0027A5F8 h = mC->vel;
+        h[1] = 0.0f;
+        if (h[0] * h[0] + h[2] * h[2] < 100.0f) {
+            h = mC->mat.r[2];
+            h[1] = 0.0f;
+            if (h[0] * h[0] + h[2] * h[2] < 0.0001f) {
+                h[0] = 1.0f;
+                h[2] = 1.0f;
+                h[3] = 1.0f;
+            }
+        }
+        func_003233B8(&h, &h);
+        Model_0027A5F8* m = mC;
+        m->vel += h * func_002032A0(0xB7422173, 0);
+        break;
+    }
+    case 0x259CB90D: {
+        Info_0027A5F8* info = m594;
+        Vec_0027A5F8 f = mC->mat.r[2];
+        f[1] = 0.0f;
+        func_003233B8(&f, &f);
+        Vec_0027A5F8 side;
+        side[0] = f[2];
+        side[1] = 0.0f;
+        side[2] = -f[0];
+        side[3] = 0.0f;
+        if (info->m98)
+            return 0;
+        if (info->mE0 || info->m14C) {
+            Model_0027A5F8* m = mC;
+            m->vel += f * func_002032A0(0x1F96C224, 0);
+            return 1;
+        }
+        if (info->f70.IsSet() && info->f70.Age() > func_00203300(0x3080E9E7, 0)) {
+            Model_0027A5F8* m = mC;
+            m->vel += f * func_002032A0(0xDC818B7E, 0);
+            return 1;
+        }
+        if (info->f28.IsSet() && info->f28.Age() > func_00203300(0x9B25142A, 0)) {
+            Model_0027A5F8* m = mC;
+            m->vel -= side * func_002032A0(0x1AB3809F, 0);
+            return 1;
+        }
+        if (!info->f4C.IsSet())
+            return 0;
+        if (info->f4C.Age() > func_00203300(0x9B25142A, 0)) {
+            Model_0027A5F8* m = mC;
+            m->vel += side * func_002032A0(0x1AB3809F, 0);
+            return 1;
+        }
+        return 0;
+    }
+    case 0x1D1FD4F0: {
+        Vec_0027A5F8 dir = m160;
+        Model_0027A5F8* m = mC;
+        m60 = m->mat.r[1];
+        m70 = m->mat.r[1];
+        func_0027FDB0(this, &dir);
+        break;
+    }
+    case 0x383B939B: {
+        float speed = 0.0f;
+        func_001E7EB0(params, 0, &speed, 0);
+        Model_0027A5F8* m = mC;
+        float len2 = m->vel.Length2();
+        if (len2 < 0.001f)
+            m->vel = m->mat.r[2];
+        else
+            m->vel *= 1.0f / sqrtf(len2);
+        mC->vel *= speed;
+        break;
+    }
+    case 0x54EF2B79:
+        m3D4 = 1;
+        m5B0->f90.Set(0);
+        break;
+    case 0x0E2998B9:
+        m3D4 = 0;
+        break;
+    case 0x6FC5AAE0:
+        m5B0->f9C.Set(1);
+        break;
+    case 0xBD4303F4:
+        m5B0->f9C.Set(0);
+        break;
+    case 0xA901A50C:
+        return m5B0->f9C.value != 0;
+    case 0xE0DF1F0A:
+        m3D8 = 1;
+        break;
+    case 0x8C3D7864:
+        m3D8 = 0;
+        break;
+    case 0x19D0E5FB:
+        m3DC = 1;
+        break;
+    case 0x948EBF96: {
+        unsigned int v = 0;
+        func_001E8398(params, 0, &v, 0);
+        int st = m5B0->state;
+        if (st == 3 && v != 0xA549B57B)
+            func_0028DF70(this, 8);
+        if (st != 3 || m5B0->state != st) {
+            if (v == 0xA549B57B)
+                m29C = 0;
+        }
+        if (m5B0->state == 2) {
+            Vec_0027A5F8 up(0.0f, 1.0f, 0.0f, 1.0f);
+            func_0027FDB0(this, &up);
+            m20 = mC->mat;
+        }
+        switch (v) {
+        case 0x439F4704:
+            func_0027C720(this, 1);
+            break;
+        case 0x58007C97:
+            m219 = 0;
+            func_0027C720(this, 0);
+            break;
+        case 0xA549B57B:
+            func_0027C720(this, 3);
+            break;
+        }
+        break;
+    }
+    case 0x947FCCF4: {
+        unsigned int v = 0;
+        func_001E8398(params, 0, &v, 1);
+        if (v == 0x8D10119D) {
+            m5B0->f78.Set(1);
+            m59C->m28 = 1;
+        } else {
+            m5B0->f78.Set(0);
+            m59C->m28 = 0;
+        }
+        break;
+    }
+    case 0xACB82C02:
+        m400 = func_001E8708(params, 0xF649D637);
+        break;
+    case 0x510F983B:
+        func_001E7EB0(params, 0, &m378, 0);
+        if (func_001E8708(params, 0x1CA1FF20) && m384 == 0.0f)
+            m378 = func_002032A0(0x78F80EC4, 0);
+        break;
+    case 0x71B993B7:
+        func_001E7DE8(params, 0, &m42C, 0);
+        break;
+    case 0x55934543:
+        if (func_001E8708(params, 0xA549B57B)) {
+            float k = func_002032A0(0xB92CBE3B, 0);
+            float dy = func_002032A0(0xEFDFE781, 0);
+            Model_0027A5F8* m = mC;
+            m280 = m->pos;
+            m280[1] -= dy;
+            m270 = m280 - m->mat.r[1] * k;
+            if (func_0028E1C0(this, 0x10, 0))
+                return m294 != 0;
+            k = func_002032A0(0x108613CB, 0);
+            dy = func_002032A0(0xF9DC446D, 0);
+            m = mC;
+            m280 = m->pos - m->mat.r[1] * k;
+            m270 = m280;
+            m280[1] -= dy;
+            if (!func_0028E1C0(this, 0x10, 0))
+                return 0;
+            return m294 != 0;
+        } else {
+            float k = func_002032A0(0xC78EBE56, 0);
+            Model_0027A5F8* m = mC;
+            Vec_0027A5F8 a = m->pos + m->mat.r[0] * k;
+            a[1] -= func_002032A0(0xFCA3378C, 0);
+            Vec_0027A5F8 b = a - mC->mat.r[0] * (2.0f * k);
+            if (func_001E8708(params, 0x85981897)) {
+                m270 = a;
+                m280 = b;
+            } else {
+                m270 = b;
+                m280 = a;
+            }
+            if (!func_0028E1C0(this, 0x10, 0))
+                return 0;
+            return m294 != 0;
+        }
+    case 0x6C8A1316:
+        if (func_001E8708(params, 0x47953F00)) {
+            if (!m5B0->f30.value)
+                return m428 != 0;
+            return m428 == 0;
+        }
+        if (func_001E8708(params, 0x996D5512)) {
+            if (m5B0->f30.value)
+                return m428 != 0;
+            return m428 == 0;
+        }
+        break;
+    case 0x133E1293:
+        m3E4 = 1;
+        break;
+    case 0x0F922431:
+        m3E4 = 0;
+        break;
+    case 0xDFB8F052:
+        return m5B0->m40 != 0;
+    case 0xC5B4B390:
+        m3EC = 1;
+        break;
+    case 0xB9EEBFF6:
+        m3EC = 0;
+        break;
+    case 0xEC681A59:
+        m424 = 1;
+        break;
+    case 0x065A559A:
+        m424 = 0;
+        break;
+    case 0x461E5B92: {
+        Model_0027A5F8* m = mC;
+        if (m->vel.Length2() < 0.0001f)
+            break;
+        m->mat.r[2] = m->vel;
+        func_003233B8(&mC->mat.r[2], &mC->mat.r[2]);
+        m = mC;
+        m->mat.r[0] = Cross_0027A5F8(m->mat.r[1], m->mat.r[2]);
+        func_003233B8(&mC->mat.r[0], &mC->mat.r[0]);
+        m = mC;
+        m->mat.r[1] = Cross_0027A5F8(m->mat.r[2], m->mat.r[0]);
+        func_003233B8(&mC->mat.r[1], &mC->mat.r[1]);
+        m20 = mC->mat;
+        break;
+    }
+    case 0x90F1D8D5:
+        if (func_001E8708(params, 0xFF03CC4E)) {
+            m3B4 = 0.0f;
+            break;
+        }
+        func_001E7EB0(params, 0x6289DD76, &m3B8, 1);
+        m3BC = m3B8;
+        func_001E7EB0(params, 0x73A19E3A, &m3BC, 0);
+        m3B4 = 9.999999828e+12f;
+        func_001E7EB0(params, 0x906B67BA, &m3B4, 0);
+        m3C0 = 1.999999995e-06f;
+        func_001E7EB0(params, 0xEDF3E7F4, &m3C0, 0);
+        m3C4 = func_002032A0(0x6618A713, 0);
+        func_001E7EB0(params, 0xA5E2DA58, &m3C4, 0);
+        if (func_001E8708(params, 0xDF312928))
+            m3B4 = -1.0f;
+        break;
+    case 0x5E8D9B80: {
+        List_0027A5F8* l = 0;
+        func_001E8248(params, 0, &l, 0);
+        if (m37C >= l->size)
+            m37C = l->size - 1;
+        m378 = func_001E9298(l, m37C);
+        if (m37C == 0)
+            m380 = func_0010FC30();
+        m37C++;
+        func_001E7EB0(params, 0x79A07F3F, &m384, 0);
+        break;
+    }
+    case 0xB94BC0C6:
+        m5B0->fCC.Set(func_001E8708(params, 0xD443A2BC) ^ 1);
+        break;
     case 0xE47FF4B5:
         m354 = 48.0f;
         m358 = 100.0f;
@@ -715,18 +693,56 @@ int Skater_0027A5F8::CallMemberFunction(unsigned int name, void* params, Script_
         func_001E7EB0(params, 0xC48391A5, &m354, 0);
         func_001E7EB0(params, 0xF0D90109, &m358, 0);
         func_001E7EB0(params, 0xDFDFEAB8, &m35C, 0);
-        return 1;
-    case 0xEBBCF455:
-        m374 = 0;
-        return 1;
-    case 0xF37CE040:
-        return m3E4 != 0;
+        break;
+    case 0x05144783:
+        func_001E72B0(script->params, 0x7323E97C, mC->mat.r[1][0]);
+        func_001E72B0(script->params, 0x0424D9EA, mC->mat.r[1][1]);
+        func_001E72B0(script->params, 0x9D2D8850, mC->mat.r[1][2]);
+        break;
+    case 0x8819DD8B: {
+        Comp_0027A5F8* c = (Comp_0027A5F8*)func_00185578(mC, 0x0A015E17);
+        int ok = c->CallMember(0x8819DD8B, params, script) != 0;
+        m20 = mC->mat;
+        void* body = func_00185578(mC, 0x8A897DD2);
+        func_001B6BC0(body, &mC->pos);
+        func_001B6BD0(body, &mC->mat.r[1]);
+        Model_0027A5F8* m = mC;
+        mA0 = m->pos;
+        m->oldPos = m->pos;
+        func_00186398(mC, 1);
+        Model_0027A5F8* m2 = mC;
+        if (m2->m31C) {
+            void* p = func_00203EE0(m2);
+            if (p)
+                func_00185058(p);
+        }
+        if (!func_001E8708(params, 0xD607E2E6)) {
+            Model_0027A5F8* m3 = mC;
+            m219 = 0;
+            m3->vel.Set(0.0f, 0.0f, 0.0f, 1.0f);
+            func_0027C720(this, 0);
+            m5B0->f30.Set(mC->m164 ^ 1);
+            func_00291AD8(func_00185578(mC, 0x488AF07A));
+            return ok;
+        }
+        if (func_001E8708(params, 0x90A91232)) {
+            float vy = mC->vel[1];
+            mC->vel[1] = 0.0f;
+            Model_0027A5F8* m4 = mC;
+            float speed = sqrtf(m4->vel.Length2());
+            m4->vel = m4->mat.r[2] * speed;
+            mC->vel[1] = vy;
+        }
+        return ok;
+    }
     case 0xF7E21884:
         func_001E7410(script->params, 0x7F261953, m3A0, m3A4, m3A8);
-        return 1;
-    case 0xEC681A59:
-        m424 = 1;
-        return 1;
+        break;
+    case 0xB48EC756:
+        m3DC = 0;
+        break;
+    default:
+        return 2;
     }
-    return 2;
+    return 1;
 }

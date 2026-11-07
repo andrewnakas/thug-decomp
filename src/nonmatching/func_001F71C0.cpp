@@ -1,4 +1,4 @@
-/* fuzzy: 56.2 */
+/* fuzzy: 64.3 */
 typedef int qword_001F71C0 __attribute__((mode(TI)));
 
 struct Tag_001F71C0 {
@@ -98,7 +98,7 @@ void func_001F71C0(int r, int g, int b, int w, int h)
     func_00322EF0(&pkt);
     func_00323068(&pkt, 0, 0, 0);
     func_003230F8(&pkt, tag.q);
-    func_003231B8(&pkt, 6, 0);
+    func_003231B8(&pkt, 0, 6);
     func_003231B8(&pkt, 1, (unsigned long)r | ((unsigned long)g << 8) | ((unsigned long)b << 16));
     func_003231B8(&pkt, 5, 0);
     func_003231B8(&pkt, 5, 0xB4002D00UL);

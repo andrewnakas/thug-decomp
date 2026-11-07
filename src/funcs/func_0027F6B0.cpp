@@ -1,4 +1,3 @@
-/* fuzzy: 99.3 */
 typedef int qword_0027F6B0 __attribute__((mode(TI)));
 
 union Vec_0027F6B0 {
@@ -229,8 +228,8 @@ void Skater_0027F6B0::Update()
                 if (0.0f < along) {
                     float ang = func_003412F0(cosAng);
                     Vec_0027F6B0 e = mC->pos - mC->oldPos;
-                    float step = sqrtf(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
-                    step = step * func_00341158(ang);
+                    float len = sqrtf(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
+                    float step = len * func_00341158(ang);
                     float minStep = func_002032A0(0x899BA3D0, 0);
                     if (step < minStep)
                         step = minStep;

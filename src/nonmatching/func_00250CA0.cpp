@@ -1,4 +1,4 @@
-/* fuzzy: 55.8 */
+/* fuzzy: 68.8 */
 extern void* D_0038FC78;
 extern char D_00390688[];
 extern char D_00374B88[];
@@ -126,9 +126,9 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
         low = mid - 0.1f;
 
     for (i = 0; i < 7; i++) {
-        Entry_00250CA0* e = &m_ent[i + 1];
         float level;
-        e->m_pos = order[i];
+        m_ent[i + 1].m_pos = order[i];
+        Entry_00250CA0* e = &m_ent[i + 1];
         if (func_001E8248(m_params, 0x1CC6F48D, &names, 0))
             func_00104110(&e->m_name, func_001E91C0(names, i));
         else
@@ -167,10 +167,9 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
 
     func_00103F28(D_00390688);
     for (i = 0; i < 8; i++) {
-        Entry_00250CA0* e = &m_ent[i];
-        const char* name = func_001041B8(&e->m_name);
-        func_00103F28(D_00374B88, i, e->m_pos, name, e->m_score[0], e->m_score[1], e->m_score[2],
-                      func_00250C50(e, 3));
+        const char* name = func_001041B8(&m_ent[i].m_name);
+        func_00103F28(D_00374B88, i, m_ent[i].m_pos, name, m_ent[i].m_score[0], m_ent[i].m_score[1],
+                      m_ent[i].m_score[2], func_00250C50(&m_ent[i], 3));
     }
 
     func_00251B70(this);
@@ -179,10 +178,9 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
 
     func_00103F28(D_00374BB8);
     for (i = 0; i < 8; i++) {
-        Entry_00250CA0* e = &m_ent[i];
-        const char* name = func_001041B8(&e->m_name);
-        func_00103F28(D_00374B88, i, e->m_pos, name, e->m_score[0], e->m_score[1], e->m_score[2],
-                      func_00250C50(e, 3));
+        const char* name = func_001041B8(&m_ent[i].m_name);
+        func_00103F28(D_00374B88, i, m_ent[i].m_pos, name, m_ent[i].m_score[0], m_ent[i].m_score[1],
+                      m_ent[i].m_score[2], func_00250C50(&m_ent[i], 3));
     }
 
     m_judge[0] = D_00390690;

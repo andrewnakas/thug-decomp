@@ -1,4 +1,5 @@
-/* fuzzy: 53.3 */
+/* fuzzy: 74.5 */
+/* sym: __14Slerp_00276958 = 0x00102FD0 */
 typedef int qword_00276958 __attribute__((mode(TI)));
 
 union Vec_00276958 {
@@ -14,10 +15,12 @@ union Vec_00276958 {
         c[2] = z;
         c[3] = w;
     }
-    Vec_00276958& operator=(const Vec_00276958& o)
+    void Set(float x, float y, float z, float w)
     {
-        q = o.q;
-        return *this;
+        c[0] = x;
+        c[1] = y;
+        c[2] = z;
+        c[3] = w;
     }
     void operator+=(const Vec_00276958& o)
     {
@@ -46,13 +49,17 @@ static inline float Length_00276958(const Vec_00276958& v)
 }
 
 struct Mat_00276958 {
-    Vec_00276958 r[4];
+    Vec_00276958 r0;
+    Vec_00276958 r1;
+    Vec_00276958 r2;
+    Vec_00276958 r3;
+    const Vec_00276958& operator[](int i) const { return (&r0)[i]; }
     Mat_00276958& operator=(const Mat_00276958& o)
     {
-        r[0] = o.r[0];
-        r[1] = o.r[1];
-        r[2] = o.r[2];
-        r[3] = o.r[3];
+        r0 = o[0];
+        r1 = o[1];
+        r2 = o[2];
+        r3 = o[3];
         return *this;
     }
 };
@@ -125,6 +132,7 @@ struct State_00276958 {
 /* Quaternion interpolator built from two matrices (func_00103000 / func_00103930). */
 struct Slerp_00276958 {
     char pad[0xA0];
+    Slerp_00276958();
 };
 
 struct Remote_00276958 {
@@ -156,6 +164,10 @@ extern int D_00391870;
 extern char D_00391868[];
 
 extern "C" float sqrtf(float);
+static inline bool Late_00276958(unsigned int ms, unsigned int now, unsigned int t)
+{
+    return now - t > ms;
+}
 extern "C" Conn_00276958* func_002A39E0(void* mgr, int i);
 extern "C" unsigned int func_00279F48(Snap_00276958* s);
 extern "C" int func_0033EBE0(float f);
@@ -165,7 +177,6 @@ extern "C" void func_002069C0(Model_00276958* m);
 extern "C" void func_001F0370(char* name, int a, Model_00276958* m, int c);
 extern "C" void* func_002A52F0(void* mgr, int id);
 extern "C" void func_00277740(Remote_00276958* self);
-extern "C" Slerp_00276958* func_00102FD0(Slerp_00276958* s);
 extern "C" int func_002B2280(void* p);
 extern "C" void func_002B2180(void* p);
 extern "C" void func_00206920(Model_00276958* m);
@@ -196,7 +207,7 @@ void Remote_00276958::Update()
         model->matC0 = s->mat;
         model->pos = s->pos;
         func_00186398(model, 1);
-        model->vel = Vec_00276958(0.0f, 0.0f, 0.0f, 1.0f);
+        model->vel.Set(0.0f, 0.0f, 0.0f, 1.0f);
         if (func_00206A00(model))
             return;
         func_002069C0(model);
@@ -206,8 +217,10 @@ void Remote_00276958::Update()
         return;
     }
 
+    Vec_00276958 d;
     Slerp_00276958 slerp;
-    Slerp_00276958* sl = func_00102FD0(&slerp);
+    Mat_00276958 out;
+    Slerp_00276958* sl = &slerp;
     void* owner = func_002A52F0(mgr, model->id);
     if (!func_002B2280(owner))
         func_002B2180(owner);
@@ -215,7 +228,7 @@ void Remote_00276958::Update()
     unsigned int now = playTime + (conn->time - startTime);
     Snap_00276958* newest = &snaps[(ring->count - 1) % 20];
     if (func_00279F48(newest) < now) {
-        if (now - func_00279F48(newest) > 1000)
+        if (Late_00276958(1000, now, func_00279F48(newest)))
             playTime -= now - func_00279F48(newest);
         else
             playTime -= 1000 / (unsigned int)D_00388830;
@@ -237,17 +250,19 @@ void Remote_00276958::Update()
             now -= func_00279F48(prev);
             int span = func_00279F48(cur) - func_00279F48(prev);
             float t = (float)(int)now / (float)span;
-            Vec_00276958 d = cur->pos - prev->pos;
+            d = cur->pos - prev->pos;
             prevPos = lastPos;
-            Vec_00276958 r = cur->mat.r[2] - prev->mat.r[2];
+            Mat_00276958 a;
+            Mat_00276958 b;
+            Vec_00276958 r;
+            r = cur->mat[2] - prev->mat[2];
             if (Length_00276958(r) > 0.75f) {
                 model->mat = prev->mat;
                 model->matC0 = prev->mat;
             } else {
-                Mat_00276958 a = prev->mat;
-                Mat_00276958 b = cur->mat;
+                a = prev->mat;
+                b = cur->mat;
                 func_00103000(sl, &a, &b);
-                Mat_00276958 out;
                 func_00103930(sl, &out, t);
                 model->mat = out;
                 model->matC0 = out;
@@ -280,7 +295,7 @@ void Remote_00276958::Update()
             if (state->flags[11].value)
                 state->m140 = model->vel;
             else
-                state->m140 = Vec_00276958(0.0f, 0.0f, 0.0f, 1.0f);
+                state->m140.Set(0.0f, 0.0f, 0.0f, 1.0f);
             return;
         }
         j = (j + 1) % 20;

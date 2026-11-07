@@ -1,4 +1,4 @@
-/* fuzzy: 60.0 */
+/* fuzzy: 68.5 */
 extern "C" void* func_00229668(void* p, int v);
 extern "C" void* func_00229DF0(void* node);
 extern "C" void func_001E7410(void* s, unsigned int name, float x, float y, float z);
@@ -28,7 +28,7 @@ struct Obj_00295030 {
 void Obj_00295030::Fill(unsigned int idx, void* node)
 {
     void* s = func_00229DF0(func_00229668(node, 1));
-    func_001E7410(s, 0x7F261953, items[idx].x, items[idx].y + items[idx].m10, items[idx].z);
+    func_001E7410(s, 0x7F261953, items[idx].x, items[idx].m10 + items[idx].y, items[idx].z);
     func_001E7410(s, 0x9D2D0915, 0.0f, items[idx].m14 - 3.1415927f, 0.0f);
     if (idx >= 2) {
         func_001E7360(s, 0x7321A8D6, func_00291FB8(m114, idx - 2));

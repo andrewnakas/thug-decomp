@@ -1,4 +1,4 @@
-/* fuzzy: 62.1 */
+/* fuzzy: 62.7 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0028C3F0 {
@@ -65,7 +65,12 @@ inline Vec_0028C3F0 Cross_0028C3F0(const Vec_0028C3F0& a, const Vec_0028C3F0& b)
 }
 
 struct Mat_0028C3F0 {
-    Vec_0028C3F0 r[4];
+    Vec_0028C3F0 r0;
+    Vec_0028C3F0 r1;
+    Vec_0028C3F0 r2;
+    Vec_0028C3F0 r3;
+    Vec_0028C3F0& operator[](int i) { return (&r0)[i]; }
+    const Vec_0028C3F0& operator[](int i) const { return (&r0)[i]; }
 };
 
 extern void* D_00388A70;
@@ -447,20 +452,20 @@ void Obj_0028C3F0::Update()
                 k = -k;
             Vec_0028C3F0 face = t * k;
 
-            m20.r[2] = m20.r[2] + (face - m20.r[2]) * 0.3f;
-            m20.r[2].Normalize();
-            m20.r[0].Set(m20.r[2][2], 0.0f, -m20.r[2][0], 0.0f);
-            m20.r[0].Normalize();
-            m20.r[1] = Cross_0028C3F0(m20.r[2], m20.r[0]);
-            m20.r[1].Normalize();
+            m20[2] = m20[2] + (face - m20[2]) * 0.3f;
+            m20[2].Normalize();
+            m20[0].Set(m20[2][2], 0.0f, -m20[2][0], 0.0f);
+            m20[0].Normalize();
+            m20[1] = Cross_0028C3F0(m20[2], m20[0]);
+            m20[1].Normalize();
 
             Mat_0028C3F0& m = mC->m70;
-            m.r[2] = face;
-            m.r[2].Normalize();
-            m.r[0].Set(m.r[2][2], 0.0f, -m.r[2][0], 0.0f);
-            m.r[0].Normalize();
-            m.r[1] = Cross_0028C3F0(m.r[2], m.r[0]);
-            m.r[1].Normalize();
+            m[2] = face;
+            m[2].Normalize();
+            m[0].Set(m[2][2], 0.0f, -m[2][0], 0.0f);
+            m[0].Normalize();
+            m[1] = Cross_0028C3F0(m[2], m[0]);
+            m[1].Normalize();
 
             Vec_0028C3F0 lift(0.0f, 0.0f, 0.0f);
             Vec_0028C3F0 old = mC->m50;
@@ -491,8 +496,8 @@ void Obj_0028C3F0::Update()
                 m270 = old;
                 m280 = mC->m50;
                 m280 += step + heading * 6.0f;
-                m270 += m.r[1];
-                m280 += m.r[1];
+                m270 += m.r1;
+                m280 += m.r1;
                 if (func_0028E1C0(this, 0x10, 0)
                     && (D_00392808->mAC == 0xD443A2BC || !(mB0.m68 & 0x1000))) {
                     func_0028DF70(this, 4);
@@ -506,7 +511,7 @@ void Obj_0028C3F0::Update()
         }
     }
 
-    m70 = mC->m70.r[1];
+    m70 = mC->m70.r1;
     func_00237A30(m5A8->m1C, (int)((float)m42C * m5A8->m1C->m1544));
     if (m2A0->m58) {
         Node_0028C3F0* cur = m29C;

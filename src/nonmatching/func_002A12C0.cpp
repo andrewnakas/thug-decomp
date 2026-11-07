@@ -1,4 +1,4 @@
-/* fuzzy: 65.5 */
+/* fuzzy: 79.7 */
 extern char D_00366B58[];
 extern char D_003781D8[];
 extern char D_003920C0[];
@@ -50,9 +50,7 @@ void Obj_002A12C0::List()
     Iter_002A12C0 it;
     char buf[1024];
     Net_002A12C0* net = m20;
-    int pass = 0;
-    do {
-        pass++;
+    for (int pass = 0; pass < 2; pass++) {
         if (net->m18 && !func_00201288(net->m18)) {
             int n = 0;
             for (Peer_002A12C0* p = func_00200EC0(net->m18, &it); p; p = func_00200EF8(net->m18, &it)) {
@@ -85,5 +83,5 @@ void Obj_002A12C0::List()
                 }
             }
         }
-    } while (pass < 2);
+    }
 }

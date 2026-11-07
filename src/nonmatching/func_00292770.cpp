@@ -1,4 +1,4 @@
-/* fuzzy: 64.9 */
+/* fuzzy: 73.5 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_00292770 {
@@ -63,8 +63,8 @@ void Obj_00292770::Snap(int i)
         func_00209360(pc, pa);
         func_00209370(pc, pb);
         if (func_002093E8(pc, 1, 0)) {
-            elems[i].pos = c.hit;
+            elems[i].pos.q = c.hit.q;
         }
     }
-    pc->mC0.Release();
+    c.mC0.Release();
 }

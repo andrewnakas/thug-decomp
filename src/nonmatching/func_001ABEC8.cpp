@@ -1,4 +1,4 @@
-/* fuzzy: 63.6 */
+/* fuzzy: 73.7 */
 extern "C" unsigned int func_0010FC30();
 extern "C" int func_00183330(int i);
 
@@ -11,17 +11,6 @@ struct Event_001ABEC8 {
 struct Obj_001ABEC8;
 extern "C" Event_001ABEC8* func_001AB8A0(Obj_001ABEC8* o, int type);
 
-static inline int Ready(float* t, int i, int on)
-{
-    if (t[i] != 0.0f) {
-        if (!on || t[i] < (float)func_0010FC30())
-            t[i] = 0.0f;
-        else
-            return 0;
-    }
-    return 1;
-}
-
 struct Obj_001ABEC8 {
     char pad[0x9AC];
     float m9AC[22];
@@ -33,14 +22,21 @@ struct Obj_001ABEC8 {
 
 void Obj_001ABEC8::Method(int i, int on)
 {
-    if (!Ready(m9AC, i, on))
-        return;
+    if (m9AC[i] != 0.0f) {
+        if (!on || m9AC[i] < (float)func_0010FC30())
+            m9AC[i] = 0.0f;
+        else
+            return;
+    }
     if (mA04[i] != on) {
         mA04[i] = on;
         int id = func_00183330(i);
         for (int k = 0; k < mA5C; k++)
             if (mA60[k] == id)
                 return;
-        func_001AB8A0(this, on ? 1 : 2)->m8 = id;
+        if (on)
+            func_001AB8A0(this, 1)->m8 = id;
+        else
+            func_001AB8A0(this, 2)->m8 = id;
     }
 }

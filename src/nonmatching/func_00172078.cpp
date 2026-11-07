@@ -1,4 +1,4 @@
-/* fuzzy: 57.9 */
+/* fuzzy: 73.8 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -59,10 +59,10 @@ Vec4_00172078 func_00172078(Node_00172078* node)
             t = (d.w + dist) * 0.5f;
         if (0.0f < dist) {
             float inv = 1.0f / dist;
-            d.w = d.w * inv;
             d.x = d.x * inv;
             d.y = d.y * inv;
             d.z = d.z * inv;
+            d.w = d.w * inv;
         }
         Vec4_00172078 c;
         Vec4_00172078 step;

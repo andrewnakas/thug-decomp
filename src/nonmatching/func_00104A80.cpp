@@ -1,4 +1,4 @@
-/* fuzzy: 50.6 */
+/* fuzzy: 71.3 */
 struct LNode_00104A80;
 
 class Obj_00104A80 {
@@ -17,6 +17,14 @@ struct LNode_00104A80 {
     Obj_00104A80* data;
     void* vptr;
     LNode_00104A80* next;
+    LNode_00104A80* Valid()
+    {
+        if (data == (Obj_00104A80*)-1) {
+            return 0;
+        }
+        return this;
+    }
+    LNode_00104A80* Next() { return next->Valid(); }
 };
 
 class Node104D78 {
@@ -28,15 +36,8 @@ public:
     virtual void Run();
     Obj_00104A80* Next()
     {
-        LNode_00104A80* n = m4->next;
-        if (n->data == (Obj_00104A80*)-1) {
-            n = 0;
-        }
-        m4 = n;
-        if (n) {
-            return n->data;
-        }
-        return 0;
+        m4 = m4->Next();
+        return m4 ? m4->data : 0;
     }
 };
 
@@ -62,17 +63,17 @@ extern "C" void func_00104A80(Mgr_00104A80* m, int unused, int mask)
         Obj_00104A80* o = p->Next();
         m->m24 = 0;
         while (o) {
-            Obj_00104A80* nx = p->Next();
-            if (o->m4 == 0 && o->m10 != m->m20) {
-                o->m10 = m->m20;
-                if ((o->m14 & mask) == 0) {
-                    o->Update();
+            Obj_00104A80* cur = o;
+            o = p->Next();
+            if (cur->m4 == 0 && cur->m10 != m->m20) {
+                cur->m10 = m->m20;
+                if ((cur->m14 & mask) == 0) {
+                    cur->Update();
                 }
             }
             if (m->m24) {
                 break;
             }
-            o = nx;
         }
     } while (m->m24);
 }

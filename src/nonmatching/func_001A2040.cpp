@@ -1,4 +1,4 @@
-/* fuzzy: 60.4 */
+/* fuzzy: 62.4 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -92,12 +92,12 @@ void func_001A2040(Frame_001A2040* frames, float* w, int count, Frame_001A2040* 
                 float y = qj.y + (qi.y - qj.y) * t;
                 float z = qj.z + (qi.z - qj.z) * t;
                 float ww = qj.w + (qi.w - qj.w) * t;
-                float s = 1.0f / sqrtf(x * x + y * y + z * z + ww * ww);
-                qi.x = x * s;
-                qi.y = y * s;
-                qi.z = z * s;
-                qi.w = ww * s;
-                qj = qi;
+                qi.x = x;
+                qi.y = y;
+                qi.z = z;
+                qi.w = ww;
+                Quat_001A2040 nq = qi.Normalize();
+                qj = nq;
                 fj->t[k] = fj->t[k] + (fi->t[k] - fj->t[k]) * t;
             }
         }

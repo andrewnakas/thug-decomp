@@ -1,4 +1,4 @@
-/* fuzzy: 62.1 */
+/* fuzzy: 92.5 */
 typedef int qword_001D8170 __attribute__((mode(TI)));
 
 extern void* D_00388A70;
@@ -41,15 +41,27 @@ Mesh_001D8170* func_001D8170(Mesh_001D8170* src, int arg, int check)
     d->m3C = src->m3C;
     d->mC = src->mC;
     d->m30 = src->m30;
-    d->m30 = func_0010A638(D_00388A70, src->m6 * (src->mB ? 6 : 12), 1, 0);
+    if (src->mB)
+        d->m30 = func_0010A638(D_00388A70, src->m6 * 6, 1, 0);
+    else
+        d->m30 = func_0010A638(D_00388A70, src->m6 * 12, 1, 0);
     unsigned int n = src->m6;
-    d->mC = func_0010A638(D_00388A70, src->mA ? src->m8 * 8 : src->m8 * 10, 1, 0);
+    if (src->mA)
+        d->mC = func_0010A638(D_00388A70, src->m8 * 8, 1, 0);
+    else
+        d->mC = func_0010A638(D_00388A70, src->m8 * 10, 1, 0);
     if (!d->m30)
         return 0;
     if (!d->mC)
         return 0;
-    func_00331404(d->m30, src->m30, src->m6 * (src->mB ? 6 : 12));
-    func_00331404(d->mC, src->mC, src->mA ? src->m8 * 8 : src->m8 * 10);
+    if (src->mB)
+        func_00331404(d->m30, src->m30, src->m6 * 6);
+    else
+        func_00331404(d->m30, src->m30, src->m6 * 12);
+    if (src->mA)
+        func_00331404(d->mC, src->mC, src->m8 * 8);
+    else
+        func_00331404(d->mC, src->mC, src->m8 * 10);
     if (src->m38) {
         d->m38 = func_0010A638(D_00388A70, n, 1, 0);
         func_00331404(d->m38, src->m38, n);

@@ -1,4 +1,3 @@
-/* fuzzy: 95.5 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C3870 {
     qword q;
@@ -145,8 +144,7 @@ int Obj_001C3870::Wallplant()
     float reach = Param_001C3870(0x99978D2B) * 3.0f;
     float step = (up - Param_001C3870(0x6DA7F696)) * 0.11111111f;
     Coll_001C3870 c;
-    Coll_001C3870* pc = &c;
-    func_00209240(pc);
+    func_00209240(&c);
     Box_001C3870 box;
     func_00102340(&box, &(m30 - Vec_001C3870(reach + 1.0f, 0.0f, reach + 1.0f)),
                   &(m30 + Vec_001C3870(reach + 1.0f, up + 1.0f, reach + 1.0f)));
@@ -187,7 +185,7 @@ int Obj_001C3870::Wallplant()
         while (j--) {
             c.start[1] -= step;
             c.end[1] -= step;
-            if (func_002093E8(pc, 1, 0)) break;
+            if (func_002093E8(&c, 1, 0)) break;
         }
         if (c.start[1] < top) top = c.start[1];
     }
@@ -199,7 +197,7 @@ int Obj_001C3870::Wallplant()
         func_001BB080(mA34, 2, mA70);
         if (mA38->m2C) {
             Coll_001C3870::Ref* ref = &c.mC0;
-        ref->Release();
+            ref->Release();
             return 1;
         }
     }
@@ -211,6 +209,6 @@ int Obj_001C3870::Wallplant()
     func_00184920(mC, 0x8687163A, 0, 0.0f);
     func_00183F88(mC, 0x6B9CA247);
     Coll_001C3870::Ref* ref = &c.mC0;
-        ref->Release();
+    ref->Release();
     return 1;
 }

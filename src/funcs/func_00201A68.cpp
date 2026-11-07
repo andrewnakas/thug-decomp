@@ -1,7 +1,6 @@
-/* fuzzy: 98.4 */
 /* sym: _vt$14NodeA_00201A68 = 0x00366970 */
 /* sym: _vt$14NodeB_00201A68 = 0x00366958 */
-/* sym: _vt$14NodeC_00201A68 = 0x00366940 */
+/* sym: _vt$18ListNodeC_00201A68 = 0x00366940 */
 /* sym: _vt$14NodeD_00201A68 = 0x00366988 */
 /* sym: _vt$14NodeE_00201A68 = 0x00366C68 */
 
@@ -28,7 +27,7 @@ extern "C" void func_00201D98(void* self);
 
 NODE_00201A68(NodeA_00201A68)
 NODE_00201A68(NodeB_00201A68)
-NODE_00201A68(NodeC_00201A68)
+NODE_00201A68(ListNodeC_00201A68)
 NODE_00201A68(NodeD_00201A68)
 NODE_00201A68(NodeE_00201A68)
 
@@ -44,7 +43,7 @@ struct Elem_00201A68 {
 struct Mgr_00201A68 {
     NodeA_00201A68 m_a;
     NodeB_00201A68 m_b;
-    NodeC_00201A68 m_c;
+    ListNodeC_00201A68 m_c;
     char pad48[0x54 - 0x48];
     void* m_54;
     int m_58;

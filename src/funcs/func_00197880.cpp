@@ -1,4 +1,3 @@
-/* fuzzy: 95.0 */
 struct Obj_00197880 {
     char pad0[0x324];
     int m324;
@@ -14,11 +13,12 @@ int Obj_00197880::Fn(float x)
     int i = 0;
     float lim = m348;
     float* r = m328;
-next:
-    if (lim < x * *r && i < m324 - 1) {
-        r++;
-        i++;
-        goto next;
-    }
+    do {
+        if (lim < x * *r && i < m324 - 1) {
+            r++;
+            i++;
+        } else
+            break;
+    } while (1);
     return i;
 }

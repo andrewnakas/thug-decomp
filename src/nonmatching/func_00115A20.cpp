@@ -1,4 +1,4 @@
-/* fuzzy: 87.7 */
+/* fuzzy: 92.8 */
 struct Hdr_00115A20 {
     int m_count;
     unsigned short m_n4;
@@ -31,7 +31,7 @@ struct Geom_00115A20 {
 };
 
 extern "C" void func_00115C68(Geom_00115A20* g, char* p, int i);
-extern "C" void func_00115C98(Geom_00115A20* g, char* p, int i);
+extern "C" int  func_00115C98(Geom_00115A20* g, char* p, int i);
 extern "C" int func_00115CC8(Geom_00115A20* g);
 extern "C" void func_00115840(Geom_00115A20* g, int, int, int flags);
 extern "C" void** func_0010BDE0(int size);

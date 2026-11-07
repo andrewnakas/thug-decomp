@@ -1,4 +1,4 @@
-/* fuzzy: 81.8 */
+/* fuzzy: 84.9 */
 struct Heap_00108AB0 {
     char pad[0xD8];
     int m_D8;
@@ -35,7 +35,7 @@ extern "C" int func_001DFD90();
 extern "C" void func_003331D0(char* buf, const char* fmt, ...);
 extern "C" int func_0010FC30();
 extern "C" int func_0010EC78(const char* path, int mode, int prio);
-extern "C" void func_00331A9C(char* d, const char* s);
+extern "C" int  func_00331A9C(char* d, const char* s);
 extern "C" int func_0010E558(int h);
 extern "C" void func_0010BFC0(const char* path);
 extern "C" void* func_0010A638(Heap_00108AB0* heap, int size, int align, int sub);

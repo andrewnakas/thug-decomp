@@ -1,4 +1,4 @@
-/* fuzzy: 51.5 */
+/* fuzzy: 71.6 */
 /* sym: GetX__13Anim_001177A8Pvi = 0x00115C68 */
 /* sym: GetY__13Anim_001177A8Pvi = 0x00115C98 */
 /* sym: Test__13Anim_001177A8 = 0x00115CC8 */
@@ -153,16 +153,15 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
 {
     if (m4 & 0x800000)
         return func_00116A48(this, rot, pos, time);
+    RKey_001177A8* r0 = m18;
+    RKey_001177A8* r1 = m18;
+    TKey_001177A8* t0 = m1C;
+    TKey_001177A8* t1 = m1C;
     RKey_001177A8* rbase = m18;
     TKey_001177A8* tbase = m1C;
-    RKey_001177A8* r0 = rbase;
-    RKey_001177A8* r1 = rbase;
-    TKey_001177A8* t0 = tbase;
-    TKey_001177A8* t1 = tbase;
     float rt = 0.0f;
     float tt = 0.0f;
     float ft = time * 60.0f;
-    float scale = 32.0f;
     void* counts = m20;
     for (int i = 0; i < m8; i++) {
         int nr = GetX(counts, i);
@@ -174,13 +173,16 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
                 break;
             }
             RKey_001177A8* k = &rbase[j];
-            float a = k[0].time;
-            float b = k[1].time;
-            if (a <= ft && ft <= b) {
-                r0 = k;
-                rt = (ft - a) / (b - a);
-                r1 = k + 1;
-                break;
+            RKey_001177A8* n = k + 1;
+            float a = k->time;
+            if (a <= ft) {
+                float b = n->time;
+                if (ft <= b) {
+                    r0 = k;
+                    rt = (ft - a) / (b - a);
+                    r1 = n;
+                    break;
+                }
             }
         }
         int flt = Test();
@@ -195,6 +197,7 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
             GetRot_001177A8(&q1, r1, flt);
             *rot = Nlerp_001177A8(q0, q1, rt);
         }
+        float scale = 32.0f;
         for (int j = 0; j < nt; j++) {
             if (j == nt - 1) {
                 t0 = t1 = &tbase[j];
@@ -202,13 +205,16 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
                 break;
             }
             TKey_001177A8* k = &tbase[j];
-            float a = k[0].time;
-            float b = k[1].time;
-            if (a <= ft && ft <= b) {
-                t0 = k;
-                tt = (ft - a) / (b - a);
-                t1 = k + 1;
-                break;
+            TKey_001177A8* n = k + 1;
+            float a = k->time;
+            if (a <= ft) {
+                float b = n->time;
+                if (ft <= b) {
+                    t0 = k;
+                    tt = (ft - a) / (b - a);
+                    t1 = n;
+                    break;
+                }
             }
         }
         flt = Test();

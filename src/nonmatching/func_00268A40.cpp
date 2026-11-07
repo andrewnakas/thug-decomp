@@ -1,5 +1,5 @@
-/* fuzzy: 96.9 */
-// NEAR MISS (same size 0x5F4, 21 words; "Starting overlapping rail removal"). Left: (1) bbox test pointer regs v0/v1 swapped and the game materialises &b->m10/&b->m20 one block later (after the first direct-offset compare) - here local Vec* bl/bh give the pointer form but too early; (2) final sum: game computes nearX+nearZ (x in v0) then n + that; "n + (nx + nz)" puts x in v1, "n + nx + nz" (this file) gets regs right but adds n first. Idioms that fixed the rest: int n = 0 hoisted before the e/f normalise calls (s2 saved), Gap inline computes the two fabsf first and span = hi - lo as its own statement, Vec 4-float ctor so operator- constructs in place.
+/* fuzzy: 99.6 */
+// NEAR MISS (3 words): bbox test now matches (pointer locals formed after the first x compare, hi-side x/z compares written hi >= lo). Left: final sum, game adds nearX+nearZ (x in v0) then n; "n + X + Z" adds n first, every (X+Z)-first form puts x in v1 (z gets higher global-alloc priority).
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -36,11 +36,6 @@ extern char D_003761B8[];
 extern "C" int func_00103F28(char* fmt, ...);
 extern "C" void func_0026B460(Node_00268A40* n, int a);
 extern "C" int func_001CB7B8(Node_00268A40* n, int a);
-
-static inline bool Overlap_00268A40(const Vec_00268A40& lo1, const Vec_00268A40& hi1, const Vec_00268A40& lo2, const Vec_00268A40& hi2)
-{
-    return lo1[0] <= hi2[0] && lo2[0] <= hi1[0] && lo1[2] <= hi2[2] && lo2[2] <= hi1[2] && lo1[1] <= hi2[1] && lo2[1] <= hi1[1];
-}
 
 static inline float Gap_00268A40(float a0, float a1, float b0, float b1)
 {
@@ -93,7 +88,10 @@ void Rail_00268A40::RemoveOverlaps()
         for (int j = i + 1; j < m5C && func_001CB7B8(a, 2); j++) {
             Node_00268A40* b = &m50[j];
             if (!b->m50) continue;
-            Vec_00268A40* bl = &b->m10; Vec_00268A40* bh = &b->m20; if (bl->c[0] <= hi[0] && lo[0] <= bh->c[0] && bl->c[2] <= hi[2] && lo[2] <= bh->c[2] && bl->c[1] <= hi[1] && lo[1] <= bh->c[1]) {
+            if (b->m10[0] <= hi[0] && b->m20[0] >= lo[0]) {
+            Vec_00268A40* bl = &b->m10;
+            Vec_00268A40* bh = &b->m20;
+            if (bl->c[2] <= hi[2] && bh->c[2] >= lo[2] && bl->c[1] <= hi[1] && lo[1] <= bh->c[1]) {
                 Vec_00268A40 qa = b->m30;
                 Vec_00268A40 qb = b->m50->m30;
                 Vec_00268A40 db = qb - qa;
@@ -119,7 +117,7 @@ void Rail_00268A40::RemoveOverlaps()
                         }
                     }
                 }
-            }
+            }}
         }
     }
     func_00103F28(D_003761B8, removed);

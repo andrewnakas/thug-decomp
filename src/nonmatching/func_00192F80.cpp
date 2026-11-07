@@ -1,4 +1,4 @@
-/* fuzzy: 79.6 */
+/* fuzzy: 85.2 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -160,6 +160,7 @@ extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
 struct Sub_00192F80 {
     char pad[0x220 - 0x140];
+    ~Sub_00192F80();
 };
 extern "C" void func_00209240(Sub_00192F80* s);
 
@@ -337,10 +338,9 @@ void Car_00192F80::Init(void* params)
             t->e2.y = p->y;
             t->e2.z = p->z;
             t->e2 -= t->v0;
-            Vec_00192F80 b = t->v0 + t->e1;
-            float lb = Len_00192F80(b);
-            Vec_00192F80 c = t->v0 + t->e2;
-            sum += Len_00192F80(t->v0) + lb + Len_00192F80(c);
+            sum += Len_00192F80(t->v0);
+            sum += Len_00192F80(t->v0 + t->e1);
+            sum += Len_00192F80(t->v0 + t->e2);
             t->m80 = Len_00192F80(t->e1);
             t->m84 = Len_00192F80(t->e2);
         }
@@ -365,13 +365,10 @@ void Car_00192F80::Init(void* params)
         func_001E7EB0(s, 0x82BCBB10, &m340, 0);
         if (func_001E8618(s, 0xC023FA75)) {
             Arr_00192F80* a;
-            int i = 0;
             func_001E8248(s, 0xC023FA75, &a, 1);
             m324 = a->m_size;
-            float* f = m328;
-            while (i < m324) {
-                *f = func_001E9298(a, i++);
-                f++;
+            for (int i = 0; i < m324; i++) {
+                m328[i] = func_001E9298(a, i);
             }
         }
     }
@@ -383,19 +380,20 @@ void Car_00192F80::Init(void* params)
         if (!m318) {
             m318 = new Wheel_00192F80[n];
         }
-        for (int i = m1C4 - 1; i != -1; i--) {
-            func_00196340(this, &m318[i], func_001E9378(a, i));
+        for (int i = m1C4; --i != -1;) {
+            void* wp = func_001E9378(a, i);
+            func_00196340(this, &m318[i], wp);
         }
     }
     if (func_001E8618(params, 0x371BADFF)) {
         void* s;
         func_001E8180(params, 0x371BADFF, &s, 1);
-        for (int i = m1C4 - 1; i != -1; i--) {
+        for (int i = m1C4; --i != -1;) {
             func_00196340(this, &m318[i], s);
         }
     }
     m1C8 = 0;
-    for (int i = m1C4 - 1; i != -1; i--) {
+    for (int i = m1C4; --i != -1;) {
         if (m318[i].mD4) {
             m1C8++;
         }
@@ -438,8 +436,10 @@ void Car_00192F80::Init(void* params)
         m40.Normalize();
         m70.FromQuat(m40);
         m70.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
-        mC->m70 = m70;
-        mC->mC0 = m70;
+        Mat_00192F80* d = &mC->m70;
+        *d = m70;
+        d = &mC->mC0;
+        *d = m70;
     }
     m20 = mC->m50;
     if (func_001E8618(params, 0x7F261953)) {
@@ -460,7 +460,7 @@ void Car_00192F80::Init(void* params)
     m50.Set(0.0f, 0.0f, 0.0f, 1.0f);
     m140.Set(0.0f, 0.0f, 0.0f, 1.0f);
     m150.Set(0.0f, 0.0f, 0.0f, 1.0f);
-    for (int i = m1C4 - 1; i != -1; i--) {
+    for (int i = m1C4; --i != -1;) {
         Wheel_00192F80* w = &m318[i];
         w->m4 = 1;
         w->m0 = w->mD8;

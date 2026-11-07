@@ -1,13 +1,14 @@
-/* fuzzy: 71.3 */
+/* fuzzy: 74.0 */
 extern "C" void* func_00331404(void* dst, const void* src, int n);
+struct C_00181C00;
+extern "C" int func_00181BC0(C_00181C00* self);
+extern "C" void func_00181C00(C_00181C00* self, char* src);
 
 struct C_00181C00 {
     char pad0[0x28];
     char* m_pixels;
     char pad2C[4];
     char* m_clut;
-    bool IsSwizzled();
-    void Upload(char* src);
 };
 
 struct Src_001472C0 {
@@ -82,8 +83,8 @@ bool Tex_001472C0::Copy(Tex_001472C0* o)
     if ((m_10 & 0xFF00FF) != (o->m_10 & 0xFF00FF)) return false;
     char* dpix = m_dst->m_pixels;
     char* spix = o->m_src->m_pixels;
-    if (m_dst->IsSwizzled()) {
-        m_dst->Upload(spix);
+    if (func_00181BC0(m_dst)) {
+        func_00181C00(m_dst, spix);
     } else {
         func_00331404(dpix, spix, o->m_src->m_size);
     }

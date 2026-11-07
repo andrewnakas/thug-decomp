@@ -1,4 +1,4 @@
-/* fuzzy: 78.0 */
+/* fuzzy: 91.0 */
 struct Button_001CE2E8 {
     char pad[0x14];
     int m_pressed;
@@ -53,6 +53,17 @@ extern "C" void func_0026FDC8(Button_001CE2E8* b);
 extern "C" void func_001F0210(unsigned int name, void* params, int a, int b, int c);
 extern "C" float func_0010FAB8();
 
+static inline void Approach_001CE2E8(float& cur, float target, float dt)
+{
+    float d = target - cur;
+    if (__builtin_fabsf(d) > 0.001f) {
+        float r = dt * 3.75f;
+        cur = cur + d * r;
+    } else {
+        cur = target;
+    }
+}
+
 void Cam_001CE2E8::Update()
 {
     Pad_001CE2E8* pad;
@@ -81,29 +92,21 @@ void Cam_001CE2E8::Update()
     float dt = func_0010FAB8();
     if (!m_free && !m_lerping) {
         float v = pad->m_stickY;
-        float target = (v < 0.0f) ? v * -0.97999996f : v * -0.7f;
-        float d = target - m_tilt;
-        if (__builtin_fabsf(d) > 0.001f) {
-            float r = dt * 3.75f;
-            m_tilt = m_tilt + d * r;
+        float target;
+        if (v < 0.0f) {
+            target = v * -0.97999996f;
         } else {
-            m_tilt = target;
+            target = v * -0.7f;
         }
-        target = pad->m_stickX * 3.0f;
-        d = target - m_pan;
-        if (__builtin_fabsf(d) > 0.001f) {
-            float r = dt * 3.75f;
-            m_pan = m_pan + d * r;
-        } else {
-            m_pan = target;
-        }
+        Approach_001CE2E8(m_tilt, target, dt);
+        Approach_001CE2E8(m_pan, pad->m_stickX * 3.0f, dt);
     }
-    dt = func_0010FAB8();
+    float dt2 = func_0010FAB8();
     if (m_lerping && m_time > 0.0f) {
-        if (dt < m_time) {
-            m_time -= dt;
-            m_pan += m_panRate * dt;
-            m_tilt += m_tiltRate * dt;
+        if (dt2 < m_time) {
+            m_time -= dt2;
+            m_pan += m_panRate * dt2;
+            m_tilt += m_tiltRate * dt2;
         } else {
             m_time = 0.0f;
             m_pan = m_panTarget;

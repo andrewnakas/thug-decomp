@@ -1,4 +1,4 @@
-/* fuzzy: 71.6 */
+/* fuzzy: 87.7 */
 struct Msg_001FB948 {
     unsigned char m_type;
     char pad1;
@@ -73,8 +73,8 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
             unsigned short seq;
             func_001FA800(&msg);
             func_0031BCC0(mgr->m429C);
-            seq = conn->m4934;
             msg.m_data = &seq;
+            seq = conn->m4934;
             msg.m_len = 2;
             msg.m_type = 9;
             msg.m8 = 0xFF;
@@ -119,17 +119,13 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
         int n = conn->m58 - conn->m54;
         if (n > 0 && func_00202778(conn)) {
             if (mgr->m1834) {
-                if (!func_00200E28(mgr, conn->m54, n, 0)) {
-                    func_00202BC8(conn, conn->m4934);
-                    conn->m58 = conn->m54;
-                    return;
-                }
-            } else {
-                if (!func_00200D18(mgr, conn->m4C, conn->m50, conn->m54, n, 0)) {
-                    func_00202BC8(conn, conn->m4934);
-                    conn->m58 = conn->m54;
-                    return;
-                }
+                if (!func_00200E28(mgr, conn->m54, n, 0))
+                    goto fail;
+            } else if (!func_00200D18(mgr, conn->m4C, conn->m50, conn->m54, n, 0)) {
+            fail:
+                func_00202BC8(conn, conn->m4934);
+                conn->m58 = conn->m54;
+                return;
             }
             mgr->m17F0 += n;
             func_001F9598(conn->m34FC, n + 0x1C, mgr->m0);

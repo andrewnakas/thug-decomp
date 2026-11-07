@@ -1,4 +1,4 @@
-/* fuzzy: 75.4 */
+/* fuzzy: 94.7 */
 struct Obj_002A7A08 {
     char pad0[0x1A4];
     void* m1A4;
@@ -17,8 +17,8 @@ extern "C" void func_002A7AF0(Obj_002A7A08* p, int v);
 void func_002A7A08()
 {
     void* q = D_0038EB78;
-    Obj_002A7A08* p = D_00392068;
     int st = func_001FA698(q);
+    Obj_002A7A08* p = D_00392068;
     switch (st) {
     case 7:
         if (func_001FA6A8(q) == 3) {

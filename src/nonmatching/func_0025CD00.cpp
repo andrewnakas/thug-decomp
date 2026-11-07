@@ -1,4 +1,4 @@
-/* fuzzy: 77.4 */
+/* fuzzy: 92.8 */
 typedef int qword_0025CD00 __attribute__((mode(TI)));
 
 struct Vec_0025CD00 {
@@ -8,6 +8,14 @@ struct Vec_0025CD00 {
             float x, y, z, w;
         } f;
     };
+    Vec_0025CD00() {}
+    Vec_0025CD00(float x, float y, float z, float w)
+    {
+        f.x = x;
+        f.y = y;
+        f.z = z;
+        f.w = w;
+    }
 };
 
 /* One placed piece: its id, flags, attached object and links. */
@@ -28,7 +36,7 @@ struct Mesh_0025CD00 {
 };
 
 /* Model component (0x286A8D26); vptr at 0x18 like every component. */
-class Model_0025CD00 {
+class ModelBase_0025CD00 {
 public:
     char pad0[0x18];
     virtual void V0();
@@ -43,7 +51,12 @@ public:
     virtual void V9();
     virtual void V10();
     virtual void RunScript(void* prof, int a, int b, unsigned int name);
+};
+
+class Model_0025CD00 : public ModelBase_0025CD00 {
+public:
     char pad1C[0x260 - 0x1C];
+
     Mesh_0025CD00* m260;
     char pad264[0x288 - 0x264];
     int m288;
@@ -90,7 +103,7 @@ extern "C" int func_001E8708(void* s, unsigned int name);
 extern "C" void func_001F0210(unsigned int script, void* params, void* o, int a, int b);
 extern "C" Obj_0025CD00* func_0025CBC8(void* params);
 extern "C" Model_0025CD00* func_00185578(void* obj, unsigned int name);
-extern "C" void func_0013F010(Mesh_0025CD00* m, Vec_0025CD00* v);
+extern "C" void func_0013F010(Mesh_0025CD00* m, const Vec_0025CD00& v);
 extern "C" void* func_0018DF68(Model_0025CD00* c);
 extern "C" Obj_0025CD00* func_00184D70(void* p);
 extern "C" Vec_0025CD00 func_0013EF90(Mesh_0025CD00* m);
@@ -129,12 +142,13 @@ bool Builder_0025CD00::Build(int* data)
     int n = *p++;
     for (int k = 0; k < n; k++) {
         int id = *p++;
-        int special = 0;
         unsigned int type = *p;
         int index = func_001F0D78(D_00390C00) + *p++;
         int colour = *p++;
         int link = *p++;
         int flags = *p++;
+        int special = 0;
+
         void* params = func_001E6978(func_001190D0(8));
         if (type == 0x5B8AB877 || type == 0x67E6859A)
             special = 1;
@@ -169,12 +183,9 @@ bool Builder_0025CD00::Build(int* data)
             void* s = func_0011FE18(prof, 0x650FAB6D);
             if (!s)
                 s = func_0011FE18(prof, 0x0FC85BAE);
-            bool hit = s && func_001E8708(s, 0xC4C5B2CC);
-            if (!hit) {
-                s = func_0011FE18(prof, 0x6DF453B6);
-                hit = s && func_001E8708(s, 0xC4C5B2CC);
-            }
-            if (hit) {
+            if ((s && func_001E8708(s, 0xC4C5B2CC)) ||
+                ((s = func_0011FE18(prof, 0x6DF453B6)) && func_001E8708(s, 0xC4C5B2CC))) {
+
                 func_001F0210(0xF37D9F53, 0, 0, 0, 0);
                 if (params)
                     func_001E6AE8(params, 3);
@@ -189,12 +200,7 @@ bool Builder_0025CD00::Build(int* data)
         e->m_obj = func_0025CBC8(params);
         Model_0025CD00* c = func_00185578(e->m_obj, 0x286A8D26);
         if (c) {
-            Vec_0025CD00 v;
-            v.f.x = 0.0f;
-            v.f.y = 0.0f;
-            v.f.z = 0.0f;
-            v.f.w = 50000.0f;
-            func_0013F010(c->m260, &v);
+            func_0013F010(c->m260, Vec_0025CD00(0.0f, 0.0f, 0.0f, 50000.0f));
             if (c->m288) {
                 Obj_0025CD00* owner = func_00184D70(func_0018DF68(c));
                 Model_0025CD00* oc = func_00185578(owner, 0x286A8D26);
@@ -206,11 +212,8 @@ bool Builder_0025CD00::Build(int* data)
                     m40 = owner->m50;
                     m50 = 1;
                 }
-                v.f.w = 50000.0f;
-                v.f.x = 0.0f;
-                v.f.y = 0.0f;
-                v.f.z = 0.0f;
-                func_0013F010(mesh, &v);
+                func_0013F010(mesh, Vec_0025CD00(0.0f, 0.0f, 0.0f, 50000.0f));
+
                 func_0013D910(mesh, 0);
                 func_0013EE48(mesh, 0);
                 func_0018CAF0(oc);

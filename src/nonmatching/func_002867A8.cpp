@@ -1,4 +1,4 @@
-/* fuzzy: 74.3 */
+/* fuzzy: 92.2 */
 typedef int qword __attribute__((mode(TI)));
 union Row_002867A8 {
     qword q;
@@ -6,7 +6,16 @@ union Row_002867A8 {
 };
 struct Mat_002867A8 {
     Row_002867A8 r[4];
+    Mat_002867A8& operator=(const Mat_002867A8& o)
+    {
+        r[0].q = o.r[0].q;
+        r[1].q = o.r[1].q;
+        r[2].q = o.r[2].q;
+        r[3].q = o.r[3].q;
+        return *this;
+    }
 };
+
 
 extern "C" Mat_002867A8* func_00100928(Mat_002867A8* out, float angle);
 extern "C" void func_00323318(Mat_002867A8* a, Mat_002867A8* b, Mat_002867A8* out);

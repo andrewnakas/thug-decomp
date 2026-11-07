@@ -1,4 +1,5 @@
-/* fuzzy: 79.8 */
+/* fuzzy: 85.4 */
+/* sym: _vt$12Ctx_002BD080 = 0x00367170 */
 struct Game_002BD080 {
     char pad[0xAC];
     int mAC;

@@ -1,4 +1,4 @@
-/* fuzzy: 76.8 */
+/* fuzzy: 90.2 */
 typedef int qword_002264C8 __attribute__((mode(TI)));
 
 extern char D_0038F9D0[];
@@ -198,7 +198,11 @@ bool func_002264C8(Card_002264C8* card, unsigned int type, char* name, char* out
     out[1] = 0;
     icon.lineBreak = lineLen * 2;
     icon.bgAlpha = 0x60;
-    icon.colors = colors;
+    __builtin_memcpy(icon.colors.bg, colors.bg, sizeof(colors.bg));
+    __builtin_memcpy(icon.colors.dir, colors.dir, sizeof(colors.dir));
+    __builtin_memcpy(&icon.colors.lights, &colors.lights, sizeof(colors.lights));
+    __builtin_memcpy(&icon.colors.ambient, &colors.ambient, sizeof(colors.ambient));
+
     func_00331A9C(icon.iconFile, iconName);
     func_00331A9C(icon.copyFile, iconName);
     func_00331A9C(icon.delFile, iconName);

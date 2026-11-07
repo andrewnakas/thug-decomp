@@ -1,4 +1,4 @@
-/* fuzzy: 70.3 */
+/* fuzzy: 99.3 */
 typedef int qword_0027F6B0 __attribute__((mode(TI)));
 
 union Vec_0027F6B0 {
@@ -82,12 +82,18 @@ struct Model_0027F6B0 {
     Vec_0027F6B0 mB0;
 };
 
-/* Rail/grind state; the timers are read by func_0026FD78 and func_0026FDA0. */
+/* Rail/grind state; func_0026FDA0 / func_0026FD78 return the time since m8 / mC of the timer block. */
+struct Timer_0027F6B0 {
+    int m0;
+    int m4;
+    unsigned int m8;
+    unsigned int mC;
+};
+
 struct Rail_0027F6B0 {
     char pad0[0x4];
-    char timer[0x8];
-    int m8;
-    char pad10[0xBC - 0x10];
+    Timer_0027F6B0 timer;
+    char pad14[0xBC - 0x14];
     int mBC;
     char padC0[0x128 - 0xC0];
     int m128;
@@ -173,8 +179,8 @@ extern "C" void func_001B0EB8(Pad_0027F6B0* self, int on);
 extern "C" void func_0019C9D8(Snap_0027F6B0* dst, const Snap_0027F6B0* src);
 extern "C" void func_00184920(Model_0027F6B0* m, unsigned int name, int d, float f);
 extern "C" void func_001848F0(Model_0027F6B0* m, unsigned int name, int b);
-extern "C" int func_0026FD78(char* timer);
-extern "C" int func_0026FDA0(char* timer);
+extern "C" int func_0026FD78(Timer_0027F6B0* timer);
+extern "C" int func_0026FDA0(Timer_0027F6B0* timer);
 extern "C" int func_002817F0(Skater_0027F6B0* self, int up, Vec_0027F6B0* pos, Vec_0027F6B0* from, Vec_0027F6B0* vel,
                              Target_0027F6B0* out);
 extern "C" void func_002823A8(Skater_0027F6B0* self, Target_0027F6B0* t);
@@ -183,41 +189,37 @@ extern "C" void func_002823A8(Skater_0027F6B0* self, Target_0027F6B0* t);
    still holds (angle and distance limits), commits the new snapshot, or falls back to state 1. */
 void Skater_0027F6B0::Update()
 {
-    Vec_0027F6B0 d;
-    Vec_0027F6B0 n;
-    Vec_0027F6B0 a;
-    Vec_0027F6B0 b;
-    Vec_0027F6B0 e;
     float cosAng = 0.0f;
     int ok = 0;
     Model_0027F6B0* model = mC;
     Info_0027F6B0* info = m594;
     float k = func_002032A0(0xE4D79235, 0);
+    Rail_0027F6B0* rail = &info->rail;
     m270 = model->vel * k;
     m280 = mC->vel * -200.0f;
     m270 += mC->pos;
     m280 += mC->pos;
     if (func_0028E1C0(this, 0x10, 0)) {
-        model = mC;
-        d = model->pos - mB0.hit;
+        Model_0027F6B0* body = mC;
+        Vec_0027F6B0 d = body->pos - mB0.hit;
         float dist = sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
-        float along = Dot_0027F6B0(model->vel, d);
+        float along = Dot_0027F6B0(body->vel, d);
         if (!m290) {
             if (along < 0.001f) {
-                n = mB0.hit + mB0.normal;
-                model->pos = n;
+                Vec_0027F6B0 n = mB0.hit + mB0.normal;
+                body->pos = n;
             }
         } else {
             ok = 1;
-            n = mB0.normal;
-            a = model->m90;
+            Vec_0027F6B0 n = mB0.normal;
+            Vec_0027F6B0 a = body->m90;
             float facing = Dot_0027F6B0(a, n);
-            b = a;
+            Vec_0027F6B0 b = a;
             func_00101730(&a, &n);
             func_00101730(&b, &m70);
             cosAng = Dot_0027F6B0(a, b);
             float limit;
-            if (!info->rail.m8)
+            if (!info->rail.timer.m4)
                 limit = func_00340F60(func_002032A0(0xEF161C2A, 0) * 0.01745329425f);
             else
                 limit = func_00340F60(func_002032A0(0x4138283E, 0) * 0.01745329425f);
@@ -226,7 +228,7 @@ void Skater_0027F6B0::Update()
             } else {
                 if (0.0f < along) {
                     float ang = func_003412F0(cosAng);
-                    e = mC->pos - mC->oldPos;
+                    Vec_0027F6B0 e = mC->pos - mC->oldPos;
                     float step = sqrtf(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
                     step = step * func_00341158(ang);
                     float minStep = func_002032A0(0x899BA3D0, 0);
@@ -237,7 +239,7 @@ void Skater_0027F6B0::Update()
                 }
                 if (ok) {
                     m5B0->m54.Set(m294);
-                    e = n;
+                    Vec_0027F6B0 e = n;
                     func_0027FDB0(this, &e);
                 }
             }
@@ -249,22 +251,26 @@ void Skater_0027F6B0::Update()
             if (2.0f < sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) && 0.99f < cosAng)
                 m5B0->mD8.Set(1);
         }
-        m5B0->m13C = mB0.m6C;
-        m59C->m20 = mB0.m6C;
+        Snap_0027F6B0* cur = &mB0;
+        int id = cur->m6C;
+        Snap_0027F6B0* prev = &m190;
+        m5B0->m13C = id;
+        m59C->m20 = id;
+
         func_0027FF70(this);
         func_00280188(this);
-        if (m190.m70 != mB0.m70) {
-            func_001BB080(m598, 4, &m190);
+        if (prev->m70 != cur->m70) {
+            func_001BB080(m598, 4, prev);
             if (m5B8->m2C)
                 return;
-            func_001BB080(m598, 5, &mB0);
+            func_001BB080(m598, 5, cur);
             if (m5B8->m2C)
                 return;
         }
         if (!m5A0->m1400)
             func_001B0EB8(m5A0, 0);
-        func_0019C9D8(&m190, &mB0);
-        m59C->m24 = m190.m6C;
+        func_0019C9D8(prev, cur);
+        m59C->m24 = prev->m6C;
     }
     if (ok)
         return;
@@ -273,13 +279,12 @@ fail:
     func_00184920(mC, 0xD96F01F1, 0, 0.0f);
     func_001848F0(mC, 0x3B1001B6, 0);
     func_00280220(this);
-    Rail_0027F6B0* rail = &info->rail;
     if (m5B0->m40) {
         m5B0->m60.Set(1);
         if (!rail->mBC && !rail->m128)
             func_00280448(this);
-        if (func_0026FD78(rail->timer) > func_00203300(0x6BB5B751, 0) &&
-            func_0026FDA0(rail->timer) > func_00203300(0x6BB5B751, 0))
+        if (func_0026FD78(&rail->timer) > func_00203300(0x6BB5B751, 0) &&
+            func_0026FDA0(&rail->timer) > func_00203300(0x6BB5B751, 0))
             m5B0->m60.Set(0);
     } else if (rail->mBC || rail->m128) {
         Target_0027F6B0 t;

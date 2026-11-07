@@ -1,4 +1,3 @@
-/* fuzzy: 74.9 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0013CD08 {
@@ -42,22 +41,23 @@ struct Obj_0013CD08 {
     int Flag(int n) const { return (int)(m1B0 >> n) & 1; }
 };
 
+struct Box_0013CD08 {
+    Vec_0013CD08 a;
+    Vec_0013CD08 b;
+    char pad20[0x20];
+    Box_0013CD08(float ax, float ay, float az, float bx, float by, float bz) : a(ax, ay, az, 1.0f), b(bx, by, bz, 1.0f) {}
+};
+
 extern "C" int func_0013E9D8(Obj_0013CD08* o);
 extern "C" void* func_0013E9B8(Obj_0013CD08* o, int i);
 extern "C" void func_0013C568(void* c, int vis);
-extern "C" void func_0013C740(void* c, Mat_0013CD08* m, int a, int b);
+extern "C" int func_0013C740(void* c, Mat_0013CD08* m, int a, int b);
 extern "C" int func_0011D9E0(void* v);
 extern "C" int func_0011D9E8(void* v);
 extern "C" void func_0011D9F0(void* v, Mat_0013CD08* m, float a, float b, float c);
-extern "C" void func_00123610(Mat_0013CD08* m, Vec_0013CD08* pos, Vec_0013CD08* a, int b, int c, int d,
-                              unsigned int color, Vec_0013CD08* e);
+extern "C" void func_00123610(Mat_0013CD08* m, Vec_0013CD08* pos, Box_0013CD08* box, int b, int c, int d,
+                              unsigned int color);
 
-static inline void Swap_0013CD08(Vec_0013CD08& a, Vec_0013CD08& b)
-{
-    Vec_0013CD08 t = a;
-    a = b;
-    b = t;
-}
 
 extern "C" bool func_0013CD08(Obj_0013CD08* self, Mat_0013CD08* m, int simple, void* view)
 {
@@ -118,11 +118,10 @@ extern "C" bool func_0013CD08(Obj_0013CD08* self, Mat_0013CD08* m, int simple, v
     case 5:
     default: {
         Mat_0013CD08 t = *m;
-        Vec_0013CD08 pos = t.row[3];
         t.row[3] = Vec_0013CD08(0.0f, 0.0f, 0.0f, 1.0f);
-        Vec_0013CD08 hi(10.0f, 10.0f, 10.0f, 1.0f);
-        Vec_0013CD08 lo(-10.0f, -10.0f, -10.0f, 1.0f);
-        func_00123610(&t, &pos, &hi, 0, 1, 0, 0xFF0000C8, &lo);
+        Vec_0013CD08 pos = m->row[3];
+        Box_0013CD08 box(10.0f, 10.0f, 10.0f, -10.0f, -10.0f, -10.0f);
+        func_00123610(&t, &pos, &box, 0, 1, 0, 0xFF0000C8);
         break;
     }
     }

@@ -1,4 +1,3 @@
-/* fuzzy: 96.7 */
 struct Req_001F8E30 {
     int m0;
     int m4;
@@ -20,7 +19,7 @@ extern "C" void func_00327468(char* name);
 extern "C" void* func_003315B8(void* p, int c, int n);
 extern "C" char* func_00331A9C(char* dst, const char* src);
 extern "C" int func_00327BE0(int a, int b, void* data, int size);
-extern "C" void func_00327A90(int a, int b, int* x, int* y);
+extern "C" int func_00327A90(int a, int b, int* x, int* y);
 extern "C" void func_00324540(int a, int b, int c);
 extern "C" void func_001F9E08();
 
@@ -52,7 +51,8 @@ void Conn_001F8E30::Connect()
 
     Req_001F8E30 a;
     func_003315B8(&a, 0, sizeof(a));
-    a.m0 = func_001FA5D0(this);
+    int id = func_001FA5D0(this);
+    a.m0 = id;
     a.m4 = 0;
     func_00331A9C(a.m8, user);
     func_00331A9C(a.m58, pass);
@@ -73,9 +73,9 @@ void Conn_001F8E30::Connect()
     } else if (func_001FA648(this) == 3) {
         r = func_001F8C10(D_0038EB88, 0, D_0038EB88, D_0038EB88, 0x3C, func_001F9E08);
     }
-    if (r == 0) {
-        int y = 4;
+    if (0 == r) {
         int x = 0x4D2;
+        int y = 4;
         func_00327A90(0, 0, &x, &y);
         m2A8 = 1;
         m2BC = x;

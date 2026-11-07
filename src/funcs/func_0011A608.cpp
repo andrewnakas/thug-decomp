@@ -1,4 +1,3 @@
-/* fuzzy: 76.2 */
 struct Node_0011A608 {
     char pad0[0xC];
     Node_0011A608* m_next;
@@ -47,27 +46,28 @@ extern "C" void func_0011A608(Owner_0011A608* self, unsigned int name)
     if (!func_001E8248(script, name, &arr, 0)) {
         return;
     }
-    if (!arr->m_size) {
-        return;
-    }
-    Node_0011A608* head = &self->m_list;
-    for (unsigned int i = 0; i < arr->m_size; i++) {
-        void* s = func_001E9378(arr, i);
-        int frame = 0;
-        if (!func_001E7DE8(s, 0x4A07C332, &frame, 0)) {
-            float t = 0.0f;
-            func_001E7EB0(s, 0x906B67BA, &t, 1);
-            frame = (int)(t * 60.0f);
-        }
-        unsigned int id;
-        func_001E8398(s, 0xC451F558, &id, 1);
-        int flags = 0;
-        func_001E8180(s, 0x7031F10C, &flags, 0);
-        Node_0011A608* n = func_00118B60(func_001046B0(0x28), frame, id, flags);
-        func_00118348(n, 1);
-        n->m_next = head;
-        n->m_prev = head->m_prev;
-        head->m_prev->m_next = n;
-        head->m_prev = n;
+    unsigned int i = 0;
+    if (arr->m_size) {
+        do {
+            void* s = func_001E9378(arr, i);
+            int frame = 0;
+            if (!func_001E7DE8(s, 0x4A07C332, &frame, 0)) {
+                float t = 0.0f;
+                func_001E7EB0(s, 0x906B67BA, &t, 1);
+                frame = (int)(t * 60.0f);
+            }
+            unsigned int id;
+            func_001E8398(s, 0xC451F558, &id, 1);
+            int flags = 0;
+            func_001E8180(s, 0x7031F10C, &flags, 0);
+            Node_0011A608* head = &self->m_list;
+            Node_0011A608* n = func_00118B60(func_001046B0(0x28), frame, id, flags);
+            func_00118348(n, 1);
+            n->m_prev = head->m_prev;
+            n->m_next = head;
+            head->m_prev->m_next = n;
+            head->m_prev = n;
+            i++;
+        } while (i < arr->m_size);
     }
 }

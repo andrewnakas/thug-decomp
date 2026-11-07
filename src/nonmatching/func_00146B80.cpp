@@ -1,4 +1,6 @@
-/* fuzzy: 83.7 */
+/* fuzzy: 86.4 */
+/* sym: _vt$10B_00146B80 = 0x0035D6C8 */
+/* sym: _vt$10C_00146B80 = 0x0035F090 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00146B80 {

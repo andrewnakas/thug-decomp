@@ -1,4 +1,6 @@
 /* fuzzy: 85.8 */
+/* sym: Turn__10C_001A6CA0PvPfifi = 0x001A7108 */
+/* sym: Start__10C_001A6CA0i = 0x001A6A10 */
 extern "C" int func_001E7EB0(void* params, unsigned int name, float* out, int req);
 extern "C" int func_001E7DE8(void* params, unsigned int name, int* out, int req);
 

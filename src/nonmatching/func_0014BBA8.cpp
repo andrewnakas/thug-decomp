@@ -1,4 +1,5 @@
-/* fuzzy: 89.0 */
+/* fuzzy: 92.9 */
+/* sym: __12Img_0014BBA8i = 0x00146C90 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
 

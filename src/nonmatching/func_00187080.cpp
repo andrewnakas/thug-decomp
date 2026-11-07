@@ -1,4 +1,4 @@
-/* fuzzy: 71.8 */
+/* fuzzy: 78.2 */
 extern char D_00361AA0[];
 
 struct Obj_00187080;
@@ -76,18 +76,18 @@ struct Obj_00187080 {
 void Obj_00187080::Propagate(int on)
 {
     It_00187080 it;
-    It_00187080* p = &it;
     unsigned int bit = m1C.Alloc();
-    Obj_00187080* d = it.First(&m4);
-    if (d) {
+    Obj_00187080* o = it.First(&m4);
+    if (o) {
+        It_00187080* p = &it;
         do {
-            d->m20 &= ~bit;
-            d = p->Advance(it.cur);
-        } while (d);
+            o->m20 &= ~bit;
+            o = p->Advance(it.cur);
+        } while (o);
     }
 restart:
     m20 &= ~bit;
-    d = it.First(&m4);
+    Obj_00187080* d = it.First(&m4);
     if (d) {
         It_00187080* q = &it;
         do {

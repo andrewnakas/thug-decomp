@@ -1,4 +1,4 @@
-/* fuzzy: 76.7 */
+/* fuzzy: 88.3 */
 extern "C" void func_0031AA28(int a, int b);
 
 struct Obj_00107FB0 {
@@ -23,15 +23,14 @@ void Obj_00107FB0::Clear()
     if (mDC == 2) {
         int i = 0;
         if (mCC & 2) {
-        char* a = m60.a;
-        while (i < mD4) {
-            char* b = m60.b;
-            a[i] = 0;
-            b[i] = 0;
-            i++;
+            char* a = m60.a;
+            while (i < mD4) {
+                char* b = m60.b;
+                a[i] = 0;
+                b[i] = 0;
+                i++;
+            }
+            func_0031AA28(m10, m14);
         }
-        }
-
-        func_0031AA28(m10, m14);
     }
 }

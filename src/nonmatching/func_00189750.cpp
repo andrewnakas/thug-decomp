@@ -1,4 +1,6 @@
 /* fuzzy: 74.0 */
+/* sym: __11Ev_00189750 = 0x00187C78 */
+/* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;
 extern "C" void* func_0010A638(void* heap, unsigned int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);

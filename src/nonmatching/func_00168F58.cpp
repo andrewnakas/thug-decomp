@@ -1,4 +1,4 @@
-/* fuzzy: 95.7 */
+/* fuzzy: 96.0 */
 extern unsigned char* D_00394274;
 extern unsigned int D_00394280;
 extern unsigned int D_00394284;
@@ -120,8 +120,8 @@ extern "C" void func_00168F58(void* tex, float* a, float* b, float* d, float* c,
     End();
     Put(0x05000001);
     D_00394288 = D_00394274;
-    D_00394284 = 0x20;
     D_0039428C = 4;
+    D_00394284 = 0x20;
     Put(Code(0x6C, 0, D_00394280 + ++n, 0));
     Vec4(a, 0);
     Vec4(b, 0);

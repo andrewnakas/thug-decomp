@@ -1,4 +1,4 @@
-/* fuzzy: 73.1 */
+/* fuzzy: 84.6 */
 struct Node_0011A7A0 {
     int m0;
     unsigned int m_id;
@@ -39,10 +39,10 @@ struct List_0011A7A0 {
     }
     Node_0011A7A0* Nth(unsigned int i)
     {
-        for (Node_0011A7A0* p = First(); p; p = p->Next()) {
-            if (i-- == 0) {
-                return p;
-            }
+        Node_0011A7A0* p = m_first;
+        if (p->m_id == 0xFFFFFFFF) p = 0;
+        for (; p; p = p->Next()) {
+            if (i-- == 0) return p;
         }
         return 0;
     }

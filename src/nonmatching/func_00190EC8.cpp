@@ -1,4 +1,6 @@
-/* fuzzy: 70.3 */
+/* fuzzy: 72.1 */
+/* sym: __13BBox_00190EC8RC12Vec_00190EC8T1 = 0x00102340 */
+/* sym: __15Feeler_001A8940 = 0x00209240 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00190EC8 {
@@ -96,8 +98,9 @@ extern "C" char func_002093E8(Feeler_001A8940* f, int a, int b);
 bool Obj_00190EC8::Probe()
 {
     Feeler_001A8940 f;
-    BBox_00190EC8 box(m_pos - Vec_00190EC8(m_radius, m_radius, m_radius, 1.0f),
-                      m_pos + Vec_00190EC8(m_radius, m_radius, m_radius, 1.0f));
+    Vec_00190EC8 r1(m_radius, m_radius, m_radius, 1.0f);
+    Vec_00190EC8 r2(m_radius, m_radius, m_radius, 1.0f);
+    BBox_00190EC8 box(m_pos - r1, m_pos + r2);
     func_001DA948(D_003E3570, &box);
     f.mD4 = D_003E3570;
     m_hits = 0;

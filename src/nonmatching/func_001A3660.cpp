@@ -1,5 +1,5 @@
-/* cflags: -O1 */
-/* fuzzy: 73.8 */
+/* cflags: -O2 -fno-schedule-insns */
+/* fuzzy: 95.7 */
 struct Ent_001A3660 {
     int m0;
     float m4;
@@ -26,7 +26,7 @@ extern void* D_0038E0A0;
 extern "C" unsigned int func_0010FC30();
 extern "C" void func_001A37A8(void* p, Ent_001A3660* e);
 extern "C" int func_0013B108(void* p, float* out);
-extern "C" int func_001A3A28(void* p, int a, int b, int c, float x, float y);
+extern "C" int func_001A3A28(void* p, int a, float x, float y, float z, int b, int c);
 extern "C" Out_001A3660* func_001DEA98(void* p, void* o, int a);
 struct Obj_001A3660 {
     char pad[0x3C];
@@ -47,13 +47,13 @@ next:
         if (now >= e->m2C) {
         float t;
         if (func_0013B108(&mA0, &t) && t < e->m4 + 240.0f) {
-            if (func_001A3A28(this, e->m0, e->m28, 0, e->m14, e->m10)) {
+            if (func_001A3A28(this, e->m0, e->m14, e->m10, e->m4, e->m28, 0)) {
                 Out_001A3660* o = func_001DEA98(D_0038E0A0, this, e->m0);
                 float f = e->m1C;
                 o->m1C = f;
                 o->m18 = e->m18;
-                o->m20 = e->m20;
                 o->m24 = f * 0.01f;
+                o->m20 = e->m20;
                 o->mC = 0;
                 e->m0 = 0;
             }

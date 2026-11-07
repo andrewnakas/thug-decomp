@@ -1,4 +1,3 @@
-/* fuzzy: 95.4 */
 typedef int qword_001D5078 __attribute__((mode(TI)));
 
 struct Vec_001D5078 {
@@ -28,6 +27,7 @@ struct Mesh_001D5078 {
             v.y += ((Packed_001D5078*)m30)[i].y * 0.0625f;
             v.z += ((Packed_001D5078*)m30)[i].z * 0.0625f;
             v.w = 0.0f;
+            return v;
         } else {
             v.x = ((float*)m30)[i * 3 + 0];
             v.y = ((float*)m30)[i * 3 + 1];

@@ -1,4 +1,3 @@
-/* fuzzy: 96.1 */
 struct Comp_001EC3E8 {
     char m_0;
     unsigned char m_type;
@@ -45,10 +44,11 @@ extern "C" unsigned char* func_001EC3E8(unsigned char* p, char* file)
     Entry_001EC3E8* e = func_001E5188(name);
     e->m_8 = func_00105520(file);
     Comp_001EC3E8* c;
+    unsigned char* next;
     switch (*p) {
     case 14:
         c = func_001E4ED8(func_001E8CD0(0x10));
-        p = func_001ED1C0(p, 0, c);
+        next = func_001ED1C0(p, 0, c);
         goto done;
     case 22:
     case 23:
@@ -58,8 +58,9 @@ extern "C" unsigned char* func_001EC3E8(unsigned char* p, char* file)
     case 30:
     case 31:
         c = func_001E4ED8(func_001E8CD0(0x10));
-        p = func_001ECE50(p, 0, c);
+        next = func_001ECE50(p, 0, c);
     done:
+        p = next;
         e->m_type = c->m_type;
         e->m_C = c->m_8;
         c->m_8 = 0;

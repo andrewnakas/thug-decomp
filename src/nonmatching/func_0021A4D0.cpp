@@ -1,4 +1,4 @@
-/* fuzzy: 96.5 */
+/* fuzzy: 96.9 */
 struct Vec_0021A4D0 {
     float x, y, z, w;
     Vec_0021A4D0() {}
@@ -44,7 +44,7 @@ extern "C" void func_0010A950(Pool_0021A4D0* pool, int a);
 extern "C" void func_0010A9B0(Pool_0021A4D0* pool);
 extern "C" int func_001E8708(void* s, unsigned int key);
 extern "C" int func_001E7C80(void* s, int idx, char** out, int f);
-extern "C" void func_00103F28(const char* fmt, ...);
+extern "C" int  func_00103F28(const char* fmt, ...);
 extern "C" int func_00110DC8(const char* name);
 extern "C" char* func_0010E1E8(const char* name, int* size, int a, int b);
 extern "C" void* func_00334100(const char* p);

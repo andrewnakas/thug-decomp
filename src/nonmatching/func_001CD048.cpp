@@ -1,4 +1,4 @@
-/* fuzzy: 56.4 */
+/* fuzzy: 72.0 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_001CD048 {
@@ -47,6 +47,7 @@ static inline Vec_001CD048 Cross_001CD048(const Vec_001CD048& a, const Vec_001CD
 
 struct Mat_001CD048 {
     Vec_001CD048 r0, r1, r2, r3;
+    Vec_001CD048& operator[](int i) { return (&r0)[i]; }
 };
 
 struct Quat_001CD048 {
@@ -149,6 +150,15 @@ extern "C" float func_0018B1D0(float rate, float dt);
 extern "C" Vec_001CD048 func_001CE018(Cam_001CD048* cam, int snap);
 extern "C" void func_001CE100(Cam_001CD048* cam, float* a, float* b);
 extern "C" void func_0018B200(Vec_001CD048* pos, Mat_001CD048* m, Vec_001CD048* at, Vec_001CD048* look, int a, int b);
+
+static inline Mat_001CD048 Mul_001CD048(Mat_001CD048& a, const Mat_001CD048& b)
+{
+    Mat_001CD048 r = b;
+    func_00323318(&r, &a, &r);
+    return r;
+}
+
+static inline unsigned int Elapsed_001CD048(unsigned int start) { return func_0010FC30() - start; }
 
 static inline float Param_001CD048(unsigned int key)
 {
@@ -271,14 +281,12 @@ void Cam_001CD048::Update()
     }
 
     Mat_001CD048 m;
-    m.r2 = fwd;
-    m.r1.Set(0.0f, 1.0f, 0.0f, 1.0f);
-    m.r0.Set(fwd[2], 0.0f, -fwd[0], 1.0f);
-    m.r3.Set(0.0f, 0.0f, 0.0f, 1.0f);
+    m[2] = fwd;
+    m[1].Set(0.0f, 1.0f, 0.0f, 1.0f);
+    m[0].Set(fwd[2], 0.0f, -fwd[0], 1.0f);
+    m[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
     Mat_001CD048 tmp;
-    Mat_001CD048 rot = *func_00100890(&tmp, mAC->m124 + mA4->m28);
-    func_00323318(&rot, &m, &rot);
-    m = rot;
+    m = Mul_001CD048(m, *func_00100890(&tmp, mAC->m124 + mA4->m28));
     m.r0 = -m.r0;
     m.r2 = -m.r2;
 
@@ -329,34 +337,40 @@ void Cam_001CD048::Update()
     Vec_001CD048 lift = mC->m_mat.r2 * dist + up * upScale;
     pos += lift;
     Vec_001CD048 look = mB0->m50 + up * upScale;
-    Vec_001CD048 dir = look - pos;
-    func_003233B8(&dir, &dir);
-    Vec_001CD048 camUp = mC->m_mat.r1;
-    Vec_001CD048 right = Cross_001CD048(camUp, dir);
-    func_003233B8(&right, &right);
-    camUp = Cross_001CD048(dir, right);
-    func_003233B8(&camUp, &camUp);
-    mC->m_mat.r0 = -right;
-    mC->m_mat.r1 = camUp;
-    mC->m_mat.r2 = -dir;
-    mC->m_mat.r0[3] = 0.0f;
-    mC->m_mat.r1[3] = 0.0f;
-    mC->m_mat.r2[3] = 0.0f;
-    mC->m_mat.r3.Set(0.0f, 0.0f, 0.0f, 1.0f);
+    m[2] = look - pos;
+    func_003233B8(&m[2], &m[2]);
+    m[1] = mC->m_mat[1];
+    m[0] = Cross_001CD048(m[1], m[2]);
+    func_003233B8(&m[0], &m[0]);
+    m[1] = Cross_001CD048(m[2], m[0]);
+    func_003233B8(&m[1], &m[1]);
+    mC->m_mat[0] = -m[0];
+    mC->m_mat[1] = m[1];
+    mC->m_mat[2] = -m[2];
+    mC->m_mat[0][3] = 0.0f;
+    mC->m_mat[1][3] = 0.0f;
+    mC->m_mat[2][3] = 0.0f;
+    mC->m_mat[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
 
     Vec_001CD048 eye = pos - mC->m_mat.r2 * dist;
     Skater_001CD048* sk = mB4;
     Vec_001CD048 shake;
-    bool shaking;
-    if (sk->m1C == 1) {
-        shaking = sk->m24 - 2 < 2 && func_0010FC30() - sk->m20 < 150;
-    } else {
-        shaking = sk->m1C >= 2 && sk->m1C < 5;
-    }
-    if (shaking) {
-        shake = sk->m60 * -18.0f;
-    } else {
+    switch (sk->m1C) {
+    case 1:
+        if (sk->m24 - 2 < 2 && Elapsed_001CD048(sk->m20) < 150) {
+            shake = sk->m60 * -18.0f;
+            break;
+        }
         shake.Set(0.0f, 0.0f, 0.0f, 1.0f);
+        break;
+    case 2:
+    case 3:
+    case 4:
+        shake = sk->m60 * -18.0f;
+        break;
+    default:
+        shake.Set(0.0f, 0.0f, 0.0f, 1.0f);
+        break;
     }
     Vec_001CD048 at = eye + shake;
     func_0018B200(&pos, &mC->m_mat, &at, &look, 1, 1);

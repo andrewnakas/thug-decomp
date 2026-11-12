@@ -1,4 +1,4 @@
-/* fuzzy: 66.2 */
+/* fuzzy: 76.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Pk_001F7410 {
@@ -51,16 +51,16 @@ extern "C" void func_001F7410(unsigned int buf, unsigned int src, int noUpload, 
         func_003231B8(&pk, 0x50, (unsigned long)0xC1B0 << 36);
         func_003231B8(&pk, 0x52, ((unsigned long)0x10 << 32) | 0x10);
         func_00323110(&pk);
-        for (int i = 0; i < bw; i++) {
-            for (int j = 0; j < bh; j++) {
+        for (int i = 0, x = 0; i < bw; i++, x += 16) {
+            for (int j = 0, y = 0; j < bh; j++, y += 16) {
                 func_00322F58(&pk, 0, 0, 0);
                 func_003230F8(&pk, tagImage.q);
-                func_003231B8(&pk, 0x51, ((unsigned long)(i * 16) << 32) | ((unsigned long)(j * 16) << 48));
+                func_003231B8(&pk, 0x51, ((unsigned long)x << 32) | ((unsigned long)y << 48));
                 func_003231B8(&pk, 0x53, 0);
                 func_00323110(&pk);
                 unsigned long* p = func_003230E0(&pk, 4);
-                p[1] = 0;
                 p[0] = ((unsigned long)0x08000000 << 32) | 0x40;
+                p[1] = 0;
                 func_00322FD0(&pk, (void*)(src & 0x0FFFFFFF), 0x40, 0, 0, 0);
                 src += 0x400;
             }

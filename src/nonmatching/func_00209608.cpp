@@ -1,4 +1,4 @@
-/* fuzzy: 54.4 */
+/* fuzzy: 68.3 */
 typedef int qword_00209608 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -20,7 +20,12 @@ struct Vec_00209608 {
 
 static inline Vec_00209608 operator-(const Vec_00209608& a, const Vec_00209608& b)
 {
-    return Vec_00209608(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    Vec_00209608 r;
+    r.x = a.x - b.x;
+    r.y = a.y - b.y;
+    r.z = a.z - b.z;
+    r.w = a.w - b.w;
+    return r;
 }
 static inline float Length_00209608(Vec_00209608 v)
 {
@@ -115,11 +120,14 @@ float Obj_00209608::GetValue()
     float py = m44;
     float pz = m48;
     for (unsigned int i = 0; i < 3; i++) {
-        Vec_00209608 pos = sec->GetVertex(FaceVert_00209608(g, face, i));
+        const Vec_00209608& pos = sec->GetVertex(FaceVert_00209608(g, face, i));
+        float x = pos.x - px;
+        float y = pos.y - py;
+        float z = pos.z - pz;
         v[i].p.w = 1.0f;
-        v[i].p.x = pos.x - px;
-        v[i].p.y = pos.y - py;
-        v[i].p.z = pos.z - pz;
+        v[i].p.x = x;
+        v[i].p.y = y;
+        v[i].p.z = z;
         v[i].val = g->m38[FaceVert_00209608(g, face, i)] * 0.003921568859f;
     }
     Vec_00209608 p(0.0f, 0.0f, 0.0f, 1.0f);
@@ -131,7 +139,8 @@ float Obj_00209608::GetValue()
     float mua;
     float mub;
     func_00101F60(&s1, &s2, &p, &pb, &mua, &mub, 0);
-    float t = Length_00209608(p - v[1].p) / Length_00209608(v[2].p - v[1].p);
+    float t = Length_00209608(p - v[1].p);
+    t /= Length_00209608(v[2].p - v[1].p);
     float mid = v[1].val + (v[2].val - v[1].val) * t;
     float u = sqrtf(v[0].p.x * v[0].p.x + v[0].p.y * v[0].p.y + v[0].p.z * v[0].p.z) / Length_00209608(p - v[0].p);
     return v[0].val + (mid - v[0].val) * u;

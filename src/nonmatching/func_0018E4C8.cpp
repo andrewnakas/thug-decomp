@@ -1,4 +1,4 @@
-/* fuzzy: 65.0 */
+/* fuzzy: 90.3 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -83,10 +83,22 @@ struct Mat_0018E4C8 {
     const Row_0018E4C8& operator[](int i) const { return r[i]; }
     void Ident()
     {
-        r[0].Set(1.0f, 0.0f, 0.0f, 0.0f);
-        r[1].Set(0.0f, 1.0f, 0.0f, 0.0f);
-        r[2].Set(0.0f, 0.0f, 1.0f, 0.0f);
-        r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
+        r[0].x = 1.0f;
+        r[0].y = 0.0f;
+        r[0].z = 0.0f;
+        r[0].w = 0.0f;
+        r[1].x = 0.0f;
+        r[1].y = 1.0f;
+        r[1].z = 0.0f;
+        r[1].w = 0.0f;
+        r[2].x = 0.0f;
+        r[2].y = 0.0f;
+        r[2].z = 1.0f;
+        r[2].w = 0.0f;
+        r[3].x = 0.0f;
+        r[3].y = 0.0f;
+        r[3].z = 0.0f;
+        r[3].w = 1.0f;
     }
     Mat_0018E4C8& operator*=(const Mat_0018E4C8& o);
     void FromQuat(const Quat_0018E4C8& q)
@@ -250,36 +262,38 @@ void Body_0018E4C8::Init(void* params)
     m120.Ident();
 
     // Start from the owner's position and orientation (rotation matrix -> quaternion).
-    Frame_0018E4C8* f = mC;
-    mE0 = f->m50;
-    const Mat_0018E4C8& m = f->m70;
-    Quat_0018E4C8 r;
-    float tr = m[0][0] + m[1][1] + m[2][2];
-    float sq;
-    if (tr > 0.0f) {
-        sq = sqrtf(tr + 1.0f);
-        float hw = sq * 0.5f;
-        sq = 0.5f / sq;
-        func_00119228(&r, hw);
-        func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
-    } else {
-        int i = 0;
-        if (m[0][0] < m[1][1])
-            i = 1;
-        if (m[i][i] < m[2][2])
-            i = 2;
-        int j = (i + 1) % 3;
-        int k = (j + 1) % 3;
-        sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
-        r[i] = sq * 0.5f;
-        sq = 0.5f / sq;
-        r[j] = (m[j][i] + m[i][j]) * sq;
-        r[k] = (m[k][i] + m[i][k]) * sq;
-        r[3] = (m[k][j] - m[j][k]) * sq;
+    {
+        Frame_0018E4C8* f = mC;
+        mE0 = f->m50;
+        const Mat_0018E4C8& m = f->m70;
+        Quat_0018E4C8 r;
+        float tr = m[0][0] + m[1][1] + m[2][2];
+        float sq;
+        if (tr > 0.0f) {
+            sq = sqrtf(tr + 1.0f);
+            float hw = sq * 0.5f;
+            sq = 0.5f / sq;
+            func_00119228(&r, hw);
+            func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
+        } else {
+            int i = 0;
+            if (m[0][0] < m[1][1])
+                i = 1;
+            if (m[i][i] < m[2][2])
+                i = 2;
+            int j = (i + 1) % 3;
+            int k = (j + 1) % 3;
+            sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
+            r[i] = sq * 0.5f;
+            sq = 0.5f / sq;
+            r[j] = (m[j][i] + m[i][j]) * sq;
+            r[k] = (m[k][i] + m[i][k]) * sq;
+            r[3] = (m[k][j] - m[j][k]) * sq;
+        }
+        m100 = r;
+        m100.Normalize();
+        m120.FromQuat(m100);
     }
-    m100 = r;
-    m100.Normalize();
-    m120.FromQuat(m100);
 
     func_001E7FA8(params, 0x0C4C809E, &mF0, 0);
     func_001E7FA8(params, 0xFB1A83B2, &m110, 0);
@@ -385,7 +399,7 @@ void Body_0018E4C8::Init(void* params)
     if (func_001E8618(params, 0xC35CAC0D)) {
         Arr_0018E4C8* list;
         func_001E8248(params, 0xC35CAC0D, &list, 0);
-        for (int i = list->m_size - 1; i != -1; i--) {
+        for (int i = list->m_size; --i != -1;) {
             void* s = func_001E9378(list, i);
             if (func_001E8618(s, 0x806FFF30)) {
                 m50[i].m20 = 0;
@@ -401,7 +415,7 @@ void Body_0018E4C8::Init(void* params)
         Mat_0018E4C8 rot;
         rot.Ident();
         ApplyEuler_0018E4C8(rot, ang);
-        for (int i = m54 - 1; i != -1; i--) {
+        for (int i = m54; --i != -1;) {
             Vec_0018E4C8 p = rot.Rotate(m50[i].pos);
             m50[i].pos = p;
         }
@@ -412,7 +426,7 @@ void Body_0018E4C8::Init(void* params)
         Mat_0018E4C8 rot;
         rot.Ident();
         ApplyEuler_0018E4C8(rot, ang);
-        for (int i = m54 - 1; i != -1; i--) {
+        for (int i = m54; --i != -1;) {
             Vec_0018E4C8 p = rot.Rotate(m50[i].pos);
             m50[i].pos = p;
         }
@@ -423,18 +437,18 @@ void Body_0018E4C8::Init(void* params)
     if (func_001E8618(params, 0x737612C6) && func_001E8618(params, 0x737612C6)) {
         func_001E7FA8(params, 0x737612C6, &c, 0);
     }
-    for (int i = m54 - 1; i != -1; i--) {
+    for (int i = m54; --i != -1;) {
         c += m50[i].pos;
     }
     c *= 1.0f / (float)m54;
     m70 = -c;
-    for (int i = m54 - 1; i != -1; i--) {
+    for (int i = m54; --i != -1;) {
         m50[i].pos -= c;
     }
 
     if (!func_001E7EB0(params, 0x967CD3AE, &m1C, 0)) {
         float mx = 0.0f;
-        for (int i = m54 - 1; i != -1; i--) {
+        for (int i = m54; --i != -1;) {
             float d = sqrtf(m50[i].pos.Length2());
             if (d > mx)
                 mx = d;
@@ -446,7 +460,7 @@ void Body_0018E4C8::Init(void* params)
     }
     D_00394328 = func_002032A0(0x542CF0C7, 0);
     m168 = 0.0f;
-    for (int i = m54 - 1; i != -1; i--) {
+    for (int i = m54; --i != -1;) {
         float d = m50[i].pos.Length2();
         if (m168 < d)
             m168 = d;

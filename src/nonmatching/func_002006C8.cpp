@@ -1,4 +1,4 @@
-/* fuzzy: 58.6 */
+/* fuzzy: 78.1 */
 struct MsgDesc_002006C8 {
     unsigned char m_id;
     unsigned char m1;
@@ -63,7 +63,7 @@ extern "C" void func_001FA800(MsgDesc_002006C8*);
 extern "C" int func_001053C8(char*, int);
 extern "C" char* func_00331A9C(char*, char*);
 extern "C" void* func_00331404(void*, void*, int);
-extern "C" int func_001FF970(void*, int, MsgDesc_002006C8*, int);
+extern "C" int func_001FF970(void*, int, MsgDesc_002006C8*);
 extern "C" void func_0010A950(Heap_002006C8*, int);
 extern "C" void* func_0010A638(Heap_002006C8*, int, int, int);
 extern "C" Pending_002006C8* func_001FA780(void*);
@@ -77,11 +77,9 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
     Header_002006C8 hdr;
     Cont_002006C8 cont;
     MsgDesc_002006C8 desc;
-    func_001FA800(&desc);
-    int chunk = size;
     bool small = size <= 0x100;
-    if (!small)
-        chunk = 0x100;
+    int chunk = small ? size : 0x100;
+    func_001FA800(&desc);
     hdr.m_size = size;
     hdr.m_seq = mgr->m880;
     hdr.m_crc = func_001053C8(data, size);
@@ -94,7 +92,7 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
     desc.m1 = 1;
     desc.m_data = &hdr;
     desc.m_queue = queue;
-    func_001FF970(conn, mgr->m48, &desc, 1);
+    func_001FF970(conn, mgr->m48, &desc);
     if (!small) {
         if (stream) {
             if (chunk < size) {
@@ -113,7 +111,7 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
                     desc.m_priority = 2;
                     desc.m_queue = queue;
                     desc.m1 = 1;
-                    func_001FF970(conn, mgr->m48, &desc, 1);
+                    func_001FF970(conn, mgr->m48, &desc);
                 } while (chunk < size);
             }
         } else {
@@ -127,22 +125,22 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
                 func_00331404(buf, data, size);
             }
             void* mem = func_0010A638(D_00388A70, 0x44, 1, 0);
-            char* cur = buf + chunk;
+            data = buf + chunk;
             Pending_002006C8* p = func_001FA780(mem);
             Node_002006C8* node = func_001FA758(func_001046B0(0x1C), p);
-            p->m_size = size;
             p->m_seq = mgr->m880;
+            p->m_size = size;
             p->m_type = type;
             func_00331A9C(p->m_name, name);
             p->m_queue = queue;
             p->m_buf = buf;
-            p->m_cur = cur;
+            p->m_cur = data;
             int* cnt = &mgr->m_count[queue];
             p->m_count = *cnt;
             p->m_flag = keep;
             Node_002006C8* head = &mgr->m_list;
-            node->m_next = head;
             node->m_prev = head->m_prev;
+            node->m_next = head;
             head->m_prev->m_next = node;
             head->m_prev = node;
             *cnt += blocks;

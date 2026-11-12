@@ -1,4 +1,4 @@
-/* fuzzy: 52.6 */
+/* fuzzy: 57.3 */
 /* sym: _vt$11It_001FF970 = 0x00366B58 */
 
 struct LNode_001FF970 {
@@ -17,13 +17,16 @@ struct LNode_001FF970 {
     }
     void AddSorted(LNode_001FF970* item)
     {
-        LNode_001FF970* n = m10->Valid();
-        while (n) {
-            if (!(n->m8 < item->m8)) {
+        int pri = item->m8;
+        LNode_001FF970* p = m10;
+        while (1) {
+            LNode_001FF970* n = p->Valid();
+            if (!n) break;
+            if (!(n->m8 < pri)) {
                 item->InsertBefore(n);
                 return;
             }
-            n = n->m10->Valid();
+            p = n->m10;
         }
         item->InsertBefore(this);
     }
@@ -116,11 +119,6 @@ struct CNode_001FF970 {
     int m8;
     CNode_001FF970* mC;
     CNode_001FF970* Valid(unsigned k = 0) { return k < ~(unsigned)m4 ? this : 0; }
-    CNode_001FF970* Valid2()
-    {
-        if (~(int)m4) return this;
-        return 0;
-    }
     CNode_001FF970* GetNext()
     {
         CNode_001FF970* n = mC;

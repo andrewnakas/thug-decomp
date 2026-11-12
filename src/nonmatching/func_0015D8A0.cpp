@@ -1,4 +1,4 @@
-/* fuzzy: 76.7 */
+/* fuzzy: 79.7 */
 /* Grass/ground-cover renderer around (x, z): walks the 33x33 cells of a 128-unit grid near the point, and for
    every cell's (up to 4) blades emits a 0x20-byte vertex record into VU1 packets of 0x50 records. */
 struct Row_0015D8A0 {
@@ -24,9 +24,9 @@ struct Field_0015D8A0 {
     float m_originX;
     float m_originZ;
     char pad46C[0x490 - 0x46C];
-    unsigned char m_blade[0x400];
-    unsigned char m_bladeX[0x400];
-    unsigned char m_bladeZ[0x400];
+    unsigned char m_blade[4][0x100];
+    unsigned char m_bladeX[4][0x100];
+    unsigned char m_bladeZ[4][0x100];
     char pad1090[8];
     long m_tex;
 };
@@ -74,7 +74,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
     int oy = (int)(o->m_y * 16.0f);
     int n = o->m_steps;
     for (int i = 0xFE - n; i < 0x100; i++)
-        height[i] = (int)((o->m_height - (float)(i + n - 0xFE) / (float)n * o->m_height) * 16.0f);
+        height[i] = (int)((o->m_height - (float)(i - 0xFE + n) / (float)n * o->m_height) * 16.0f);
     for (int i = 0; i < 0x100; i++)
         spread[i] = (int)((float)i * (2048.0f / 255.0f));
 
@@ -82,7 +82,7 @@ void func_0015D8A0(Field_0015D8A0* o, float x, float z)
     unsigned int* rec = 0;
     unsigned int* start = 0;
     for (int zi = z0; zi <= z1; zi++) {
-int zc = zi >= 0 ? (zi > o->m_rowCount - 1 ? o->m_rowCount - 1 : zi) : 0;
+        int zc = zi < 0 ? 0 : (zi > o->m_rowCount - 1 ? o->m_rowCount - 1 : zi);
         Row_0015D8A0* row = &o->m_rows[zc];
         if (row->m_start == 0x4000)
             continue;
@@ -103,12 +103,12 @@ int zc = zi >= 0 ? (zi > o->m_rowCount - 1 ? o->m_rowCount - 1 : zi) : 0;
             wx += 0x800;
             int idx = sub + (xc & 0xF);
             for (int k = 0; k < 4; k++) {
-                int b = o->m_blade[idx];
+                int b = o->m_blade[k][idx];
                 if (b != 0xFF) {
                     int y = base + height[b];
                     int top = y + oy;
-                    int px = wx + spread[o->m_bladeX[idx]];
-                    int pz = wz + spread[o->m_bladeZ[idx]];
+                    int px = wx + spread[o->m_bladeX[k][idx]];
+                    int pz = wz + spread[o->m_bladeZ[k][idx]];
                     if (left == 0) {
                         out[0] = 0x01000102;
                         start = out;

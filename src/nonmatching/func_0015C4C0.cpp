@@ -1,4 +1,4 @@
-/* fuzzy: 53.1 */
+/* fuzzy: 69.8 */
 /* Grass field setup: samples the ground height (feeler ray from +50000 down to -50000) on a 128-unit grid over
    the world bounding box (clamped to 0x15F x 0x12D cells), quantises heights into a shared table (within 0x1E0),
    keeps for each cell the highest of itself and its +x/+z/+xz neighbours, packs every row's non-empty span into
@@ -177,17 +177,16 @@ void func_0015C4C0(Field_0015C4C0* o)
 
     for (int z = z0; z <= z1; z++) {
         for (int x = x0; x <= x1; x++) {
-            int cols = o->m_cols;
-            unsigned char* cell = grid + (z - z0) * cols + (x - x0);
-            unsigned char n = grid[(z - z0) * cols + (x - x0 + 1)];
-            if (o->m_heights[*cell] < o->m_heights[n])
-                *cell = n;
-            n = grid[(z - z0 + 1) * cols + (x - x0)];
-            if (o->m_heights[*cell] < o->m_heights[n])
-                *cell = n;
-            n = grid[(z - z0 + 1) * cols + (x - x0 + 1)];
-            if (o->m_heights[*cell] < o->m_heights[n])
-                *cell = n;
+            int c = (z - z0) * o->m_cols + (x - x0);
+            int r = (z - z0) * o->m_cols + (x + 1 - x0);
+            int d = (z + 1 - z0) * o->m_cols + (x - x0);
+            int rd = (z + 1 - z0) * o->m_cols + (x + 1 - x0);
+            if (o->m_heights[grid[c]] < o->m_heights[grid[r]])
+                grid[c] = grid[r];
+            if (o->m_heights[grid[c]] < o->m_heights[grid[d]])
+                grid[c] = grid[d];
+            if (o->m_heights[grid[c]] < o->m_heights[grid[rd]])
+                grid[c] = grid[rd];
         }
     }
 
@@ -208,19 +207,18 @@ void func_0015C4C0(Field_0015C4C0* o)
                 }
             }
         }
-        Row_0015C4C0* r = &o->m_rows[z];
         if (first < last) {
-            r->m_start = first;
-            r->m_end = last;
-            r->m_offset = total;
+            o->m_rows[z].m_start = first;
+            o->m_rows[z].m_end = last;
+            o->m_rows[z].m_offset = total;
             for (int x = first; x <= last; x++) {
                 o->m_cells[total] = grid[z * o->m_cols + x];
                 total++;
             }
         } else {
-            r->m_start = 0x4000;
-            r->m_end = 0;
-            r->m_offset = 0;
+            o->m_rows[z].m_start = 0x4000;
+            o->m_rows[z].m_end = 0;
+            o->m_rows[z].m_offset = 0;
         }
     }
     func_0010A8D8(D_00388A70, grid);

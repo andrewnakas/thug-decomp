@@ -114,6 +114,12 @@ def check_nonmatching(path, res):
     # tiny functions: one differing branch is a large share of a handful of instructions, so no floor
     if max(score, fuzzy_v1(res)) < MIN_FUZZY and len(res.target.words) > 12:
         problems.append(f"scores {score:.1f}%, below {MIN_FUZZY:.0f}%: not yet close enough to keep")
+    # a C++ callee, vtable or constructor that maps to no address leaves the unit's behaviour unchecked
+    # (plain C helpers such as libgcc's dpmul legitimately stay unresolved and are skipped)
+    unresolved = sorted({sym for _t, target, sym, lit in (res.ours.relocs.values() if res.ours else ())
+                         if target is None and lit is None and sym and ("__" in sym or sym.startswith("_vt$"))})
+    if unresolved:
+        problems.append("unresolved C++ names (add `/* sym: NAME = 0xADDR */` lines): " + ", ".join(unresolved[:6]))
     return problems
 
 

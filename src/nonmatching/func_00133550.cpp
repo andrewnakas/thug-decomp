@@ -1,4 +1,4 @@
-/* fuzzy: 67.5 */
+/* fuzzy: 74.5 */
 /* sym: __13Inst_00133550 = 0x001D5608 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
@@ -59,8 +59,8 @@ extern "C" void func_00102358(void* box, Vec_00133550* v);
 extern "C" int func_00133550(void* p0, char* name, char* buf, int* outCount, Inst_00133550** outInst,
                              Mesh_00133550** outMesh, void* box, int flag)
 {
-    int any = 0;
     func_003331D0(buf, D_0035D4F8, name, name, flag ? D_00389CD8 : D_00389CE0, func_00132580());
+    int any = 0;
     char* data = func_0010DAB0(buf);
     Header_00133550* h = (Header_00133550*)data;
     if (h) {

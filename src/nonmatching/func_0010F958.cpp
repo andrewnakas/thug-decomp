@@ -1,4 +1,6 @@
-/* fuzzy: 76.2 */
+/* fuzzy: 86.5 */
+/* sym: dpmul = 0x0033E220 */
+/* sym: litodp = 0x0033E798 */
 struct Timer_0010F958 {
     float ratio;
     float scaled;

@@ -262,6 +262,13 @@ class Mutator:
                     continue
                 if has_call(a) and has_call(b):
                     continue
+                if has_call(a) or has_call(b):
+                    # a call may change anything it is handed (a member call, `&x`) and any memory
+                    c, o = (a, b) if has_call(a) else (b, a)
+                    if idents(c) & idents(o) - writes(o) or self._reads_memory(o) or self._barrier(o):
+                        continue
+                    if idents(c) & writes(o):
+                        continue
                 pairs.append((st[k], st[k + 1]))
         if not pairs:
             return None

@@ -1,4 +1,4 @@
-/* fuzzy: 89.8 */
+/* cflags: -fno-gcse */
 extern "C" void func_002BCDF8(void* self);
 extern "C" int* func_002BCE20(void* self, int a);
 extern "C" void* func_00122CF8(unsigned int size);

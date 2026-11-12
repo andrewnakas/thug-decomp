@@ -1,4 +1,4 @@
-/* fuzzy: 74.0 */
+/* fuzzy: 74.6 */
 /* sym: __11Ev_00189750 = 0x00187C78 */
 /* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;
@@ -121,7 +121,7 @@ extern "C" void func_00187D28(Ev_00189750* ev, int a, int b);
 extern "C" void func_00188DF0(void* q, unsigned int key, unsigned int id, int a, int b, int c, int d);
 extern "C" void func_00189018(void* q, int a, int b);
 extern "C" void func_00189340(Mgr_00189750* m, Ev_00189750* ev, int a);
-extern "C" Handler_00189750* func_001895B0(Mgr_00189750* m);
+extern "C" Handler_00189750* func_001895B0(Mgr_00189750* m, unsigned int id);
 extern "C" void func_00189BC0(Mgr_00189750* m, Ev_00189750* ev, int a, int b);
 extern "C" Group_00189750* func_0018AE38(void* table, unsigned int* key, int a);
 extern "C" void func_001EE608(Target_00189750* t);
@@ -180,7 +180,7 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
     } else {
         func_00189340(this, &ev, 0);
         if (ev.m_id != 0x36B2EE74 && !ev.Handled()) {
-            Handler_00189750* h = func_001895B0(this);
+            Handler_00189750* h = func_001895B0(this, ev.m_id);
             if (h) {
                 h->Handle(&ev, 0);
             } else {

@@ -1,5 +1,5 @@
-/* fuzzy: 90.8 */
-/* nonmatch func_002D5F80: best earlier draft (thug-claude-lane3/work/w53/p1/func_002D5F80.fail), 39 of 196 words differ. */
+/* fuzzy: 96.7 */
+/* nonmatch func_002D5F80: 22 of 196 words differ. Iterator matches (NextN + Data() inline layer, as func_002B5278); left: which loop-hoisted %hi() string addresses get callee-saved regs (game: D_00392D18, ours: D_0037C060). */
 extern char D_0037C180[];
 
 struct LNode_002D5F80 {
@@ -8,7 +8,15 @@ struct LNode_002D5F80 {
     int m8;
     LNode_002D5F80* next;
     LNode_002D5F80* prev;
-    bool IsHead() { return data == -1; }
+    int Data() { return data; }
+    LNode_002D5F80* NextN()
+    {
+        LNode_002D5F80* n = next;
+        if (n->data == -1) {
+            return 0;
+        }
+        return n;
+    }
 };
 
 struct Search_002D5F80 {
@@ -19,11 +27,10 @@ struct Search_002D5F80 {
     ~Search_002D5F80() { m8 = D_0037C180; }
     int Next()
     {
-        LNode_002D5F80* n = cur->next;
-        LNode_002D5F80* r = 0;
-        if (!n->IsHead()) r = n;
-        cur = r;
-        if (r) return r->data;
+        cur = cur->NextN();
+        if (cur) {
+            return cur->Data();
+        }
         return 0;
     }
     int First(LNode_002D5F80* head)

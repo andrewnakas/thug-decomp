@@ -1,4 +1,4 @@
-/* fuzzy: 86.2 */
+/* fuzzy: 87.2 */
 /* sym: _vt$13Link_002DA2C0 = 0x0037CA60 */
 /* sym: _vt$13Head_002DA2C0 = 0x0037CA00 */
 /* sym: __13Prio_002DA2C0 = 0x002DB438 */
@@ -121,8 +121,8 @@ void Obj_002DA2C0::Send()
         d->InsertSorted(&head, pri);
     }
     d = it.First(&head);
-    Iter_002DA2C0* q = &it;
     if (d) {
+        Iter_002DA2C0* q = &it;
         do {
             void* s = func_001E6978(func_001190D0(8));
             func_001E7268(s, D_00392E90, d->m3C);

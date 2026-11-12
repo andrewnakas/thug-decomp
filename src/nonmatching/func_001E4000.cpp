@@ -1,4 +1,5 @@
-/* fuzzy: 97.0 */
+/* cflags: -fno-gcse */
+/* fuzzy: 99.1 */
 extern int D_0038E31C;
 extern long D_00394120;
 extern int D_0038882C;

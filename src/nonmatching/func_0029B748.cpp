@@ -1,4 +1,5 @@
-/* fuzzy: 86.0 */
+/* cflags: -fno-gcse */
+/* fuzzy: 97.9 */
 struct Vec_0029B748 {
     float x, y, z, w;
 };

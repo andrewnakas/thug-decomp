@@ -1,4 +1,5 @@
-/* fuzzy: 81.1 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 82.1 */
 
 
 struct Slot_00292630 {

@@ -39,7 +39,9 @@ The mutations are text- and brace-aware and stay inside one block of statements.
   for2while    `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
   flags        add or drop one allowed per-file flag (--sweep-flags also tries every flag and pair up front)
   countdown    `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
---focus regalloc multiplies the declaration and live-range passes by 4.
+--focus regalloc multiplies the declaration and live-range passes by 4. --sweep-wrappers first calls each extern
+callee through a `static inline` pass-through (same arguments, same order), one callee at a time: in gcc 2.95 the
+inlined call is allocated and scheduled differently, and this alone matched func_001C9C38 and func_001FC238.
 
 Width guard: a candidate whose load/store widths or zero/sign extensions (lb/lh/lw.., andi 0xFF/0xFFFF,
 16/24-bit shift pairs) move further from the game's than the starting unit's did, in any one class, is
@@ -1194,6 +1196,29 @@ def flag_variants(src, allowed):
         yield (f"/* cflags: {' '.join(fl)} */\n" + body if fl else body), fl
 
 
+def wrapper_variants(src):
+    """The unit with every call of one extern "C" callee made through a `static inline` pass-through
+    (same arguments, same order), one variant per callee that is called."""
+    for d in re.finditer(r'extern\s+"C"\s+([\w\s*]+?)\s*\b(func_[0-9A-F]{8})\s*\(([^()]*)\)\s*;\n', src):
+        ret, fn, plist = re.sub(r"\s+", " ", d.group(1)).strip(), d.group(2), d.group(3).strip()
+        ps = [x.strip() for x in plist.split(",")] if plist and plist != "void" else []
+        if "..." in ps:
+            continue
+        decl = []
+        for i, x in enumerate(ps):
+            m = re.match(r"^(.*?[\s*&])([A-Za-z_]\w*)$", x)
+            decl.append((m.group(1).strip(), m.group(2)) if m and m.group(2) not in TYPE_WORDS else (x, f"a{i}"))
+        rest = src[d.end():]
+        if not re.search(r"\b" + fn + r"\s*\(", rest):
+            continue
+        w = f"Wrap_{fn[5:]}"
+        if w in src:
+            continue
+        helper = f"static inline {ret} {w}(" + ", ".join(f"{t} {v}" for t, v in decl) + ") { " + \
+            ("" if ret == "void" else "return ") + f"{fn}(" + ", ".join(v for _, v in decl) + "); }\n"
+        yield src[:d.end()] + helper + re.sub(r"\b" + fn + r"(\s*\()", w + r"\1", rest), fn
+
+
 def fmt(sc):
     return "MATCH" if sc[0] else f"fuzzy {sc[1]:.1f}, {-sc[2]} words differ"
 
@@ -1272,6 +1297,8 @@ def main():
     ap.add_argument("--out", help="output dir (default work/cxxperm/<name>)")
     ap.add_argument("--sweep-flags", action="store_true",
                     help="first try every allowed per-file flag and every pair of them on the starting unit")
+    ap.add_argument("--sweep-wrappers", action="store_true",
+                    help="first call each extern callee through a static inline pass-through, one at a time")
     ap.add_argument("--focus", choices=["regalloc"], help="bias towards the declaration and live-range passes")
     ap.add_argument("--no-width-guard", action="store_true",
                     help="keep candidates whose load/store widths or extensions drift from the game's")
@@ -1317,6 +1344,16 @@ def main():
                 (out / f"flags_{'_'.join(f.strip('-') for f in fl)}.cpp").write_text(
                     f"/* cxxperm: {fmt(fs)} via flags */\n" + fsrc)
         print(f"  flag sweep: {tried} flag sets, {better} better than base", flush=True)
+    if a.sweep_wrappers:
+        tried = better = 0
+        for wsrc, fn in wrapper_variants(base):
+            ws = sc0.score(wsrc)
+            tried += 1
+            if ws and ws > base_score:
+                better += 1
+                print(f"  wrapper {fn}: {fmt(ws)}", flush=True)
+                (out / f"wrap_{fn[5:]}.cpp").write_text(f"/* cxxperm: {fmt(ws)} via pass-through {fn} */\n" + wsrc)
+        print(f"  wrapper sweep: {tried} callees, {better} better than base", flush=True)
 
     best = []                                 # (score, src, how)
     wins = {}

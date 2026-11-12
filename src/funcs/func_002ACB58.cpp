@@ -1,4 +1,3 @@
-/* fuzzy: 89.7 */
 struct Item_002ACB58 {
     char pad[0x14];
     void* m14;
@@ -12,14 +11,8 @@ struct Node_002ACB58 {
     Node_002ACB58* mC;
     int m10;
     virtual ~Node_002ACB58();
+    Node_002ACB58* Valid(unsigned k = 0) { return k < ~(unsigned)m4 ? this : 0; }
 };
-
-static inline Node_002ACB58* Valid_002ACB58(Node_002ACB58* n)
-{
-    if ((int)n->m4 != -1)
-        return n;
-    return 0;
-}
 
 struct Mgr_002ACB58 {
     char pad[0x100];
@@ -59,18 +52,20 @@ int Obj_002ACB58::Handle()
         }
         return 4;
     }
-    Node_002ACB58* node = Valid_002ACB58(mgr->m100);
+    Node_002ACB58* node = mgr->m100->Valid();
     while (node) {
         Item_002ACB58* item = node->m4;
-        Node_002ACB58* next = Valid_002ACB58(node->mC);
+        Node_002ACB58* next = node->mC->Valid();
         if (item->m14 == m14) {
             func_00200F28(m10, item->m14);
             delete node;
             if (item)
                 func_002B3168(item, 3);
-            return 4;
+            goto found;
         }
         node = next;
     }
     return 2;
+found:
+    return 4;
 }

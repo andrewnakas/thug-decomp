@@ -1,4 +1,3 @@
-/* fuzzy: 91.3 */
 struct Obj_002D7950_A {
     char pad0[0x108];
     int m108;
@@ -37,7 +36,7 @@ extern "C" void func_0010A950(void* p, int v);
 extern "C" void func_0010A9B0(void* p);
 extern "C" void* func_001046B0(int size);
 extern "C" Node_002D7950* func_002D88A8(void* p);
-extern "C" void func_00331A9C(char* dst, char* src);
+extern "C" char* func_00331A9C(char* dst, char* src);
 extern "C" void func_002E8A58(Obj_002D7950* p, int v, char* s);
 
 extern "C" void func_002D7950(Obj_002D7950* owner, char* name, int value)

@@ -1,4 +1,4 @@
-/* fuzzy: 87.2 */
+/* fuzzy: 88.5 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -96,8 +96,8 @@ struct Node_002B11C8 {
     Node_002B11C8* Valid() { return (int)data != -1 ? this : 0; }
     void InsertBefore(Node_002B11C8* n)
     {
-        n->next = this;
         n->prev = prev;
+        n->next = this;
         prev->next = n;
         prev = n;
     }
@@ -121,9 +121,10 @@ struct Head_002B11C8 : Node_002B11C8 {
     void Key();
     void InsertSorted(Score_002B11C8* s)
     {
+        int key = s->key;
         Node_002B11C8* n = this;
-        while ((n = ~(int)n->next->data ? n->next : 0) != 0) {
-            if (s->key >= n->key) {
+        while ((n = n->next->Valid()) != 0) {
+            if (key >= n->key) {
                 n->InsertBefore(s);
                 return;
             }

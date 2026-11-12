@@ -213,3 +213,12 @@ Example: `src/funcs/func_002BA688.cpp`.
   `$v0`; a callee returning 0/1 in `$v0` must not be declared `float` (that tested `$f0`).
 - **Parameters = what callers pass.** If the game's call site loads an argument register before the call, declare
   that parameter even when the callee ignores it, with a comment citing the call site. Never invent one no caller sets.
+
+## `-mno-split-addresses` (allowed per file since 2026-11-12)
+
+The Ratchet & Clank 3 decomp, built with the same SN 1.36 compiler, found that this flag was set per source file in
+the original builds: it changes how global addresses are formed (`lui`/`addiu` pairs vs. split `%hi`/`%lo` uses).
+A sweep of all 460 nonmatching units found no new exact match, but 27 units got closer, notably func_002D41E0
+(544 -> 275 differing words), func_00116A48 (821 -> 656), func_00189750 (235 -> 173), func_001D4648 (52 -> 31) and
+func_001538C8 (20 -> 11). Try it as `/* cflags: -mno-split-addresses */` when the game loads a global's address as a
+whole and you get split loads. Neighbouring functions from one source file should share the flag.

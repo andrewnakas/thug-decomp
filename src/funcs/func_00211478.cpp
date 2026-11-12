@@ -1,4 +1,3 @@
-/* fuzzy: 97.6 */
 struct Params_00211478 {
     int id;
     int val;
@@ -54,6 +53,8 @@ int func_00211478(int id, Info_00211478* info)
         func_00187900(func_0022E040(mgr), func_00211438, &p);
         break;
     case 0x30C19600:
+        func_00269070(rail, id, 0, func_001E87B8(s, D_003704E8));
+        break;
     case 0x8E6B02AD:
         func_00269070(rail, id, 0, func_001E87B8(s, D_003704E8));
         break;

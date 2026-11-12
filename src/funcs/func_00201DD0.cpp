@@ -1,8 +1,7 @@
-/* fuzzy: 97.8 */
-/* sym: _vt$12ItA_00201DD0 = 0x00366AF8 */
-/* sym: _vt$12ItB_00201DD0 = 0x00366AC0 */
-/* sym: _vt$12ItC_00201DD0 = 0x00366AA8 */
-/* sym: _vt$12ItD_00201DD0 = 0x00366A90 */
+/* sym: _vt$14IterA_00201DD0 = 0x00366AF8 */
+/* sym: _vt$14IterB_00201DD0 = 0x00366AC0 */
+/* sym: _vt$14IterC_00201DD0 = 0x00366AA8 */
+/* sym: _vt$14IterD_00201DD0 = 0x00366A90 */
 
 struct Node_00201DD0 {
     int m0;
@@ -46,10 +45,10 @@ struct List_00201DD0 {
         }                                         \
     };
 
-ITER_00201DD0(ItA_00201DD0)
-ITER_00201DD0(ItB_00201DD0)
-ITER_00201DD0(ItC_00201DD0)
-ITER_00201DD0(ItD_00201DD0)
+ITER_00201DD0(IterA_00201DD0)
+ITER_00201DD0(IterB_00201DD0)
+ITER_00201DD0(IterC_00201DD0)
+ITER_00201DD0(IterD_00201DD0)
 
 class Item_00201DD0 : public Node_00201DD0 {
 public:
@@ -79,15 +78,15 @@ struct Mgr_00201DD0 {
 
 void Mgr_00201DD0::Clear()
 {
-    ItA_00201DD0 a;
-    ItB_00201DD0 b;
-    ItC_00201DD0 c;
-    ItD_00201DD0 d;
+    IterA_00201DD0 a;
+    IterB_00201DD0 b;
+    IterC_00201DD0 c;
+    IterD_00201DD0 d;
     Item_00201DD0* o;
     Item_00201DD0* n;
     o = (Item_00201DD0*)a.First(&m_a);
     if (o) {
-        ItA_00201DD0* pa = &a;
+        IterA_00201DD0* pa = &a;
         do {
             n = (Item_00201DD0*)pa->Advance(a.cur);
             delete o;

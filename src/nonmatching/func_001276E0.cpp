@@ -1,4 +1,5 @@
-/* fuzzy: 55.1 */
+/* cflags: -fno-gcse */
+/* fuzzy: 73.1 */
 struct Obj_001276E0;
 struct Handle_001276E0;
 

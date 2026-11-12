@@ -1,4 +1,5 @@
-/* fuzzy: 77.3 */
+/* cflags: -fno-gcse */
+/* fuzzy: 80.9 */
 typedef int qword_001D5EE0 __attribute__((mode(TI)));
 
 struct Vec_001D5EE0 {

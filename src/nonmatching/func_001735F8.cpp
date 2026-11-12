@@ -1,4 +1,5 @@
-/* fuzzy: 49.2 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 63.8 */
 /* Text draw: walks the string, handles the \C (colour), \S (special glyph), \B (button-font glyph) and \\ escapes,
    and emits one sprite (two UV/XY vertex pairs) per glyph into the VU1 batch, restarting the batch when the
    packet buffer fills up. */

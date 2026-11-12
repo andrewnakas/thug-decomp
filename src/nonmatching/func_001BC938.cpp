@@ -1,4 +1,5 @@
-/* fuzzy: 81.8 */
+/* cflags: -fno-gcse */
+/* fuzzy: 82.6 */
 /* sym: __13Desc_001BC938 = 0x00141910 */
 typedef int qword __attribute__((mode(TI)));
 

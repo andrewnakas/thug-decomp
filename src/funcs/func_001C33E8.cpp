@@ -1,4 +1,3 @@
-/* fuzzy: 95.2 */
 typedef int qword_001C33E8 __attribute__((mode(TI)));
 
 struct Vec_001C33E8 {
@@ -107,14 +106,14 @@ void Walk_001C33E8::Snap()
         void* o = func_00185578(m_obj, 0x8A897DD2);
         func_001B6BC0(o, n);
         func_001B6BD0(o, &f.m_point);
-    } else {
-        func_00103F28(D_00363408, D_00363427, 0x898, D_003634F0);
-        m_pos.q = m_lastPos.q;
-        m_vel.Set(0.0f, 0.0f, 0.0f);
-        m_50 = 0;
-        func_001BF130(this, 0);
-        m_B50 = 0;
-        m_up.Set(0.0f, 1.0f, 0.0f);
-        m_state = 0x57FF2A27;
+        return;
     }
+    func_00103F28(D_00363408, D_00363427, 0x898, D_003634F0);
+    m_pos.q = m_lastPos.q;
+    m_vel.Set(0.0f, 0.0f, 0.0f);
+    m_50 = 0;
+    func_001BF130(this, 0);
+    m_B50 = 0;
+    m_up.Set(0.0f, 1.0f, 0.0f);
+    m_state = 0x57FF2A27;
 }

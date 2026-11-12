@@ -198,3 +198,18 @@ Example: `src/funcs/func_002BA688.cpp`.
   it (e.g. `lw` of a request counter after `++m34`, value never used), reproduce it with a plausible inline accessor on
   the class (`int NextId() { return ++m_34; }`, called as `s->NextId();`), used the same way across the family. Bare
   expression statements, comma tricks and ignored reads of non-volatile data remain banned.
+
+## Findings from the 2026-11-12 rounds (lane 3)
+
+- **Cross-jumping as an allocation lever:** writing a shared tail twice (a `case`'s if/else arm that repeats another
+  case's body) adds uses before register allocation; gcc merges the copies afterwards. Case order decides which copy
+  survives, and with it the block layout (func_002A7A08). This replaces a `goto` into another case.
+- **Stopping an unwanted if-conversion:** where the game keeps `beqz` with 0 in the delay slot, gcc may rewrite
+  `ret = 0 / ret = load` as `ret = 0; if (c) ret = load;`. An extra inline return layer (`Node::Data()` called
+  from `Iter::Advance`) stops it (func_002B5278, func_002D5F80).
+- **Top-tested inner loop:** g++ rotates a loop only when its first conditional jump goes to the loop end; write
+  `for (int j = 0; ; j++) { ... if (v) { ... } else break; }` to keep the test at the top (func_002B8018).
+- **Signatures are behaviour:** check each callee's real return register. strcpy-like callees return `char*` in
+  `$v0`; a callee returning 0/1 in `$v0` must not be declared `float` (that tested `$f0`).
+- **Parameters = what callers pass.** If the game's call site loads an argument register before the call, declare
+  that parameter even when the callee ignores it, with a comment citing the call site. Never invent one no caller sets.

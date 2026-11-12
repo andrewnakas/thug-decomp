@@ -1,4 +1,4 @@
-/* fuzzy: 88.5 */
+/* fuzzy: 88.8 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -143,9 +143,7 @@ struct ListIt_002B11C8 {
     Score_002B11C8* Next()
     {
         cur = cur->next->Valid();
-        if (!cur)
-            return 0;
-        return (Score_002B11C8*)cur->data;
+        return cur ? (Score_002B11C8*)cur->data : 0;
     }
 };
 

@@ -1,4 +1,4 @@
-/* fuzzy: 92.2 */
+/* fuzzy: 92.9 */
 typedef int qword __attribute__((mode(TI)));
 union Row_002867A8 {
     qword q;
@@ -145,16 +145,15 @@ void Obj_002867A8::Spin()
     int held = 0;
     Btn_002867A8* r;
     if (m368) {
-        Btn_002867A8* l = pad->Get(4);
         r = pad->Get(7);
-        if (l->m14) {
-            func_0026FDC8(l);
+        if (pad->Get(4)->m14) {
+            func_0026FDC8(pad->Get(4));
             if (!r->m4)
                 m36C += 3.141592741f;
         }
         if (r->m14) {
             func_0026FDC8(r);
-            if (!l->m4)
+            if (!pad->Get(4)->m4)
                 m36C -= 3.141592741f;
         }
         if (m36C != 0.0f) {

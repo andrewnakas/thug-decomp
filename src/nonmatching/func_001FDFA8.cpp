@@ -1,4 +1,5 @@
-/* fuzzy: 91.1 */
+/* cflags: -mno-split-addresses */
+/* fuzzy: 96.4 */
 /* sym: dpmul = 0x0033E220 */
 /* sym: dptoli = 0x0033E8E8 */
 extern "C" double func_0010FAC8();

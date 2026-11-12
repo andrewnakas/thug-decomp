@@ -1,5 +1,4 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 82.1 */
+/* fuzzy: 96.2 */
 
 
 struct Slot_00292630 {
@@ -82,8 +81,8 @@ extern "C" void func_00292630(Obj_00292630* self)
     self->m316 = 0;
     self->m317 = 0;
     for (i = 0; i < 8; i++) {
-        self->m120[i].m0 = 0;
-        self->m120[i].m20 = 0;
+        (self->m120 + i)->m0 = 0;
+        (self->m120 + i)->m20 = 0;
     }
     self->m2A8 = 0;
 }

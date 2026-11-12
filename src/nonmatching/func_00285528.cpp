@@ -1,4 +1,5 @@
-/* fuzzy: 87.3 */
+/* fuzzy: 99.6 */
+/* sym: __as__13Wall_00285528RC13Wall_00285528 = 0x0019C9D8 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_00285528 {
@@ -9,10 +10,10 @@ union Vec_00285528 {
     Vec_00285528() {}
     Vec_00285528(float x, float y, float z, float w)
     {
-        c[0] = x;
-        c[1] = y;
-        c[2] = z;
-        c[3] = w;
+        (*this)[0] = x;
+        (*this)[1] = y;
+        (*this)[2] = z;
+        (*this)[3] = w;
     }
     void operator+=(const Vec_00285528& o)
     {
@@ -61,6 +62,7 @@ inline Vec_00285528 operator+(const Vec_00285528& a, const Vec_00285528& b)
 struct Mat_00285528 {
     Vec_00285528 r[4];
     const Vec_00285528& operator[](int i) const { return r[i]; }
+    Vec_00285528 Up() const { return Vec_00285528(r[1][0], r[1][1], r[1][2], r[1][3]); }
     Mat_00285528& operator=(const Mat_00285528& o)
     {
         r[0] = o[0];
@@ -138,17 +140,20 @@ struct Wall_00285528 {
     Vec_00285528 hit;
     Vec_00285528 normal;
     char padC0[0xE0 - 0xC0];
+    Wall_00285528& operator=(const Wall_00285528& o);
 };
 struct State_00285528 {
     int pad;
     int state;
     unsigned int time;
+    bool On() { return state != 0; }
     int Elapsed()
     {
         int start = time;
         return func_0010FC30() - start;
     }
 };
+static inline unsigned int Since_00285528(unsigned int t) { return func_0010FC30() - t; }
 static inline void Set_00285528(State_00285528* s, int v)
 {
     if (s->state != v) {
@@ -223,7 +228,6 @@ extern "C" void func_001016A8(Vec_00285528* v, Vec_00285528* n);
 extern "C" int func_00101730(Vec_00285528* v, Vec_00285528* n);
 extern "C" Vec_00285528* func_00101820(Vec_00285528* a, const Vec_00285528& b);
 extern "C" void func_001848F0(void* obj, unsigned int name, int a);
-extern "C" void func_0019C9D8(Wall_00285528* w, Wall_00285528* c);
 extern "C" void func_001B0EB8(Sys_00285528* p, int a);
 extern "C" void func_001BB080(void* p, int a, void* b);
 extern "C" float func_001E5318(unsigned int name, int v);
@@ -335,13 +339,13 @@ void Obj_00285528::Update()
         off = m5B4->m1C->m60;
 
     float dt = m94;
-    mC->m50 += vel * dt + grav * (dt * (dt * 0.5f));
+    mC->m50 += vel * dt + grav * (0.5f * dt * dt);
     mC->m50 += off;
     mC->mB0 += grav * m94;
 
     if (m5B0->m60.state) {
         if (m5B0->m48.state && m5B0->m3C.state) {
-            m270 = mC->m50 + mC->m70.r[1];
+            m270 = mC->m50 + mC->m70.Up();
             m280 = mC->m50 + mC->m70.r[1] * -23.0f;
             if (!func_0028E1C0(this, 0x10, 0)) {
                 func_00280448(this);
@@ -392,7 +396,8 @@ void Obj_00285528::Update()
                 i++;
             } while (i < 10);
         }
-        if (hit && sqrtf(m300[0] * mB0.normal[0] + m300[2] * mB0.normal[2]) > 0.02f) {
+        float d = sqrtf(m300[0] * mB0.normal[0] + m300[2] * mB0.normal[2]);
+        if (hit && d > 0.02f) {
             Vec_00285528 p = mB0.hit;
             if (p[1] < m2F0[1])
                 p[1] = m2F0[1];
@@ -400,7 +405,8 @@ void Obj_00285528::Update()
             mC->m50[0] = p[0];
             mC->m50[2] = p[2];
             m300 = mB0.normal;
-            mC->m50 += m300 * func_002032A0(0x78384871, 0);
+            Body_00285528* b = mC;
+            b->m50 += m300 * func_002032A0(0x78384871, 0);
             Vec_00285528 dir = m300;
             dir[1] = 0.0f;
             func_003233B8(&dir, &dir);
@@ -412,7 +418,7 @@ void Obj_00285528::Update()
         }
     }
 
-    if (m5B0->m3C.state && !m5B0->mA8.state && !m5A4->m2C && !m5A4->m54)
+    if (m5B0->m3C.On() && !m5B0->mA8.state && !m5A4->m2C && !m5A4->m54)
         func_0027FF70(this);
     else
         m20 = mC->m70;
@@ -430,32 +436,39 @@ void Obj_00285528::Update()
         bool flat = mB0.normal[1] < 0.1f;
         bool stuck = false;
         Vec_00285528 probe = mC->m60 + off;
-        if (func_00288208(this, &probe) && (mC->mB0[1] > 10.0f || flat))
-            stuck = func_0010FC30() - m5B4->m20 > 500;
+        if (func_00288208(this, &probe) && (mC->mB0[1] > 10.0f || flat)) {
+            unsigned int start = m5B4->m20;
+            stuck = Since_00285528(start) > 500;
+        }
         if (!stuck) {
             Vec_00285528 n = mB0.normal;
+            Vec_00285528* pn = &n;
             mC->m50 = mB0.hit;
             mC->m50 += n;
             if (m290) {
                 func_0027C720(this, 0);
                 func_00280188(this);
                 if (m5B0->m3C.state || m5B0->mA8.state) {
-                    m3E8 = 1;
                     m3E4 = 1;
+                    m3E8 = 1;
                 } else {
                     m3E8 = 0;
                 }
                 m3E0 = m5B0->mA8.state;
                 Wall_00285528* wall = &mB0;
-                m5B0->m13C = wall->m6C;
-                m59C->m20 = wall->m6C;
+                int surf = wall->m6C;
+                m5B0->m13C = surf;
+                m59C->m20 = surf;
                 float speed = sqrtf(mC->mB0.Length2());
-                func_00270C98(m59C, m5B0->m13C, speed / func_00203D40(mC, 0xCC5F87AA));
+                float vol = speed / func_00203D40(mC, 0xCC5F87AA);
+                func_00270C98(m59C, m5B0->m13C, vol);
                 if (!m5A0->m1400)
                     func_001B0EB8(m5A0, 0);
-                func_0019C9D8(&m190, wall);
-                m59C->m24 = m190.m6C;
-                func_001BB080(m598, 3, &m190);
+                Wall_00285528* last = &m190;
+                *last = *wall;
+                int id = last->m6C;
+                m59C->m24 = id;
+                func_001BB080(m598, 3, last);
                 if (m5B8->m2C) {
                     func_001848F0(mC, 0x532B16EF, 0);
                     return;
@@ -475,8 +488,10 @@ void Obj_00285528::Update()
                             mC->mB0 = saved;
                             func_001016A8(&mC->mB0, &mB0.normal);
                         }
-                        if (mC->mB0.Length2() < Sq_00285528(func_001E5318(0x59484878, 0)))
-                            mC->mB0.SetLength(func_001E5318(0x59484878, 0));
+                        if (mC->mB0.Length2() < Sq_00285528(func_001E5318(0x59484878, 0))) {
+                            Vec_00285528* pv = &mC->mB0;
+                            pv->SetLength(func_001E5318(0x59484878, 0));
+                        }
                     }
                     if (mC->mB0.Length2() < 100.0f) {
                         mC->mB0.Set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -492,11 +507,12 @@ void Obj_00285528::Update()
                 func_001848F0(mC, 0x532B16EF, 0);
                 return;
             }
-            func_00101730(&mC->mB0, &n);
-            func_00101730(&mC->m70.r[2], &n);
+            func_00101730(&mC->mB0, pn);
+            func_00101730(&mC->m70.r[2], pn);
             func_00100DC0(&mC->m70, 2);
             m20 = mC->m70;
-            mC->m50 += n * func_002032A0(0x23410C14, 0);
+            Body_00285528* b = mC;
+            b->m50 += n * func_002032A0(0x23410C14, 0);
             Set_00285528(&m5B0->mFC, 1);
         }
     } else if (!m5B0->m3C.state) {
@@ -510,7 +526,7 @@ void Obj_00285528::Update()
         unsigned int last = m3F8;
         int recent = 0;
         if (m588 < last)
-            recent = func_0010FC30() - last < 250;
+            recent = Since_00285528(last) < 250;
         Target_00285528 target;
         if (func_002817F0(this, recent, &mC->m50, &mC->m60, &mC->mB0, &target))
             func_002823A8(this, &target);

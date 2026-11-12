@@ -1,4 +1,3 @@
-/* fuzzy: 91.8 */
 extern char D_00371C78[];
 
 struct LNode_002B5278 {
@@ -6,6 +5,7 @@ struct LNode_002B5278 {
     void* m_data;
     int m8;
     LNode_002B5278* m_next;
+    void* Data() { return m_data; }
     LNode_002B5278* Next() {
         LNode_002B5278* n = m_next;
         if (n->m_data == (void*)-1) {
@@ -24,7 +24,7 @@ struct Iter_002B5278 {
     void* Advance(LNode_002B5278* c) {
         m_cur = c->Next();
         if (m_cur) {
-            return m_cur->m_data;
+            return m_cur->Data();
         }
         return 0;
     }
@@ -34,18 +34,7 @@ struct List_002B5278 {
     LNode_002B5278 m_head;
     void* First(Iter_002B5278* it) {
         it->m_cur = &m_head;
-        it->m_cur = it->m_cur->Next();
-        if (it->m_cur) {
-            return it->m_cur->m_data;
-        }
-        return 0;
-    }
-    void* Next(Iter_002B5278* it) {
-        it->m_cur = it->m_cur->Next();
-        if (it->m_cur) {
-            return it->m_cur->m_data;
-        }
-        return 0;
+        return it->Advance(it->m_cur);
     }
 };
 

@@ -1,4 +1,4 @@
-/* fuzzy: 85.8 */
+/* sym: Pos__14Graph_0028AAF8P13Node_0028AAF8 = 0x0026B1B0 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0028AAF8 {
@@ -9,10 +9,17 @@ union Vec_0028AAF8 {
     Vec_0028AAF8() {}
     Vec_0028AAF8(float x, float y, float z, float w)
     {
-        c[0] = x;
-        c[1] = y;
-        c[2] = z;
-        c[3] = w;
+        (*this)[0] = x;
+        (*this)[1] = y;
+        (*this)[2] = z;
+        (*this)[3] = w;
+    }
+    Vec_0028AAF8(float x, float y, float z)
+    {
+        (*this)[0] = x;
+        (*this)[1] = y;
+        (*this)[2] = z;
+        c[3] = 1.0f;
     }
     void Set(float x, float y, float z, float w)
     {
@@ -44,10 +51,17 @@ union Vec_0028AAF8 {
     }
     bool operator==(const Vec_0028AAF8& o) const
     {
-        return c[0] == o[0] && c[1] == o[1] && c[2] == o[2] && c[3] == o[3];
+        return o[0] == c[0] && o[1] == c[1] && o[2] == c[2] && o[3] == c[3];
     }
     float Length2() const { return c[0] * c[0] + c[1] * c[1] + c[2] * c[2]; }
     void Normalize();
+    void Sub(const Vec_0028AAF8& a, const Vec_0028AAF8& b)
+    {
+        c[0] = a[0] - b[0];
+        c[1] = a[1] - b[1];
+        c[2] = a[2] - b[2];
+        c[3] = a[3] - b[3];
+    }
 };
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
@@ -96,7 +110,6 @@ struct Holder_0028AAF8 {
         m20 = func_0010FC30();
         return false;
     }
-    void* Handle() { return Valid() ? m1C->h : 0; }
 };
 
 struct Body_0028AAF8 {
@@ -163,6 +176,7 @@ struct Graph_0028AAF8 {
     Node_0028AAF8* m50;
     char pad54[0x58 - 0x54];
     void* m58;
+    Vec_0028AAF8 Pos(Node_0028AAF8* n);
 };
 struct Pad_0028AAF8 {
     char pad0[0x8];
@@ -225,7 +239,6 @@ extern "C" int func_001EFDC0(void* p);
 extern "C" float func_002032A0(unsigned int, int);
 extern "C" float func_00203D40(void* self, unsigned int name);
 extern "C" void func_0023AD28(void* p, unsigned int index);
-extern "C" void func_0026B1B0(Vec_0028AAF8* out, Graph_0028AAF8* g, Node_0028AAF8* n);
 extern "C" int func_0026F8D8(int a, int b, int c, int d);
 extern "C" void func_00270C98(Snd_0028AAF8* self, int a, float vol);
 extern "C" void func_002710B8(void* self, int mode, int mask);
@@ -281,7 +294,7 @@ struct Obj_0028AAF8 {
     Sub_0028AAF8* m5B0;
     Holder_0028AAF8* m5B4;
     Clock_0028AAF8* m5B8;
-    void Pos(Vec_0028AAF8* out, Node_0028AAF8* n) { func_0026B1B0(out, m2A0, n); }
+    void* ResHandle() { return m5B4->Valid() ? m5B4->m1C->h : 0; }
     void SetTerrain(Node_0028AAF8* n)
     {
         int terrain = n->m5E;
@@ -291,12 +304,14 @@ struct Obj_0028AAF8 {
     void PlayGrindSound()
     {
         float speed = sqrtf(mC->mB0.Length2());
-        func_00270C98(m59C, m5B0->m13C, speed / func_00203D40(mC, 0xCC5F87AA));
+        float vol = speed / func_00203D40(mC, 0xCC5F87AA);
+        func_00270C98(m59C, m5B0->m13C, vol);
     }
     void FaceUp()
     {
         if (m5B0->m1C == 2) {
-            Vec_0028AAF8 up(0.0f, 1.0f, 0.0f, 1.0f);
+            Vec_0028AAF8 up;
+            up.Set(0.0f, 1.0f, 0.0f, 1.0f);
             func_0027FDB0(this, &up);
             m20 = mC->m70;
         }
@@ -309,8 +324,10 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
 {
     Pad_0028AAF8* pad = &m594->pad;
     func_002919B0(func_00185578(mC, 0x488AF07A));
-    if (m29C != node)
-        func_0023AD28(m5A8->m1C, (unsigned int)((char*)node - (char*)graph->m50) / sizeof(Node_0028AAF8));
+    if (m29C != node) {
+        unsigned int index = (unsigned int)((char*)node - (char*)graph->m50) / sizeof(Node_0028AAF8);
+        func_0023AD28(m5A8->m1C, index);
+    }
     m2A0 = graph;
     m29C = node;
 
@@ -336,14 +353,15 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
         dir.Normalize();
         float ang = func_001E5318(0xBB357ECB, 0) * 0.017453294f;
         float s = func_00340F60(ang);
-        Vec_0028AAF8 tilt(s * dir[0], func_00341068(ang), s * dir[2], 1.0f);
+        float c = func_00341068(ang);
+        Vec_0028AAF8 tilt(s * dir[0], c, s * dir[2]);
         void* params = m2A0->m58;
         void* slot = func_001E9378(params, m29C->m5C);
         func_001E8398(slot, 0xA1DC81F9, &m2B0, 1);
         func_001B0EF0(m5A0, m2B0);
         int sparks = 0;
         if (func_001E8398(slot, 0x2CA8A299, &sparks, 0))
-            func_001BB2E8(m598, 3, m2B0, params != func_001E55B8(0xC472ECC5, 0) ? params : 0, m5B4->Handle());
+            func_001BB2E8(m598, 3, m2B0, params != func_001E55B8(0xC472ECC5, 0) ? params : 0, ResHandle());
         mC->m50 = *pos;
         Set_0028AAF8(&m5B0->m3C, 0);
         Set_0028AAF8(&m5B0->m48, 0);
@@ -365,7 +383,8 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
             }
         }
         mC->mB0[1] = vy;
-        mC->mB0 += dir * func_002032A0(0xA3EF4833, 0);
+        Body_0028AAF8* b = mC;
+        b->mB0 += dir * func_002032A0(0xA3EF4833, 0);
         m2A4 = func_0010FC30();
         Set_0028AAF8(&m5B0->mA8, 0);
         Set_0028AAF8(&m5B0->mF0, 0);
@@ -375,7 +394,7 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
         Set_0028AAF8(&m5B0->m6C, 0);
         func_00101820(&mC->mB0, tilt);
         if (sparks)
-            func_001BB2E8(m598, 4, m2B0, params != func_001E55B8(0xC472ECC5, 0) ? params : 0, m5B4->Handle());
+            func_001BB2E8(m598, 4, m2B0, params != func_001E55B8(0xC472ECC5, 0) ? params : 0, ResHandle());
         func_0027C720(this, 1);
         mC->m50[1] += 1.0f;
         func_001848F0(mC, 0xB8048F1D, 0);
@@ -411,8 +430,9 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
         func_002710B8(func_00185578(mC, 0x11B4C67F), 0, 0x100000);
         func_0028DF70(this, 7);
         m5A0->mA68 = 0;
-        if (!mC->m14)
-            mC->m14 = func_001EE428(func_00121960(0xF4));
+        Body_0028AAF8* b = mC;
+        if (!b->m14)
+            b->m14 = func_001EE428(func_00121960(0xF4));
         func_001EE8C8(mC->m14, 0x1647CF96, 0, mC);
         func_001EFDC0(mC->m14);
         m5B0->m138 = 1;
@@ -425,11 +445,9 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
     Node_0028AAF8* prev = cur->m50;
     Vec_0028AAF8 dir;
     {
-        Vec_0028AAF8 a;
-        Vec_0028AAF8 b;
-        Pos(&a, prev);
-        Pos(&b, cur);
-        dir = a - b;
+        Vec_0028AAF8 a = m2A0->Pos(prev);
+        Vec_0028AAF8 b = m2A0->Pos(cur);
+        dir.Sub(a, b);
     }
     dir.Normalize();
     m270 = mC->m50;
@@ -450,7 +468,7 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
         mC->mB0[2] = mC->m70.r[2][2];
     }
     if (!keepSpeed && Sq_0028AAF8(mC->mB0[0]) + Sq_0028AAF8(mC->mB0[2]) > 100.0f) {
-        Vec_0028AAF8 up(0.0f, 1.0f, 0.0f, 1.0f);
+        Vec_0028AAF8 up(0.0f, 1.0f, 0.0f);
         func_00101730(&mC->mB0, &up);
     }
 
@@ -465,19 +483,16 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
         if (along < 0.0f)
             sign = -1.0f;
     }
-    {
-        Node_0028AAF8* end = 0;
-        if (sign < 0.0f) {
-            if (!cur->m54)
-                end = cur;
-        } else {
-            if (!prev->m50)
-                end = prev;
+    if (sign < 0.0f) {
+        if (!cur->m54) {
+            Vec_0028AAF8 e = m2A0->Pos(cur);
+            if (*pos == e)
+                return;
         }
-        if (end) {
-            Vec_0028AAF8 e;
-            Pos(&e, end);
-            if (e == *pos)
+    } else {
+        if (!prev->m50) {
+            Vec_0028AAF8 e = m2A0->Pos(prev);
+            if (*pos == e)
                 return;
         }
     }
@@ -488,7 +503,8 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
     Set_0028AAF8(&m5B0->m48, 0);
     FaceUp();
     func_0027C720(this, 4);
-    if (m5B8->m20 != func_0010FC30())
+    unsigned int last = m5B8->m20;
+    if (func_0010FC30() != last)
         PlayGrindSound();
     float vy = mC->mB0[1];
     func_00101890(&mC->mB0, &dir);
@@ -508,13 +524,13 @@ void Obj_0028AAF8::StartGrind(Vec_0028AAF8* pos, Node_0028AAF8* node, Graph_0028
     int left = 0;
     int flat = 0;
     {
-        Vec_0028AAF8 v = dir * sign;
-        mC->mB0 += v * func_002032A0(0x457BB395, 0);
+        Vec_0028AAF8* vel = &mC->mB0;
+        *vel += dir * sign * func_002032A0(0x457BB395, 0);
     }
     m3B0 = 0;
     if (sign < 0.0f)
         dir = -dir;
-    if (dir[0] * ((*pos)[2] - m3A0[2]) + dir[2] * (m3A0[0] - (*pos)[0]) < 0.0f)
+    if (dir[0] * ((*pos)[2] - m3A0[2]) + dir[2] * -((*pos)[0] - m3A0[0]) < 0.0f)
         left = 1;
 
     m270.Set(0.0f, func_002032A0(0xE4D79235, 0), 0.0f, 0.0f);

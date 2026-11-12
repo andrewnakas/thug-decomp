@@ -1,4 +1,5 @@
-/* fuzzy: 81.9 */
+/* cflags: -fno-gcse */
+/* fuzzy: 86.6 */
 struct Link_0023FD70 {
     int m_id;
     Link_0023FD70* m_next;

@@ -1,4 +1,5 @@
-/* fuzzy: 61.0 */
+/* cflags: -fno-gcse */
+/* fuzzy: 62.1 */
 /* nonmatch func_002B9A28 (0x9EC): fresh draft from the asm. Builds restart nodes (and CTF flag/base nodes) for the 18 restart slots. */
 extern char D_00392650[]; /* "angles" */
 extern char D_00392658[]; /* "name" */

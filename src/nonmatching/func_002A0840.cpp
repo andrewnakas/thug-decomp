@@ -1,4 +1,5 @@
-/* fuzzy: 82.1 */
+/* cflags: -fno-gcse */
+/* fuzzy: 86.7 */
 /* sym: _$_13Item_002A0840 = 0x002B3168 */
 extern char D_00366B58[];
 

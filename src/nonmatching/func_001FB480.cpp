@@ -1,4 +1,5 @@
-/* fuzzy: 90.2 */
+/* cflags: -fno-gcse */
+/* fuzzy: 96.2 */
 struct Addr_001FB480 {
     unsigned short m0;
     unsigned short port;

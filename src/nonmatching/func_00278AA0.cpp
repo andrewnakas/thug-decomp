@@ -1,4 +1,5 @@
-/* fuzzy: 69.3 */
+/* cflags: -fno-gcse */
+/* fuzzy: 78.2 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));

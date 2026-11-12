@@ -1,4 +1,5 @@
-/* fuzzy: 74.9 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 76.6 */
 /* sym: __9Prm_284B0 = 0x001E6978 */
 /* sym: _$_9Prm_284B0 = 0x001E6AE8 */
 /* sym: _vt$14ListHead_284B0 = 0x003724F8 */

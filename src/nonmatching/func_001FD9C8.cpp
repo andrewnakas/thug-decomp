@@ -1,4 +1,5 @@
-/* fuzzy: 67.9 */
+/* cflags: -fno-gcse */
+/* fuzzy: 78.8 */
 /* sym: _vt$11It_001FD9C8 = 0x00366AA8 */
 
 struct Obj_001FD9C8;

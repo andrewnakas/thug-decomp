@@ -1,5 +1,5 @@
 /* cflags: -fno-strength-reduce */
-/* fuzzy: 93.8 */
+/* fuzzy: 94.4 */
 typedef unsigned long u64_001E04D8;
 
 extern int D_0038E130;
@@ -41,7 +41,7 @@ extern "C" void* func_001E6978(void*);
 extern "C" void func_001E7200(void*, unsigned int, int);
 extern "C" void func_001F0370(const char*, void*, int, int);
 extern "C" void func_001E6AE8(void*, int);
-extern "C" void func_00103F28(const char*, ...);
+extern "C" int func_00103F28(const char*, ...);
 extern "C" int func_00100030(int);
 
 static inline bool Clear_001E04D8(u64_001E04D8 v, int i)
@@ -98,8 +98,8 @@ void func_001E04D8()
             int j = D_0038E158 < 2 ? 0 : func_00100030(D_0038E158 - 1) + 1;
             Swap_001E04D8(D_0038E15C, j);
         }
-        D_0038E154 = 0;
         p->mC98 = 0;
+        D_0038E154 = 0;
         p->mCA0 = 0;
     } else {
         D_0038E15C++;

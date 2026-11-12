@@ -1,4 +1,4 @@
-/* fuzzy: 94.9 */
+/* fuzzy: 97.6 */
 /* sym: __15Feeler_001BDE80 = 0x00209240 */
 /* sym: SetStart__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209360 */
 /* sym: SetEnd__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209370 */
@@ -127,6 +127,6 @@ void C_001BDE80::Update()
             }
         }
     }
-    m38 = 0;
     m50 = mC->m50;
+    m38 = 0;
 }

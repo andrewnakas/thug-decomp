@@ -1,4 +1,4 @@
-/* fuzzy: 91.9 */
+/* fuzzy: 92.9 */
 /* sym: __13Base_0014E988i = 0x00143030 */
 /* sym: _vt$12Der_0014E988 = 0x0035F848 */
 extern void* D_00388A70;
@@ -51,8 +51,8 @@ Der_0014E988::Der_0014E988(int n, void* p) : Base_0014E988(n)
     m2C = new Elem_0014E988[n * 3];
     if (func_00170728(p)) {
         Hdr_0014E988* h = func_00170650(p)->GetHdr();
-        m30 = (char*)((int)h + 4);
         m34 = h->m2 & 0xF;
+        m30 = (char*)((int)h + 4);
     } else {
         m30 = 0;
         m34 = 0;

@@ -1,4 +1,4 @@
-/* fuzzy: 91.4 */
+/* fuzzy: 92.6 */
 /* sym: _vt$13Base_00208400 = 0x0035D5C8 */
 /* sym: _vt$13Head_00208400 = 0x0035D5B0 */
 
@@ -107,10 +107,10 @@ void Grid_00208400::Update(Base_00208400* added, Base_00208400* removed, Base_00
     Head_00208400 head;
     unsigned int nAdded = 0;
     Base_00208400* pa = added->mC;
-    Base_00208400* pr = removed->mC;
     Base_00208400* pm = moved->mC;
-    Base_00208400* n;
     Obj_00208400* o;
+    Base_00208400* pr = removed->mC;
+    Base_00208400* n;
     unsigned int k;
     int i, j;
 

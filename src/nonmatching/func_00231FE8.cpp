@@ -1,4 +1,4 @@
-/* fuzzy: 93.5 */
+/* fuzzy: 96.7 */
 /* NEAR MISS func_00231FE8 (101/379 words, size 0x5F4 want 0x5EC): net skater-history decode (bitstream into 20-entry ring of 0x90-byte records). Remaining: game keeps lh pos[0] in $a2 across the m50 float stores (mine reloads it for the func_00279F60 arg), so the blez skip and the f12 reload are one insn off; sk should be in $fp and c7D/c7E in $s7/$s6 (declaration-order search got close); stack slot 0x40 = 1 store modelled as bs.m20 = 1; bit 7 of the 4-bit read written as (b << 24) >> 31 (needs a better form). */
 typedef int qword_00231FE8 __attribute__((mode(TI)));
 
@@ -160,8 +160,8 @@ decode:
     char c7D;
     unsigned int t;
     char c78;
-    char c84;
     char c7C;
+    char c84;
     int c70;
     char c7E;
     int c74;
@@ -184,8 +184,8 @@ decode:
     } else {
         c7C = 0;
         c88 = -1;
-        c7D = 0;
         c78 = 0;
+        c7D = 0;
         c7E = 0;
         c70 = 0;
         c74 = 0;
@@ -212,8 +212,8 @@ decode:
         vel[2] = (short)func_001FAC80(&bs, 0x10) * (1.0f / 4096.0f);
     if (f & 0x40) {
         unsigned int b = func_001FAB88(&bs, 4);
-        c78 = b & 7;
         c7C = (b << 24) >> 31;
+        c78 = b & 7;
         c84 = func_001FAB88(&bs, 6);
         c7D = func_001FAB88(&bs, 1);
         c7E = func_001FAB88(&bs, 1);

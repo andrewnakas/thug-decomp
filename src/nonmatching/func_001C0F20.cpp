@@ -1,4 +1,4 @@
-/* fuzzy: 92.8 */
+/* fuzzy: 95.2 */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C0F20 {
@@ -24,7 +24,7 @@ union Vec_001C0F20 {
     bool operator==(const Vec_001C0F20& o) const
     {
         bool r = false;
-        if (o[0] == c[0] && o[1] == c[1] && o[2] == c[2] && o[3] == c[3]) r = true;
+        if (o[0] == c[0] && o[1] == c[1] && o[2] == c[2] && c[3] == o[3]) r = true;
         return r;
     }
     float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }

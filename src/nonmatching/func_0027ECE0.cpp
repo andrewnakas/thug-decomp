@@ -1,4 +1,4 @@
-/* fuzzy: 92.1 */
+/* fuzzy: 93.1 */
 extern "C" float fabsf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -84,7 +84,7 @@ extern "C" void func_0027F008(Obj_0027ECE0* self, Vec_0027ECE0* n);
 
 void Obj_0027ECE0::Update()
 {
-    if (m_body->m_pos == m_body->m_old)
+    if (m_body->m_old == m_body->m_pos)
         return;
     Vec_0027ECE0 dir(m_body->m_pos.x - m_body->m_old.x, m_body->m_pos.y - m_body->m_old.y,
                      m_body->m_pos.z - m_body->m_old.z, m_body->m_pos.w - m_body->m_old.w);

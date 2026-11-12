@@ -1,4 +1,4 @@
-/* fuzzy: 97.8 */
+/* fuzzy: 98.2 */
 /* sym: __17TaskBase_001FE410i = 0x001047F8 */
 /* sym: _vt$12Net_001FE410 = 0x00366B70 */
 /* sym: _vt$13Slot_001FE410 = 0x00366C50 */
@@ -146,8 +146,8 @@ Net_001FE410::Net_001FE410(int flags)
     m_task_a = new Task_001FE410((void*)func_001FE018, this, -2500);
     m_task_b = new Task_001FE410((void*)func_001FDFA8, this, 1000);
     m_task_c = new Task_001FE410((void*)func_001FE0B0, this, 0);
-    SetFlags(flags);
     m4350 = 0;
+    SetFlags(flags);
     m0 = 0;
     m2280 = 0;
 }

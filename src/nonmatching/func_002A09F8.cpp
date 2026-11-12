@@ -1,4 +1,4 @@
-/* fuzzy: 85.4 */
+/* fuzzy: 89.7 */
 extern char D_00371C78[];
 extern char D_003781B8[];
 extern char D_003781C8[];
@@ -55,7 +55,12 @@ struct Node_002A09F8 {
     Node_002A09F8* prev;
     virtual ~Node_002A09F8();
     Conn_002A09F8* GetData() { return data; }
-    Node_002A09F8* Valid(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }
+    Node_002A09F8* Valid()
+    {
+        if (!~(int)data)
+            return 0;
+        return this;
+    }
     Node_002A09F8* First()
     {
         if (!~(int)next->data)
@@ -69,7 +74,12 @@ struct LNode_002A09F8 {
     void* data;
     int m8;
     LNode_002A09F8* next;
-    LNode_002A09F8* Valid(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }
+    LNode_002A09F8* Valid()
+    {
+        if (!~(int)data)
+            return 0;
+        return this;
+    }
     int Count()
     {
         int n = 0;
@@ -92,6 +102,7 @@ struct Sub_002A09F8 {
     int m10;
     int m14;
     int m18;
+    int GetM18() { return m18; }
 };
 
 struct Player_002A09F8 {
@@ -264,7 +275,7 @@ void Obj_002A09F8::Run()
                     continue;
                 if (q->m154 != p->m154)
                     continue;
-                info.m10 = q->m18->m18;
+                info.m10 = q->m18->GetM18();
                 info.m8 = q->m14C & 0x7880;
                 info.m11 = q->m30;
                 info.m0 = q->m28;
@@ -286,13 +297,13 @@ void Obj_002A09F8::Run()
                     continue;
                 if (func_002B1FC8(p))
                     continue;
-                info.m10 = q->m18->m18;
+                info.m10 = q->m18->GetM18();
                 info.m8 = q->m14C & 0x7880;
                 info.m11 = q->m30;
                 info.m0 = q->m28;
                 info.m4 = q->m2C;
                 info.m14 = q->m44;
-                info.mC = func_002B1108(m, q->m18->m18);
+                info.mC = func_002B1108(m, q->m18->GetM18());
                 func_00331A9C(info.m18, q->m34);
                 msg.m_Length = func_002616E0(q->m48, info.m28, 0x1000, flag) + 0x28;
                 msg.m_Data = &info;

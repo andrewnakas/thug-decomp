@@ -1,4 +1,4 @@
-/* fuzzy: 88.2 */
+/* fuzzy: 90.7 */
 typedef int qword_00296A70 __attribute__((mode(TI)));
 struct Vec_00296A70 {
     union {
@@ -18,6 +18,7 @@ public:
 struct Script_00296A70 {
     char pad0[0x18];
     void* m18;
+    void* GetParams() { return m18; }
 };
 
 struct Goal_00296A70 {
@@ -79,7 +80,7 @@ extern "C" void func_001E9170(void* arr, int i, void* v);
 extern "C" int func_00291E80(void* params);
 extern "C" void func_00293830(Ent_00296A70* e, unsigned char v);
 extern "C" void func_002938A0(Ent_00296A70* e, unsigned char v);
-extern "C" int func_00293998(Ent_00296A70* e, unsigned char v);
+extern "C" bool func_00293998(Ent_00296A70* e, unsigned char v);
 extern "C" void func_002939E0(Ent_00296A70* e, int a, int x, int b, int c);
 extern "C" void func_00293A80(Ent_00296A70* e, int v);
 extern "C" Goal_00296A70* func_00293B20(Ent_00296A70* e, int v);
@@ -166,10 +167,10 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
             func_001E7DE8(params, 0xEB7D6498, &v, 0);
             Goal_00296A70* g = func_00293B20(e, v);
             if (g) {
-                func_001E7200(script->m18, 0xEDF5DB70, g->m2 * 180);
-                func_001E7200(script->m18, 0xA4BEE6A1, g->m3);
+                func_001E7200(script->GetParams(), 0xEDF5DB70, g->m2 * 180);
+                func_001E7200(script->GetParams(), 0xA4BEE6A1, g->m3);
                 if (g->m1)
-                    func_001E7360(script->m18, 0, 0x687E2C25);
+                    func_001E7360(script->GetParams(), 0, 0x687E2C25);
                 break;
             }
             return 0;
@@ -213,7 +214,7 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
         break;
     case 0x259C59DD:
         func_002966C0(this);
-        func_001E73C8(script->m18, D_00391E28, func_00292748(mA5C0));
+        func_001E73C8(script->GetParams(), D_00391E28, func_00292748(mA5C0));
         break;
     case 0x1F80B5AE: {
         Ent_00296A70* e = func_00295CC8(this, params);
@@ -258,7 +259,7 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
     }
     case 0x69B872E3:
         if (mA5C0)
-            func_00293380(mA5C0, script->m18);
+            func_00293380(mA5C0, script->GetParams());
         break;
     case 0x96F11BD3: {
         int type = func_00291E80(params);
@@ -275,7 +276,7 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
                     func_001E9170(arr, k++, s);
                 }
             }
-            func_001E7788(script->m18, D_00377480, arr);
+            func_001E7788(script->GetParams(), D_00377480, arr);
         }
         break;
     }
@@ -284,13 +285,13 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
         int n = func_00295E28(this, type);
         if (!type && func_001E8708(params, 0xB99F6330))
             n -= func_00295E28(this, 0xE8B4B836);
-        func_001E7268(script->m18, D_00377490, n);
+        func_001E7268(script->GetParams(), D_00377490, n);
         break;
     }
     case 0x5BD8050A:
-        func_001E6C28(script->m18, D_00391E28);
+        func_001E6C28(script->GetParams(), D_00391E28);
         if (mA5C0)
-            func_001E73C8(script->m18, D_00391E28, func_00292748(mA5C0));
+            func_001E73C8(script->GetParams(), D_00391E28, func_00292748(mA5C0));
         break;
     case 0x5408AC04: {
         Ent_00296A70* e = func_00295CC8(this, params);
@@ -343,7 +344,7 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
             func_00296550(this);
         break;
     case 0xD7258335:
-        func_001E7200(script->m18, 0x8BC2E0DB, 10);
+        func_001E7200(script->GetParams(), 0x8BC2E0DB, 10);
         break;
     case 0x9E5A634A:
         mA5C0 = func_00295CC8(this, params);

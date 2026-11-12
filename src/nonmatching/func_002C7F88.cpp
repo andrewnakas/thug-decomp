@@ -1,4 +1,4 @@
-/* fuzzy: 86.7 */
+/* fuzzy: 90.3 */
 /* nonmatch func_002C7F88: best earlier draft (thug-claude-lane3/work/w53/p2/func_002C7F88.fail), 174 of 347 words differ (size 0x55c, want 0x56c). */
 struct Box_002C7F88 {
     unsigned char x;
@@ -85,16 +85,16 @@ int Obj_002C7F88::Nudge(int rot, int db, int dc)
         int r = s.rot[idx];
         if (r == 0) {
             if (s.GetBox(idx)->z - s.c[idx] < gb.z) s.c[idx]--;
-            if (gb.z + gb.d < s.GetBox(idx)->z + s.GetBox(idx)->d + s.b[idx]) s.b[idx]--;
+            if (gb.z + gb.d < s.GetBox(idx)->d + s.GetBox(idx)->z + s.b[idx]) s.b[idx]--;
         } else if (r == 2) {
             if (s.GetBox(idx)->z - s.b[idx] < gb.z) s.b[idx]--;
-            if (gb.z + gb.d < s.GetBox(idx)->z + s.GetBox(idx)->d + s.c[idx]) s.c[idx]--;
+            if (gb.z + gb.d < s.GetBox(idx)->d + s.GetBox(idx)->z + s.c[idx]) s.c[idx]--;
         } else if (r == 1) {
             if (s.GetBox(idx)->x - s.c[idx] < gb.x) s.c[idx]--;
-            if (gb.x + gb.w < s.GetBox(idx)->x + s.GetBox(idx)->w + s.b[idx]) s.b[idx]--;
+            if (gb.x + gb.w < s.GetBox(idx)->w + s.GetBox(idx)->x + s.b[idx]) s.b[idx]--;
         } else if (r == 3) {
             if (s.GetBox(idx)->x - s.b[idx] < gb.x) s.b[idx]--;
-            if (gb.x + gb.w < s.GetBox(idx)->x + s.GetBox(idx)->w + s.c[idx]) s.c[idx]--;
+            if (gb.x + gb.w < s.GetBox(idx)->w + s.GetBox(idx)->x + s.c[idx]) s.c[idx]--;
         }
         for (idx = 0; idx < 2; idx++) {
         }

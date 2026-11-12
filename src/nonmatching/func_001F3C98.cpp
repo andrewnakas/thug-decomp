@@ -1,4 +1,4 @@
-/* fuzzy: 92.0 */
+/* fuzzy: 95.0 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_001F3C98 {
     qword q;
@@ -152,8 +152,8 @@ void Obj_001F3C98::Update()
             if (mA2C != 0xB39B4F1B) {
                 mA60 = 0.0f;
                 mA5C = 1;
-                mA50 = mA0C;
                 mA30 = mC->m50;
+                mA50 = mA0C;
                 mA54 = mA14;
                 func_00103F28(D_003661A0, mA04, mA54, mA50);
                 mA58 = 0;
@@ -195,8 +195,8 @@ void Obj_001F3C98::Update()
         } else if (mA2C != 0x439F4704) {
             mA90 = 0;
         } else if (mA90 == 1) {
-            mA90 = 2;
             mA80 = mC->m50;
+            mA90 = 2;
         }
     } else {
         mA90 = 0;

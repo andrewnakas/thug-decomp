@@ -1,4 +1,4 @@
-/* fuzzy: 85.4 */
+/* fuzzy: 93.8 */
 /* sym: _vt$12Ctx_002BD080 = 0x00367170 */
 struct Game_002BD080 {
     char pad[0xAC];
@@ -69,7 +69,7 @@ void Obj_002BD080::Load(void* params, int apply)
     int* data = func_002BCE20(this, 0);
     int arr = 0;
     if (func_001E8AA0(params, D_0037A530, &arr, 1)) {
-        for (int i = 0; i < 0xEA6; i++) data[i] = func_001E9270(arr, i);
+        for (int i = 0; i != 0xEA6; i++) data[i] = func_001E9270(arr, i);
         if (apply) {
             Ctx_002BD080 ctx2;
             func_002C5150(ctx2.GetGame(), data, n);

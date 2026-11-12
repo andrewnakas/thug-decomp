@@ -1,5 +1,4 @@
-/* fuzzy: 93.1 */
-/* nonmatch func_002D41E0: best earlier draft (thug-claude-lane3/work/kz/func_002D41E0.cpp), 544 of 656 words differ (size 0xa38, want 0xa40). */
+/* fuzzy: 95.8 */
 struct Entry_002D41E0;
 struct Node_002D41E0 {
     int m0;
@@ -204,7 +203,7 @@ void Task_002D41E0::Update()
                 func_00331A9C(e->m1C, tok);
                 tok = func_00336558(0, D_00392C40);
             } while (tok);
-            d->m374 = d->m368.First(h);
+            d->m374 = d->m368.First(&d->m350);
             if (d->m374->m18)
                 d->m374 = d->m368.Next();
             d->m4 = 0;
@@ -284,14 +283,14 @@ void Task_002D41E0::Update()
                     func_00331A9C(tmp, tok);
                     it->m214 = func_00334120(tmp);
                 }
-                tok = e + 1;
                 if (d->m378 == 0x38DBE1D0) {
+                    tok = e + 1;
                     e = func_003364D8(tok, D_00392C48);
                     *e = 0;
                     func_00331A9C(tmp, tok);
                     it->m208 = func_00334120(tmp);
-                    tok = e + 1;
                 }
+                tok = e + 1;
                 e = func_003364D8(tok, D_00392C48);
                 *e = 0;
                 func_00331A9C(it->mD0, tok);

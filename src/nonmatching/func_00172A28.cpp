@@ -1,4 +1,4 @@
-/* fuzzy: 90.7 */
+/* fuzzy: 91.3 */
 struct Glyph_00172A28 {
     unsigned short x0;
     unsigned short y0;
@@ -93,8 +93,8 @@ extern "C" Font_00172A28* func_00172A28()
         Glyph_00172A28* g = font->m_glyphs;
         int i;
         for (i = 0; i < count; i++) {
-            g->base = e->a << 4;
             short c = e->c;
+            g->base = e->a << 4;
             if (c >= 0)
                 font->m_map[(unsigned char)c] = i;
             else

@@ -1,4 +1,3 @@
-/* fuzzy: 87.8 */
 struct Node_002B8018 {
     char pad0[0xC];
     Node_002B8018* mC;
@@ -77,13 +76,15 @@ void Obj_002B8018::Build(Node_002B8018* list)
             int cnt = func_002BB428(p);
             for (int i = 0; i < cnt; i++) {
                 Elem_002B8018* e = func_002B6CF8(p->Get(i));
-                int j = 0;
-                void* v;
-                while ((v = func_002B6628(m2C, *e->m14, j++)) != 0) {
-                    void* s = func_002B6810(m64);
-                    int g = func_002B6EE0(e);
-                    func_002B6368(s, v, e->m20, e->m30, ((p->m8 >> 3) & 1) ? 0 : g);
-                    func_002B6550(m64, s);
+                for (int j = 0; ; j++) {
+                    void* v = func_002B6628(m2C, *e->m14, j);
+                    if (v) {
+                        void* s = func_002B6810(m64);
+                        int g = func_002B6EE0(e);
+                        func_002B6368(s, v, e->m20, e->m30, ((p->m8 >> 3) & 1) ? 0 : g);
+                        func_002B6550(m64, s);
+                    } else
+                        break;
                 }
             }
         }

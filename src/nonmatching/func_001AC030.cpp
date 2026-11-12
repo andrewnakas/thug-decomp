@@ -1,4 +1,5 @@
-/* fuzzy: 48.0 */
+/* cflags: -fno-gcse -fno-rerun-loop-opt */
+/* fuzzy: 50.8 */
 // One entry of the trick history ring (100 entries, newest at m_head).
 struct Hist_001AC030 {
     unsigned int time;

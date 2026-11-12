@@ -13,18 +13,40 @@ compiled and compared with match.compare() into a per-worker build directory. Ca
 candidates are written to work/cxxperm/<func>/best_<rank>.cpp with their score in a header comment, and the run
 stops at the first exact MATCH or at --time.
 
-The mutations are text- and brace-aware and stay inside one block of statements:
-  swap        swap two adjacent statements that do not touch the same variables (never two calls)
-  split/merge `T x = e;`  <->  `T x; x = e;`
-  temp        hoist a call into `__typeof__(call) t = call;` before its statement; inline a one-use temp
-  commute     swap operands of == != + * (and && || when neither side has a call); flip < > <= >=
-  invert      `if (c) A else B`  ->  `if (!(c)) B else A`
-  rettype     an extern "C" callee's return type among void / int / void* / bool / unsigned int
-  inttype     a local's type among int / unsigned int / short / unsigned short
-  for2while   `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
-  countdown   `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
-Candidates are not proven equivalent: read any winner before keeping it (the unsafe mutations can change order;
---no-unsafe turns them off).
+The mutations are text- and brace-aware and stay inside one block of statements. Each is drawn with a weight
+(the upstream permuter's [gcc] weights where one exists, docs/techniques/N64_AND_PERMUTER.md appendix):
+  temp         hoist a call into `__typeof__(call) t = call;` (never out of a body, a loop, a `__typeof__`
+               operand or the right of && || ?:); inline     inline a one-use temp back
+  swap         swap two adjacent statements that do not touch the same variables (never two calls)
+  split/merge  `T x = e;`  <->  `T x; x = e;`
+  move_to_use  move a declaration down to its first use or up (memory reads never cross a call or a store)
+  reorder_decls  reorder a run of uninitialised declarations (pseudo-register numbering)
+  split_var    a reused local gets a fresh variable from one plain assignment on
+  merge_var    two same-type locals with disjoint lifetimes become one (also: result written back into its
+               argument variable)
+  param        use a parameter directly instead of a local copy, or add a copy
+  nest_and     `if (a && b) S`  <->  `if (a) { if (b) S }`
+  early_return `if (c) return; rest`  <->  `if (!(c)) { rest }` (void functions)
+  compound     `x = x op y;`  <->  `x op= y;`        chain  `a = e; b = a;`  <->  `b = a = e;`
+  call_order   call an extern through a `static inline` pass-through wrapper, optionally with its parameters
+               in another order (side-effect-free arguments only)
+  ineq         `x < N`  <->  `x <= N - 1` on integer locals; `a - b`  <->  `a + -b`
+  commute      swap operands of == != + * && || (precedence-checked; never two calls); flip < > <= >=
+  invert       `if (c) A else B`  ->  `if (!(c)) B else A`
+  rettype      an extern "C" callee's return type, limited to what its asm does (void only when it leaves
+               nothing in $v0 after its last call, a value type when it does)
+  inttype      a local's type among int / unsigned int / short / unsigned short / signed char / unsigned char
+  for2while    `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
+  flags        add or drop one allowed per-file flag (--sweep-flags also tries every flag and pair up front)
+  countdown    `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
+--focus regalloc multiplies the declaration and live-range passes by 4.
+
+Width guard: a candidate whose load/store widths or zero/sign extensions (lb/lh/lw.., andi 0xFF/0xFFFF,
+16/24-bit shift pairs) move further from the game's than the starting unit's did, in any one class, is
+rejected (it narrowed or widened a value); --no-width-guard turns it off. The banned shapes (do {} while (0),
+self-assignment, new out-of-line functions, everything scan.py rejects) are never scored.
+Candidates are still not proven equivalent: read any winner before keeping it, and cut it down to the edits
+that matter.
 """
 import argparse
 import multiprocessing as mp
@@ -44,6 +66,7 @@ KEYWORDS = {"if", "else", "for", "while", "do", "return", "break", "continue", "
             "goto", "sizeof", "new", "delete", "this", "true", "false", "const", "volatile", "unsigned", "signed",
             "int", "short", "long", "char", "float", "double", "void", "bool", "struct", "class", "union",
             "static", "inline", "extern", "operator", "__typeof__"}
+TYPE_WORDS = {"int", "short", "long", "char", "float", "double", "bool", "void", "unsigned", "signed", "const"}
 CONTROL = re.compile(r"^\s*(if|for|while|do|switch|return|break|continue|goto|case|default)\b|^\s*\w+\s*:(?!:)")
 TYPE_START = re.compile(r"^\s*(?:const\s+|volatile\s+|unsigned\s+|signed\s+|struct\s+|class\s+)*"
                         r"(?:int|short|long|char|float|double|bool|void|[A-Z_]\w*|[a-z_]\w*_[0-9A-F]{6,8}\w*)"
@@ -182,16 +205,33 @@ def has_call(text):
 # ---------------------------------------------------------------- mutations
 
 class Mutator:
-    def __init__(self, unsafe=True):
+    # pass weights: the upstream permuter's [gcc] weights where a pass has an equivalent, Boktai's for its
+    # gcc-specific passes, 5 for our C++-specific ones (docs/techniques/N64_AND_PERMUTER.md, appendix)
+    WEIGHTS = {"temp": 100, "inline": 20, "swap": 10, "reorder_decls": 10, "split": 10, "merge": 5,
+               "commute": 5, "compound": 5, "chain": 5, "ineq": 5, "invert": 1, "inttype": 20, "rettype": 5,
+               "merge_var": 5, "split_var": 10, "move_to_use": 10, "for2while": 5, "call_order": 5,
+               "nest_and": 5, "early_return": 5, "param": 5, "flags": 3, "countdown": 1}
+    REGALLOC = {"move_to_use", "reorder_decls", "split_var", "merge_var", "split", "merge", "param", "temp",
+                "inline", "inttype"}
+
+    def __init__(self, unsafe=True, focus=None, allowed=(), weights=None):
         self.unsafe = unsafe
-        self.ops = [self.m_swap, self.m_swap, self.m_split, self.m_merge, self.m_temp, self.m_inline,
-                    self.m_commute, self.m_commute, self.m_invert, self.m_rettype, self.m_inttype, self.m_for2while]
-        if unsafe:
-            self.ops.append(self.m_countdown)
+        self.allowed = sorted(allowed)
+        w = dict(self.WEIGHTS)
+        w.update(weights or {})
+        if not unsafe:
+            w.pop("countdown", None)
+        if focus == "regalloc":
+            for k in self.REGALLOC:
+                w[k] = w.get(k, 0) * 4
+        self.names = [k for k in w if w[k] > 0 and hasattr(self, "m_" + k)]
+        self.weights = [w[k] for k in self.names]
+        self.ops = [getattr(self, "m_" + k) for k in self.names]
+        self._returns = {}
 
     def mutate(self, src, rng):
         for _ in range(20):
-            op = rng.choice(self.ops)
+            op = rng.choices(self.ops, weights=self.weights)[0]
             try:
                 out = op(src, rng)
             except Exception:
@@ -222,6 +262,13 @@ class Mutator:
                     continue
                 if has_call(a) and has_call(b):
                     continue
+                if has_call(a) or has_call(b):
+                    # a call may change anything it is handed (a member call, `&x`) and any memory
+                    c, o = (a, b) if has_call(a) else (b, a)
+                    if idents(c) & idents(o) - writes(o) or self._reads_memory(o) or self._barrier(o):
+                        continue
+                    if idents(c) & writes(o):
+                        continue
                 pairs.append((st[k], st[k + 1]))
         if not pairs:
             return None
@@ -277,6 +324,9 @@ class Mutator:
                     o = s + m.end() - 1
                     c = match_close(code, o)
                     if c < 0 or c >= e:
+                        continue
+                    # never out of a conditional or repeated context, never an unevaluated __typeof__ operand
+                    if self._in_typeof(code, s + m.start()) or self._cond_context(code, s, s + m.start()):
                         continue
                     call = src[s + m.start():c + 1]
                     if "=" in call and "==" not in call:
@@ -337,6 +387,10 @@ class Mutator:
             a, op, b = m.group(1), m.group(2), m.group(3)
             if op in ("&&", "||") and ("(" in a or "(" in b):
                 continue
+            if "(" in a and "(" in b:              # two calls: their order would change
+                continue
+            if not self._safe_operands(code, m.start(), m.end(), op):
+                continue
             if op in ("<", ">") and (re.match(r"[A-Za-z_]", b) and "(" not in b and code[m.end():m.end() + 1] == "("):
                 continue
             pre = code[max(0, m.start() - 2):m.start()]
@@ -396,6 +450,24 @@ class Mutator:
 
     RETTYPES = ["void", "int", "void*", "bool", "unsigned int"]
 
+    def callee_returns(self, name):
+        """True if the callee's asm leaves a value in $v0 (written after its last call), False if it does not,
+        None when unknown (no asm, or it ends in a tail jump)."""
+        if name in self._returns:
+            return self._returns[name]
+        r = None
+        fs = list((ROOT / "asm").glob(f"nonmatchings/*/{name}.s"))
+        if fs:
+            ins = re.findall(r"^\s*/\*[^*]*\*/\s+(\w+)\s+([^\n]*)$", fs[0].read_text(), re.M)
+            last = max([i for i, (op, _) in enumerate(ins) if op in ("jal", "jalr")], default=-1)
+            tail = [i for i, (op, a) in enumerate(ins) if op == "j" or op == "jr" and "$ra" not in a]
+            if not tail:
+                r = any(a.startswith("$v0,") and not op.startswith(("s", "b")) or op in ("sll", "slt", "sltu",
+                        "slti", "sltiu", "sra", "srl") and a.startswith("$v0,")
+                        for op, a in ins[last + 1:])
+        self._returns[name] = r
+        return r
+
     def m_rettype(self, src, rng):
         cands = list(re.finditer(r'extern\s+"C"\s+(void\s*\*|void|int|bool|unsigned\s+int|char\s*\*)\s+(func_[0-9A-F]{8})\s*\(',
                                  src))
@@ -403,17 +475,22 @@ class Mutator:
             return None
         m = rng.choice(cands)
         cur = re.sub(r"\s+", " ", m.group(1)).replace(" *", "*")
-        new = rng.choice([t for t in self.RETTYPES if t != cur])
-        return src[:m.start(1)] + new + src[m.end(1):]
+        ret = self.callee_returns(m.group(2))
+        types = ["void"] if ret is False else [t for t in self.RETTYPES if t != "void"] if ret else self.RETTYPES
+        types = [t for t in types if t != cur]
+        if not types:
+            return None
+        return src[:m.start(1)] + rng.choice(types) + src[m.end(1):]
 
-    INTTYPES = ["int", "unsigned int", "short", "unsigned short"]
+    INTTYPES = ["int", "unsigned int", "short", "unsigned short", "signed char", "unsigned char"]
 
     def m_inttype(self, src, rng):
         code, blocks = self._stmts(src)
         cands = []
         for st in blocks:
             for (s, e) in st:
-                m = re.match(r"^(\s*)(unsigned\s+int|unsigned\s+short|int|short)(\s+[A-Za-z_]\w*\s*[=;])", code[s:e])
+                m = re.match(r"^(\s*)(unsigned\s+int|unsigned\s+short|unsigned\s+char|signed\s+char|int|short)"
+                             r"(\s+[A-Za-z_]\w*\s*[=;])", code[s:e])
                 if m:
                     cands.append((s + len(m.group(1)), s + m.end(2), re.sub(r"\s+", " ", m.group(2))))
         if not cands:
@@ -464,11 +541,547 @@ class Mutator:
         t = "int" if t.startswith("unsigned") else t
         return src[:m.start()] + f"for ({t} {v} = ({n}) - 1; {v} >= 0; {v}--)" + src[m.end():]
 
+    # ------------------------------------------------------------ v2: precedence, context and new passes
+
+    PREC = {"*": 13, "/": 13, "%": 13, "+": 12, "-": 12, "<<": 11, ">>": 11, "<": 10, ">": 10, "<=": 10,
+            ">=": 10, "==": 9, "!=": 9, "&": 8, "^": 7, "|": 6, "&&": 5, "||": 4, "?": 3, ":": 3}
+    TOK_BEFORE = re.compile(r"(<<|>>|<=|>=|==|!=|&&|\|\||[-+*/%<>&^|!~?:)])\s*$")
+    TOK_AFTER = re.compile(r"^\s*(<<|>>|<=|>=|==|!=|&&|\|\||->|\+\+|--|[-+*/%<>&^|?:.\[(])")
+
+    def _safe_operands(self, code, start, end, op):
+        """True when the operands around `op` at code[start:end] can be swapped without regrouping: the token
+        before binds less tightly than op and so does the token after (same level is fine for + and *)."""
+        p = self.PREC[op]
+        m = self.TOK_BEFORE.search(code[max(0, start - 4):start])
+        if m:
+            t = m.group(1)
+            if t in "!~)" or t not in self.PREC or self.PREC[t] >= p:
+                return False
+        m = self.TOK_AFTER.match(code[end:end + 4])
+        if m:
+            t = m.group(1)
+            if t in ("->", "++", "--", ".", "[", "("):
+                return False
+            if t not in self.PREC:
+                return False
+            if self.PREC[t] > p or self.PREC[t] == p and op not in ("+", "*"):
+                return False
+        return True
+
+    @staticmethod
+    def _cond_context(code, s, pos):
+        """True when code[pos] (inside the statement starting at s) is evaluated conditionally or repeatedly:
+        after && || ? at any level of the statement head, or inside a loop head or a body."""
+        head = code[s:pos]
+        if re.match(r"\s*(for|while|do|switch|case|default|else)\b", head):
+            return True
+        if re.search(r"&&|\|\||\?", head):
+            return True
+        if "{" in head:
+            return True
+        m = re.match(r"\s*if\s*\(", head)
+        if m:                                  # only the condition of an if, never its (unbraced) body
+            c = match_close(code, s + m.end() - 1)
+            if c < 0 or pos > c:
+                return True
+        return False
+
+    @staticmethod
+    def _in_typeof(code, pos):
+        for m in re.finditer(r"__typeof__\s*\(", code[:pos]):
+            c = match_close(code, m.end() - 1)
+            if c < 0 or c > pos:
+                return True
+        return False
+
+    def _func_body(self, code):
+        """(head_start, open_brace, close_brace) of the unit's one out-of-line function definition."""
+        depth = 0
+        for i, c in enumerate(code):
+            if c == "{":
+                if depth == 0:
+                    hs = max(code.rfind(";", 0, i), code.rfind("}", 0, i)) + 1
+                    head = code[hs:i]
+                    if re.search(r"\)\s*(const\s*)?$", head.strip()) and not re.search(r"\binline\b", head) \
+                            and not re.match(r"\s*(struct|class|union|enum)\b", head.strip()):
+                        j = match_close(code, i)
+                        if j > 0:
+                            return hs, i, j
+                depth += 1
+            elif c == "}":
+                depth -= 1
+        return None
+
+    def _decl_type(self, code, v):
+        m = re.search(r"(?:^|[;{(,]\s*)((?:const\s+|unsigned\s+|signed\s+)*(?:int|short|long|char|float|bool|"
+                      r"[A-Za-z_]\w*)(?:\s*\*)*)\s+" + re.escape(v) + r"\s*[=;,)\[]", code, re.M)
+        return re.sub(r"\s+", " ", m.group(1)).strip() if m else None
+
+    INT_DECL = re.compile(r"^(?:(?:unsigned|signed)\s+)?(?:int|short|char|long)$|^unsigned$")
+
+    @staticmethod
+    def _reads_memory(expr):
+        return bool(re.search(r"->|\.|\[|\*|\bD_[0-9A-F]{8}\b|\bthis\b", expr)) or has_call(expr)
+
+    @staticmethod
+    def _barrier(stmt):
+        """A statement that may change memory: a call, or a store through anything but a plain local name."""
+        if has_call(stmt):
+            return True
+        for m in re.finditer(r"([A-Za-z_][\w.\->\[\]*]*)\s*(?:[-+*/%&|^]|<<|>>)?=(?!=)", stmt):
+            if not re.fullmatch(r"[A-Za-z_]\w*", m.group(1)) or re.match(r"D_[0-9A-F]{8}$", m.group(1)):
+                return True
+        return bool(re.search(r"\+\+|--", stmt) and re.search(r"(->|\.|\[|\*)\s*\w*\s*(\+\+|--)", stmt))
+
+    def m_move_to_use(self, src, rng):
+        """Move `T x = e;` down to just before the first statement that uses x, or up past statements that
+        neither use x nor change what e reads (memory reads never cross a call or a store)."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            for k, (s, e) in enumerate(st):
+                t = code[s:e]
+                m = re.match(r"^\s*(?:const\s+|unsigned\s+|signed\s+)*[A-Za-z_][\w:]*(?:\s*\*)*\s+([A-Za-z_]\w*)"
+                             r"\s*(?:=\s*(.+))?;\s*$", t, re.S)
+                if not m or not TYPE_START.match(t):
+                    continue
+                v, init = m.group(1), m.group(2) or ""
+                deps = idents(init)
+                mem = self._reads_memory(init)
+                call = has_call(init)
+
+                def blocked(u):
+                    if re.search(r"\b" + v + r"\b", u) or writes(u) & deps:
+                        return True
+                    if re.search(r"\bgoto\b|^\s*\w+\s*:(?!:)|\b(case|default)\b", u, re.M):
+                        return True
+                    if (mem or call) and self._barrier(u):
+                        return True
+                    if call and self._reads_memory(u):
+                        return True
+                    return False
+                j = k + 1
+                while j < len(st) and not blocked(code[st[j][0]:st[j][1]]):
+                    j += 1
+                if j < len(st) and j > k + 1 and re.search(r"\b" + v + r"\b", code[st[j][0]:st[j][1]]):
+                    cands.append(("down", k, j, st))
+                j = k - 1
+                while j >= 0 and not blocked(code[st[j][0]:st[j][1]]):
+                    j -= 1
+                if j + 1 < k:
+                    cands.append(("up", k, rng.randrange(j + 1, k), st))
+        if not cands:
+            return None
+        d, k, j, st = rng.choice(cands)
+        s, e = st[k]
+        stmt = src[s:e]
+        ts = st[j][0]
+        ind = "\n" + re.match(r"[ \t]*", src[src.rfind("\n", 0, ts) + 1:ts]).group(0)
+        if d == "down":
+            return src[:s] + src[st[k + 1][0]:ts] + stmt + ind + src[ts:]
+        return src[:ts] + stmt + ind + src[ts:s] + src[e:]
+
+    def m_reorder_decls(self, src, rng):
+        """Move an uninitialised local declaration within its run of declarations (pseudo-number order)."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            runs, cur = [], []
+            for k, (s, e) in enumerate(st):
+                t = code[s:e]
+                if TYPE_START.match(t) and re.match(r"^[^=(]*;\s*$", t):
+                    cur.append(k)
+                else:
+                    if len(cur) > 1:
+                        runs.append(cur)
+                    cur = []
+            if len(cur) > 1:
+                runs.append(cur)
+            for r in runs:
+                cands.append((st, r))
+        if not cands:
+            return None
+        st, r = rng.choice(cands)
+        a, b = rng.sample(r, 2)
+        order = list(r)
+        order.remove(a)
+        order.insert(order.index(b) if b in order else len(order), a)
+        texts = [src[st[k][0]:st[k][1]] for k in order]
+        s0, e0 = st[r[0]][0], st[r[-1]][1]
+        return src[:s0] + "\n    ".join(texts) + src[e0:]
+
+    def _var_ok(self, body, v):
+        return not re.search(r"&\s*" + v + r"\b(?!\s*[\[.])", re.sub(r"&&", "  ", body)) \
+            and not re.search(r"\b(goto)\b|^\s*\w+\s*:(?!:)", body, re.M)
+
+    def m_split_var(self, src, rng):
+        """A reused local: from one plain assignment `v = e;` on, use a fresh variable for the rest of its block."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            bs, be = st[0][0], st[-1][1]
+            for k, (s, e) in enumerate(st):
+                m = re.match(r"^\s*([A-Za-z_]\w*)\s*=(?!=)\s*(.+);\s*$", code[s:e], re.S)
+                if not m:
+                    continue
+                v = m.group(1)
+                if v in idents(m.group(2)) or v in KEYWORDS:
+                    continue
+                decl = None
+                for j in range(k):
+                    t = code[st[j][0]:st[j][1]]
+                    if TYPE_START.match(t) and TYPE_START.match(t).group(1) == v:
+                        decl = t
+                if not decl or not self._var_ok(code[bs:be], v):
+                    continue
+                ty = re.match(r"^\s*(.*?)\b" + v + r"\b", decl, re.S).group(1).strip()
+                if not ty or "[" in decl.split(v, 1)[1][:3]:
+                    continue
+                cands.append((s, e, be, v, ty, m.group(2)))
+        if not cands:
+            return None
+        s, e, be, v, ty, rhs = rng.choice(cands)
+        n = f"{v}_{rng.randrange(2, 99)}"
+        if re.search(r"\b" + n + r"\b", src):
+            return None
+        rest = re.sub(r"\b" + v + r"\b", n, src[e:be])
+        return src[:s] + f"{ty} {n} = {rhs};" + rest + src[be:]
+
+    def m_merge_var(self, src, rng):
+        """Two same-type locals of one block with disjoint lifetimes become one (b's uses go to a); this also
+        writes a call result back into its argument variable (`T b = f(a);` -> `a = f(a);`)."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            bs, be = st[0][0], st[-1][1]
+            decls = {}
+            for k, (s, e) in enumerate(st):
+                t = code[s:e]
+                m = TYPE_START.match(t)
+                if m and not re.search(r"\[", t.split("=")[0]):
+                    ty = re.match(r"^\s*(.*?)\b" + m.group(1) + r"\b", t, re.S).group(1).strip()
+                    decls[m.group(1)] = (k, ty)
+            names = list(decls)
+            for a in names:
+                for b in names:
+                    if a == b or decls[a][1] != decls[b][1] or decls[a][0] >= decls[b][0]:
+                        continue
+                    if not self._var_ok(code[bs:be], a) or not self._var_ok(code[bs:be], b):
+                        continue
+                    kb = decls[b][0]
+                    later_a = [j for j in range(kb + 1, len(st)) if re.search(r"\b" + a + r"\b", code[st[j][0]:st[j][1]])]
+                    if later_a:
+                        continue
+                    tb = code[st[kb][0]:st[kb][1]]
+                    if "=" not in tb:                  # b must start with a value at its declaration
+                        continue
+                    # b must not be used before its declaration's statement in this block's loops: same block
+                    cands.append((st, kb, a, b, be))
+        if not cands:
+            return None
+        st, kb, a, b, be = rng.choice(cands)
+        s, e = st[kb]
+        t = src[s:e]
+        m = re.match(r"^(\s*).*?\b" + b + r"\b\s*=\s*(.+);\s*$", t, re.S)
+        if not m:
+            return None
+        rest = re.sub(r"\b" + b + r"\b", a, src[e:be])
+        return src[:s] + f"{m.group(1)}{a} = {m.group(2)};" + rest + src[be:]
+
+    def m_param(self, src, rng):
+        """Use a parameter directly instead of a local copy `T x = p;`, or add such a copy."""
+        code = mask_comments(src)
+        fb = self._func_body(code)
+        if not fb:
+            return None
+        hs, ob, cb = fb
+        head = code[hs:ob]
+        po = head.find("(")
+        pc = match_close(head, po)
+        params = []
+        for p in head[po + 1:pc].split(","):
+            m = re.match(r"^\s*(.*?[\s*&])([A-Za-z_]\w*)\s*$", p)
+            if m and "&" not in m.group(1) and "..." not in p:
+                params.append((re.sub(r"\s+", " ", m.group(1)).strip(), m.group(2)))
+        if not params:
+            return None
+        body = src[ob + 1:cb]
+        copies = []
+        for ty, p in params:
+            for m in re.finditer(r"(?m)^(\s*)(" + re.escape(ty).replace(r"\ ", r"\s+") + r")\s*([A-Za-z_]\w*)\s*=\s*"
+                                 + p + r"\s*;[ \t]*\n", body):
+                x = m.group(3)
+                after = body[m.end():]
+                if x in writes(after) or p in writes(after) or not self._var_ok(body, x) or not self._var_ok(body, p):
+                    continue
+                copies.append((m, x, p))
+        if copies and rng.random() < 0.6:
+            m, x, p = rng.choice(copies)
+            nb = body[:m.start()] + "\n" + re.sub(r"\b" + x + r"\b", p, body[m.end():])
+            return src[:ob + 1] + nb + src[cb:]
+        ty, p = rng.choice(params)
+        if not self._var_ok(body, p) or re.search(r"\b" + p + r"\b", body) is None:
+            return None
+        n = f"{p}_{rng.randrange(2, 99)}"
+        if re.search(r"\b" + n + r"\b", src):
+            return None
+        nb = re.sub(r"\b" + p + r"\b", n, body)
+        return src[:ob + 1] + f"\n    {ty} {n} = {p};" + nb + src[cb:]
+
+    def m_nest_and(self, src, rng):
+        """`if (a && b) S` (no else)  <->  `if (a) { if (b) S }`."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            for (s, e) in st:
+                t = code[s:e]
+                m = re.match(r"^\s*if\s*\(", t)
+                if not m:
+                    continue
+                o = s + m.end() - 1
+                c = match_close(code, o)
+                if c < 0:
+                    continue
+                if re.search(r"\belse\b", code[c:e]):
+                    continue
+                cond = code[o + 1:c]
+                # split at a top-level &&
+                depth, cuts = 0, []
+                i = 0
+                while i < len(cond):
+                    ch = cond[i]
+                    if ch in "([":
+                        depth += 1
+                    elif ch in ")]":
+                        depth -= 1
+                    elif depth == 0 and cond.startswith("&&", i):
+                        cuts.append(i)
+                        i += 1
+                    elif depth == 0 and (cond.startswith("||", i) or ch == "?"):
+                        cuts = None
+                        break
+                    i += 1
+                if cuts:
+                    cands.append(("split", s, o, c, e, rng.choice(cuts)))
+                k = c + 1
+                while k < e and code[k].isspace():
+                    k += 1
+                inner = code[k:e]
+                if inner.startswith("{"):
+                    c2 = match_close(code, k)
+                    inner_st = code[k + 1:c2].strip()
+                    if c2 == e - 1 and re.match(r"^if\s*\(", inner_st) and not re.search(r"\belse\b", inner_st):
+                        sp = split_statements(code, k, c2)
+                        if len(sp) == 1:
+                            cands.append(("join", s, o, c, e, (k, c2, sp[0])))
+        if not cands:
+            return None
+        kind, s, o, c, e, x = rng.choice(cands)
+        if kind == "split":
+            a, b = src[o + 1:o + 1 + x].strip(), src[o + 3 + x:c].strip()
+            body = src[c + 1:e].strip()
+            ind = re.match(r"[ \t]*", src[src.rfind("\n", 0, s) + 1:s]).group(0)
+            return src[:s] + f"if ({a}) {{\n{ind}    if ({b}) {body}\n{ind}}}" + src[e:]
+        k, c2, (is_, ie) = x
+        it = src[is_:ie]
+        m = re.match(r"^\s*if\s*\(", it)
+        io = is_ + m.end() - 1
+        ic = match_close(code, io)
+        return src[:o + 1] + f"({src[o + 1:c].strip()}) && ({src[io + 1:ic].strip()})" + ") " + \
+            src[ic + 1:ie].strip() + src[e:]
+
+    def m_early_return(self, src, rng):
+        """In a void function body: `if (c) return; R` (R to the end)  <->  `if (!(c)) { R }`."""
+        code = mask_comments(src)
+        fb = self._func_body(code)
+        if not fb:
+            return None
+        hs, ob, cb = fb
+        if not re.search(r"(?:^|\s)void\s+[\w:]+\s*\(", code[hs:ob]):
+            return None
+        st = split_statements(code, ob, cb)
+        cands = []
+        for k, (s, e) in enumerate(st[:-1]):
+            m = re.match(r"^\s*if\s*\(", code[s:e])
+            if m:
+                o = s + m.end() - 1
+                c = match_close(code, o)
+                if re.match(r"^\s*return\s*;\s*$", code[c + 1:e]):
+                    rest = code[st[k + 1][0]:st[-1][1]]
+                    if not re.search(r"^\s*\w+\s*:(?!:)|\bgoto\b", rest, re.M):
+                        cands.append(("wrap", s, o, c, st[k + 1][0], st[-1][1]))
+        s, e = st[-1]
+        m = re.match(r"^\s*if\s*\(", code[s:e])
+        if m:
+            o = s + m.end() - 1
+            c = match_close(code, o)
+            k = c + 1
+            while code[k].isspace():
+                k += 1
+            if code[k] == "{" and match_close(code, k) == e - 1:
+                cands.append(("unwrap", s, o, c, k, e))
+        if not cands:
+            return None
+        kind, s, o, c, a, b = rng.choice(cands)
+        cond = src[o + 1:c]
+        m = re.match(r"^\s*!\s*\((.*)\)\s*$", cond, re.S)
+        ncond = m.group(1) if m and match_close("(" + m.group(1) + ")", 0) == len(m.group(1)) + 1 else f"!({cond})"
+        if kind == "wrap":
+            return src[:s] + f"if ({ncond}) {{\n    " + src[a:b] + "\n    }" + src[b:]
+        return src[:s] + f"if ({ncond})\n        return;\n    " + src[a + 1:b - 1].strip() + "\n" + src[b:]
+
+    LV = r"[A-Za-z_]\w*(?:(?:\.|->)[A-Za-z_]\w*|\[[A-Za-z_0-9]+\])*"
+
+    def m_compound(self, src, rng):
+        """`x = x op y;`  <->  `x op= y;` (whole statements only)."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            for (s, e) in st:
+                t = code[s:e]
+                if TYPE_START.match(t) or re.match(r"^\s*(return|operator)\b", t):
+                    continue
+                m = re.match(r"^(\s*)(" + self.LV + r")\s*=\s*(" + self.LV + r")\s*(<<|>>|[-+*/%&|^])\s*(.+?);\s*$",
+                             t, re.S)
+                if m and m.group(2) == m.group(3):
+                    rhs = m.group(5).strip()
+                    if re.fullmatch(self.ATOM, rhs) or rhs.startswith("(") and match_close(rhs, 0) == len(rhs) - 1:
+                        cands.append((s + len(m.group(1)), e, f"{m.group(2)} {m.group(4)}= {rhs};"))
+                m = re.match(r"^(\s*)(" + self.LV + r")\s*(<<|>>|[-+*/%&|^])=\s*(.+?);\s*$", t, re.S)
+                if m and m.group(2) not in KEYWORDS:
+                    y = m.group(4).strip()
+                    y = y if re.fullmatch(self.ATOM, y) else f"({y})"
+                    cands.append((s + len(m.group(1)), e, f"{m.group(2)} = {m.group(2)} {m.group(3)} {y};"))
+        if not cands:
+            return None
+        s, e, rep = rng.choice(cands)
+        return src[:s] + rep + src[e:]
+
+    def m_chain(self, src, rng):
+        """`a = e; b = a;`  <->  `b = a = e;`."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            for k in range(len(st)):
+                t = code[st[k][0]:st[k][1]]
+                m = re.match(r"^\s*(" + self.LV + r")\s*=\s*(" + self.LV + r")\s*=(?!=)\s*(.+);\s*$", t, re.S)
+                if m:
+                    cands.append(("split", st[k][0], st[k][1], m))
+                if k + 1 < len(st):
+                    m1 = re.match(r"^\s*(" + self.LV + r")\s*=(?!=)\s*(.+);\s*$", t, re.S)
+                    t2 = code[st[k + 1][0]:st[k + 1][1]]
+                    m2 = re.match(r"^\s*(" + self.LV + r")\s*=\s*(" + self.LV + r")\s*;\s*$", t2)
+                    if m1 and m2 and m2.group(2) == m1.group(1) and not TYPE_START.match(t):
+                        cands.append(("join", st[k][0], st[k + 1][1], (m1, m2)))
+        if not cands:
+            return None
+        kind, s, e, m = rng.choice(cands)
+        if kind == "split":
+            return src[:s] + f"{m.group(2)} = {m.group(3)};\n    {m.group(1)} = {m.group(2)};" + src[e:]
+        m1, m2 = m
+        return src[:s] + f"{m2.group(1)} = {m1.group(1)} = {m1.group(2)};" + src[e:]
+
+    def m_call_order(self, src, rng):
+        """Call an extern "C" callee through a `static inline` wrapper whose parameter order differs, so the
+        arguments are evaluated (and loaded) in another order. Only for side-effect-free arguments."""
+        decls = list(re.finditer(r'extern\s+"C"\s+([\w\s*]+?)\s*\b(func_[0-9A-F]{8})\s*\(([^()]*)\)\s*;', src))
+        cands = []
+        for d in decls:
+            ps = [p.strip() for p in d.group(3).split(",")]
+            if any(p in ("", "void", "...") for p in ps):
+                continue
+            types = []
+            for p in ps:
+                m = re.match(r"^(.*?[\s*&])([A-Za-z_]\w*)$", p)
+                types.append(m.group(1).strip() if m and m.group(2) not in TYPE_WORDS else p)
+            for c in re.finditer(r"\b" + d.group(2) + r"\s*\(", src[d.end():]):
+                o = d.end() + c.end() - 1
+                cl = match_close(src, o)
+                if cl < 0:
+                    continue
+                args, depth, cur = [], 0, ""
+                for ch in src[o + 1:cl]:
+                    if ch in "([":
+                        depth += 1
+                    elif ch in ")]":
+                        depth -= 1
+                    if ch == "," and depth == 0:
+                        args.append(cur)
+                        cur = ""
+                    else:
+                        cur += ch
+                args.append(cur)
+                if len(args) != len(types) or any(has_call(a) or re.search(r"\+\+|--|[^=!<>]=[^=]", a) for a in args):
+                    continue
+                cands.append((d, types, o, cl, args, d.end() + c.start()))
+        if not cands:
+            return None
+        d, types, o, cl, args, cs = rng.choice(cands)
+        n = len(types)
+        perm = list(range(n))
+        if n > 1 and rng.random() < 0.5:       # a pass-through wrapper alone changes allocation too
+            while perm == list(range(n)):
+                rng.shuffle(perm)
+        ret = re.sub(r"\s+", " ", d.group(1)).strip()
+        name = f"Call_{d.group(2)[5:]}" + ("" if perm == list(range(n)) else "_" + "".join(map(str, perm)))
+        helper = f"static inline {ret} {name}(" + ", ".join(f"{types[i]} a{i}" for i in perm) + ") { " + \
+            ("" if ret == "void" else "return ") + f"{d.group(2)}(" + ", ".join(f"a{i}" for i in range(n)) + "); }\n"
+        out = src[:cs] + f"{name}(" + ", ".join(args[i].strip() for i in perm) + ")" + src[cl + 1:]
+        if name not in src:
+            out = out[:d.end()] + "\n" + helper + out[d.end():]
+        return out
+
+    def m_ineq(self, src, rng):
+        """On integer locals: `x < N` <-> `x <= N - 1`, `x > N` <-> `x >= N + 1` (N an integer literal); and
+        `a - b` <-> `a + -b`."""
+        code = mask_comments(src)
+        lo = min((s for s, _ in code_blocks(code)), default=len(code))
+        cands = []
+        for m in re.finditer(r"\b([A-Za-z_]\w*)\s*(<=|>=|<|>)\s*(-?\d+)\b(?![.\w])", code[lo:]):
+            ty = self._decl_type(code, m.group(1))
+            if not ty or not self.INT_DECL.match(ty):
+                continue
+            if not self._safe_operands(code, lo + m.start(), lo + m.end(), m.group(2)):
+                continue
+            n = int(m.group(3))
+            new = {"<": ("<=", n - 1), "<=": ("<", n + 1), ">": (">=", n + 1), ">=": (">", n - 1)}[m.group(2)]
+            if ty.startswith("unsigned") and new[1] < 0:
+                continue
+            cands.append((lo + m.start(), lo + m.end(), f"{m.group(1)} {new[0]} {new[1]}"))
+        for m in re.finditer(r"(?<=[\w)\]])\s*-\s*(" + self.ATOM + r")(?![\w(\[.])", code[lo:]):
+            cands.append((lo + m.start(), lo + m.end(), f" + -{m.group(1)}"))
+        for m in re.finditer(r"(?<=[\w)\]])\s*\+\s*-\s*(" + self.ATOM + r")(?![\w(\[.])", code[lo:]):
+            cands.append((lo + m.start(), lo + m.end(), f" - {m.group(1)}"))
+        if not cands:
+            return None
+        s, e, rep = rng.choice(cands)
+        return src[:s] + rep + src[e:]
+
+    def m_flags(self, src, rng):
+        """Add or drop one allowed per-file flag on the first line."""
+        flags = [f for f in self.allowed if not f.startswith("-O") and not f.startswith("-G")] + ["-O1", "-O2"]
+        if not flags:
+            return None
+        first, rest = (src.split("\n", 1) + [""])[:2]
+        m = re.match(r"^/\*\s*cflags:(.*?)\*/\s*$", first)
+        cur = m.group(1).split() if m else []
+        f = rng.choice(flags)
+        if f in cur:
+            cur.remove(f)
+        else:
+            if f.startswith("-O"):
+                cur = [c for c in cur if not c.startswith("-O")]
+            cur.append(f)
+        line = f"/* cflags: {' '.join(cur)} */" if cur else None
+        body = rest if m else src
+        return (line + "\n" + body) if line else body
+
 
 # ---------------------------------------------------------------- checking and scoring
 
 EXTRA_BANNED = [
     (re.compile(r"\bdo\s*\{[^{}]*\}\s*while\s*\(\s*0\s*\)"), "do {} while (0)"),
+    (re.compile(r"(?m)^\s*([A-Za-z_][\w.\->\[\]]*)\s*=\s*\1\s*;"), "self-assignment"),
 ]
 
 
@@ -492,6 +1105,26 @@ def out_of_line_functions(code):
     return n
 
 
+LOADSTORE = {0x20: "lb", 0x21: "lh", 0x23: "lw", 0x24: "lbu", 0x25: "lhu", 0x27: "lwu", 0x37: "ld",
+             0x28: "sb", 0x29: "sh", 0x2B: "sw", 0x3F: "sd"}
+
+
+def width_sig(words):
+    """Counts of memory-access widths and of zero/sign extensions: a candidate that moves these away from
+    the game's (an `lh` where the game has `lw`, an extra `andi 0xFFFF`) narrowed or widened a value."""
+    from collections import Counter
+    c = Counter()
+    for w in words:
+        op = w >> 26
+        if op in LOADSTORE:
+            c[LOADSTORE[op]] += 1
+        elif op == 0x0C and (w & 0xFFFF) in (0xFF, 0xFFFF):
+            c[f"andi{w & 0xFFFF:x}"] += 1
+        elif op == 0 and (w & 0x3F) in (0, 2, 3) and ((w >> 6) & 31) in (16, 24) and w:
+            c[f"shift{w & 0x3F}_{(w >> 6) & 31}"] += 1
+    return c
+
+
 class Scorer:
     def __init__(self, name, wid):
         import match
@@ -504,7 +1137,8 @@ class Scorer:
         self.path = self.dir / f"{name}.cpp"
         self.allowed = set(compiler_config().get("per_file", {}).get("allowed_cflags", []))
         self.base_funcs = None
-        self.stats = {"illegal": 0, "error": 0, "compiled": 0}
+        self.width_limit = None               # per class, from the base: candidates may not drift further
+        self.stats = {"illegal": 0, "error": 0, "compiled": 0, "width": 0}
 
     def legal(self, src):
         self.path.write_text(src)
@@ -528,7 +1162,36 @@ class Scorer:
             self.stats["error"] += 1
             return None
         self.stats["compiled"] += 1
+        if not res.ok and self.width_limit != "off":
+            tsig, osig = width_sig(res.target.words), width_sig(res.ours.words)
+            d = {k: abs(osig[k] - tsig[k]) for k in set(osig) | set(tsig)}
+            if self.width_limit is None:
+                self.width_limit = d
+            elif any(v > self.width_limit.get(k, 0) for k, v in d.items()):
+                self.stats["width"] += 1
+                return None
         return (1 if res.ok else 0, round(self.match.fuzzy(res), 3), -len(res.diffs))
+
+
+def flag_variants(src, allowed):
+    """The unit with each allowed per-file flag set, and with each pair of non -O/-G flags."""
+    first, rest = (src.split("\n", 1) + [""])[:2]
+    m = re.match(r"^/\*\s*cflags:(.*?)\*/\s*$", first)
+    cur = m.group(1).split() if m else []
+    body = rest if m else src
+    plain = [f for f in allowed if not f.startswith(("-O", "-G"))]
+    sets = [[f] for f in allowed] + [[f, g] for i, f in enumerate(plain) for g in plain[i + 1:]]
+    seen = set()
+    for add in sets:
+        fl = [c for c in cur if not (c.startswith("-O") and any(x.startswith("-O") for x in add))
+              and not (c.startswith("-G") and any(x.startswith("-G") for x in add))]
+        for f in add:
+            fl = [c for c in fl if c != f] if f in fl else fl + [f]
+        key = tuple(sorted(fl))
+        if key in seen or key == tuple(sorted(cur)):
+            continue
+        seen.add(key)
+        yield (f"/* cflags: {' '.join(fl)} */\n" + body if fl else body), fl
 
 
 def fmt(sc):
@@ -538,7 +1201,7 @@ def fmt(sc):
 # ---------------------------------------------------------------- the search
 
 def worker(args):
-    name, base, wid, seed, deadline, unsafe, keep, stop, outq = args
+    name, base, wid, seed, deadline, unsafe, keep, stop, outq, focus, guard = args
     try:
         os.nice(10)
     except OSError:
@@ -546,7 +1209,9 @@ def worker(args):
     rng = random.Random(seed)
     sc = Scorer(name, wid)
     sc.base_funcs = out_of_line_functions(mask_comments(base))
-    mut = Mutator(unsafe)
+    mut = Mutator(unsafe, focus, sc.allowed)
+    if not guard:
+        sc.width_limit = "off"
     base_score = sc.score(base)
     if base_score is None:
         outq.put(("error", wid, "base does not compile or fails scan"))
@@ -605,6 +1270,11 @@ def main():
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--no-unsafe", action="store_true", help="skip mutations that can change evaluation order")
     ap.add_argument("--out", help="output dir (default work/cxxperm/<name>)")
+    ap.add_argument("--sweep-flags", action="store_true",
+                    help="first try every allowed per-file flag and every pair of them on the starting unit")
+    ap.add_argument("--focus", choices=["regalloc"], help="bias towards the declaration and live-range passes")
+    ap.add_argument("--no-width-guard", action="store_true",
+                    help="keep candidates whose load/store widths or extensions drift from the game's")
     a = ap.parse_args()
 
     if a.src:
@@ -622,7 +1292,8 @@ def main():
     mgr = mp.Manager()
     stop = mgr.Event()
     q = mgr.Queue()
-    jobs = [(a.name, base, w, seed + w, deadline, not a.no_unsafe, a.keep, stop, q) for w in range(a.jobs)]
+    jobs = [(a.name, base, w, seed + w, deadline, not a.no_unsafe, a.keep, stop, q, a.focus, not a.no_width_guard)
+            for w in range(a.jobs)]
     procs = [mp.Process(target=worker, args=(j,)) for j in jobs]
     for p in procs:
         p.start()
@@ -635,8 +1306,20 @@ def main():
             p.join()
         sys.exit(f"{a.name}: the starting unit does not compile or fails scan.py's checks")
     print(f"{a.name}: base {fmt(base_score)}; {a.jobs} workers for {a.time}s", flush=True)
+    if a.sweep_flags:
+        tried = better = 0
+        for fsrc, fl in flag_variants(base, sorted(sc0.allowed)):
+            fs = sc0.score(fsrc)
+            tried += 1
+            if fs and fs > base_score:
+                better += 1
+                print(f"  flags {' '.join(fl) or '(none)'}: {fmt(fs)}", flush=True)
+                (out / f"flags_{'_'.join(f.strip('-') for f in fl)}.cpp").write_text(
+                    f"/* cxxperm: {fmt(fs)} via flags */\n" + fsrc)
+        print(f"  flag sweep: {tried} flag sets, {better} better than base", flush=True)
 
     best = []                                 # (score, src, how)
+    wins = {}
     stats = {}
     done = 0
     ticks = 0
@@ -663,6 +1346,8 @@ def main():
             if any(b[1] == csrc for b in best):
                 continue
             best.append((s, csrc, how))
+            for op in how.split("+"):
+                wins[op] = wins.get(op, 0) + 1
             best.sort(key=lambda b: b[0], reverse=True)
             del best[8:]
             if best[0][1] == csrc:
@@ -680,6 +1365,8 @@ def main():
           f"best {fmt(best[0][0]) if best else 'none better than base'}; results in {out}")
     if stats:
         print("  " + ", ".join(f"{k} {v}" for k, v in sorted(stats.items())))
+    if wins:
+        print("  improving passes: " + ", ".join(f"{k} {v}" for k, v in sorted(wins.items(), key=lambda x: -x[1])))
     shutil.rmtree(BUILD / "cxxperm" / a.name, ignore_errors=True)
 
 

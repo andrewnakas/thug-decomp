@@ -1,4 +1,5 @@
-/* fuzzy: 96.3 */
+/* cflags: -fno-gcse */
+/* fuzzy: 97.4 */
 extern unsigned char* D_00394274;
 extern unsigned int D_00394280;
 extern unsigned int D_00394284;

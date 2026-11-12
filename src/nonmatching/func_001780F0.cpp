@@ -1,4 +1,5 @@
-/* fuzzy: 44.2 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 45.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001780F0 {

@@ -1,4 +1,5 @@
-/* fuzzy: 47.0 */
+/* cflags: -fno-gcse */
+/* fuzzy: 48.0 */
 /* Vehicle component script member functions (assert path: gel/components/vehiclecomponent.cpp).
    Returns 0/1 for handled queries and commands, 2 for "not mine". */
 extern "C" float sqrtf(float);

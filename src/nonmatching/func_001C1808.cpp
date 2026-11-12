@@ -1,4 +1,4 @@
-/* fuzzy: 96.5 */
+/* fuzzy: 98.6 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001C1808 {
@@ -155,9 +155,9 @@ void Sk_001C1808::Update()
     case 1: {
         float zero = 0.0f;
         func_001C5BB0(this);
-        Vec_001C1808* v = &m40;
         if (mB0 != zero) {
             float a = func_001C6218(this);
+            Vec_001C1808* v = &m40;
             float b = Param_001C1808(0x839FE542);
             float lo = Param_001C1808(0xCC461B87);
             float hi = Param_001C1808(0x7213EF07);
@@ -172,15 +172,15 @@ void Sk_001C1808::Update()
             } else {
                 *v = mA0 * s;
             }
+            mB70 = mA0;
             m60 = mA0;
-            mB70 = m60;
         } else {
             mB70 = m60;
         }
         func_001C1D98(this);
-        float l2 = v->LengthSqr();
+        float l2 = m40.LengthSqr();
         if (l2 > 0.01f) {
-            mB70 = *v;
+            mB70 = m40;
             mB70 *= 1.0f / sqrtf(l2);
         } else {
             mB70 = m60;

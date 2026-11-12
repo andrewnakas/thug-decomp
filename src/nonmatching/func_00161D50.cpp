@@ -1,4 +1,5 @@
-/* fuzzy: 80.3 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 83.1 */
 struct Dma_00161D50 {
     unsigned short m0;
 };

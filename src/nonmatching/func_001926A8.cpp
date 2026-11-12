@@ -1,4 +1,5 @@
-/* fuzzy: 66.7 */
+/* cflags: -fno-gcse -fno-rerun-loop-opt */
+/* fuzzy: 70.9 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);
 extern "C" float func_00340F60(float a);

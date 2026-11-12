@@ -1,4 +1,5 @@
-/* fuzzy: 84.2 */
+/* cflags: -fno-rerun-loop-opt */
+/* fuzzy: 90.6 */
 struct Sub_001DD7C8 {
     char m_pad[0x1C];
     float m_vol;

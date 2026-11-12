@@ -1,4 +1,5 @@
-/* fuzzy: 33.5 */
+/* cflags: -fno-gcse -fno-rerun-loop-opt */
+/* fuzzy: 39.5 */
 /* Projects a textured decal/shadow along a ray (start -> end) onto the collision geometry: every collision
    face the projection volume touches is clipped against the unit square in projector space, subdivided,
    and the surviving triangles are stored with projector UVs and per-vertex intensities in a decal block. */

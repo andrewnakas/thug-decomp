@@ -1,4 +1,3 @@
-/* fuzzy: 63.0 */
 extern "C" int func_0031A5D0(int, int);
 
 struct Pad_001079B8 {
@@ -23,6 +22,8 @@ int Pad_001079B8::GetState()
         return 3;
     case 6:
         return 1;
+    case 2:
+        return 0;
     default:
         return 0;
     }

@@ -1,4 +1,4 @@
-/* fuzzy: 95.5 */
+/* fuzzy: 99.3 */
 typedef int qword __attribute__((mode(TI)));
 struct Vec_002C0730 {
     union {
@@ -16,6 +16,12 @@ struct Box_002C0730 {
     unsigned char w;
     unsigned char h;
     unsigned char d;
+    void SetSize(int aw, int ah, int ad)
+    {
+        w = aw;
+        h = ah;
+        d = ad;
+    }
 };
 
 struct Piece_002C0730 {
@@ -51,7 +57,8 @@ extern "C" void func_002BC640(List_002C0730* l, int f);
 extern "C" void* func_002BC690(List_002C0730* l);
 extern "C" void* func_002BC5A0(void* n);
 extern "C" Piece_002C0730* func_002BAB80(void* p);
-extern "C" void* func_002BA8A0(void* m, Vec_002C0730* pos, int flag);
+/* The game passes ang in $f12 (mov.s $f12,$f22 before the jal): the callee takes a float it never reads. */
+extern "C" void* func_002BA8A0(void* m, Vec_002C0730* pos, int flag, float ang);
 extern "C" void func_002B7028(void* q, float s);
 extern "C" void func_002CC060(void* mgr, void* q, Piece_002C0730* p, int id);
 extern "C" void func_002CC108(void* mgr, void* q, Piece_002C0730* p, int id);
@@ -72,9 +79,7 @@ bool Obj_002C0730::Build(Set_002C0730* s)
     Box_002C0730* bx = s->boxes;
     for (int i = 0; i < s->count; i++, bx++) {
         List_002C0730 l;
-        bx->w = 1;
-        bx->h = 1;
-        bx->d = 1;
+        bx->SetSize(1, 1, 1);
         Box_002C0730 b = *bx;
         func_002BC630(&l, func_002BF5C0(this, &b, 0, 0, 0));
         if (!l.m0) {
@@ -118,7 +123,7 @@ bool Obj_002C0730::Build(Set_002C0730* s)
         }
         pos.f.x -= D_00392610 * 28.0f;
         pos.f.z -= D_00392618 * 28.0f;
-        void* q = func_002BA8A0(m0, &pos, flag);
+        void* q = func_002BA8A0(m0, &pos, flag, ang);
         func_002B7028(q, ang / D_00392610);
         if (i == 0)
             func_002CC060(m6B00, q, p, id);

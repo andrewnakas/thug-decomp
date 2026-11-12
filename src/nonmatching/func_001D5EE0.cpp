@@ -1,4 +1,4 @@
-/* fuzzy: 72.4 */
+/* fuzzy: 77.3 */
 typedef int qword_001D5EE0 __attribute__((mode(TI)));
 
 struct Vec_001D5EE0 {
@@ -64,7 +64,7 @@ struct Box_001D5EE0;
 struct Point_001D5EE0 {
     Vec_001D5EE0 p;
     Vec_001D5EE0 dir;
-    bool edge;
+    unsigned char edge;
 };
 
 struct Contact_001D5EE0 {

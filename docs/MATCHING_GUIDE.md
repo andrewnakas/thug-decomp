@@ -214,6 +214,36 @@ Example: `src/funcs/func_002BA688.cpp`.
 - **Parameters = what callers pass.** If the game's call site loads an argument register before the call, declare
   that parameter even when the callee ignores it, with a comment citing the call site. Never invent one no caller sets.
 
+## Explaining scheduling and allocation ties (`sched_explain.py`, `regalloc_explain.py`)
+
+Two diagnostics read cc1plus's own dumps so you do not have to. Both compile the unit exactly as `cc.py` does
+(pinned cflags + the unit's `/* cflags: */`) plus dump flags, in a private `build/explain_*` directory (`--keep DIR`
+keeps the dumps), map every word of our function to its RTL insn (`-dp` + a label per insn, checked against
+match.py's object), and diff against the game.
+
+- `tools/sched_explain.py NAME [--src F] [--pass 1|2] [--block N] [--all] [--why A B] [--keep DIR]`
+  (`-dN -dS -dR -fsched-verbose-5`). Without `--block` it shows the blocks that hold the first differing words,
+  sched1 and sched2: the dependence table, then every cycle's ready list best first with gcc 2.95's
+  `rank_for_schedule` keys (priority, register weight [sched1], class relative to the last scheduled insn,
+  dependents, luid), what was issued, and the first key that puts each candidate below the one above.
+  `--why A B` names the key that orders two insns (uids from the tables or the word listing), or says they were
+  never ready together (dependences/latency decide, not ranking). A `luid` decision is a pure source-order tie:
+  swap the statements. Each block ends with a model check against the order the compiler printed; sched2 agrees
+  everywhere we measured, sched1 on ~99% of pairs (the rest, flagged `!!`, are unexplained priority inversions in
+  float/TImode-heavy blocks: trust the dump order there).
+- `tools/regalloc_explain.py NAME [--src F] [--pseudo N] [--no-local] [--keep DIR]` (`-dl -dg`). Lists global
+  allocation in find_reg order with refs, live length, priority (`floor_log2(refs)*refs/live*size`; ties go to the
+  lower pseudo number, i.e. the value created first), calls crossed, conflicts, preferences and the register it
+  ended with; checks that order against the `.greg` dump; lists local-alloc's per-block choices; then, at each
+  differing word that is the same instruction with other registers, names the pseudo and why it missed the game's
+  register: lost to an earlier conflicting pseudo (priority or tie), a local pseudo or hard register live across
+  it, a call it crosses, local-alloc tying a result to a dying source (`combine_regs`), or a `(clobber (scratch))`
+  that reload fills after allocation. REG_EQUIV pseudos (constants, stack arguments) show `EQUIV`: their live
+  length was doubled, so they go late.
+
+Dump flags this cc1plus accepts: `-dN -dS -dl -dg -dR -dp`, `-fsched-verbose-N` (not `-fsched-verbose=N`). None
+of them changes the code. The tools never touch `src/` and are safe to run beside other agents (one compile each).
+
 ## `-mno-split-addresses` (allowed per file since 2026-11-12)
 
 The Ratchet & Clank 3 decomp, built with the same SN 1.36 compiler, found that this flag was set per source file in

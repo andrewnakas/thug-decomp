@@ -13,18 +13,40 @@ compiled and compared with match.compare() into a per-worker build directory. Ca
 candidates are written to work/cxxperm/<func>/best_<rank>.cpp with their score in a header comment, and the run
 stops at the first exact MATCH or at --time.
 
-The mutations are text- and brace-aware and stay inside one block of statements:
-  swap        swap two adjacent statements that do not touch the same variables (never two calls)
-  split/merge `T x = e;`  <->  `T x; x = e;`
-  temp        hoist a call into `__typeof__(call) t = call;` before its statement; inline a one-use temp
-  commute     swap operands of == != + * (and && || when neither side has a call); flip < > <= >=
-  invert      `if (c) A else B`  ->  `if (!(c)) B else A`
-  rettype     an extern "C" callee's return type among void / int / void* / bool / unsigned int
-  inttype     a local's type among int / unsigned int / short / unsigned short
-  for2while   `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
-  countdown   `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
-Candidates are not proven equivalent: read any winner before keeping it (the unsafe mutations can change order;
---no-unsafe turns them off).
+The mutations are text- and brace-aware and stay inside one block of statements. Each is drawn with a weight
+(the upstream permuter's [gcc] weights where one exists, docs/techniques/N64_AND_PERMUTER.md appendix):
+  temp         hoist a call into `__typeof__(call) t = call;` (never out of a body, a loop, a `__typeof__`
+               operand or the right of && || ?:); inline     inline a one-use temp back
+  swap         swap two adjacent statements that do not touch the same variables (never two calls)
+  split/merge  `T x = e;`  <->  `T x; x = e;`
+  move_to_use  move a declaration down to its first use or up (memory reads never cross a call or a store)
+  reorder_decls  reorder a run of uninitialised declarations (pseudo-register numbering)
+  split_var    a reused local gets a fresh variable from one plain assignment on
+  merge_var    two same-type locals with disjoint lifetimes become one (also: result written back into its
+               argument variable)
+  param        use a parameter directly instead of a local copy, or add a copy
+  nest_and     `if (a && b) S`  <->  `if (a) { if (b) S }`
+  early_return `if (c) return; rest`  <->  `if (!(c)) { rest }` (void functions)
+  compound     `x = x op y;`  <->  `x op= y;`        chain  `a = e; b = a;`  <->  `b = a = e;`
+  call_order   call an extern through a `static inline` pass-through wrapper, optionally with its parameters
+               in another order (side-effect-free arguments only)
+  ineq         `x < N`  <->  `x <= N - 1` on integer locals; `a - b`  <->  `a + -b`
+  commute      swap operands of == != + * && || (precedence-checked; never two calls); flip < > <= >=
+  invert       `if (c) A else B`  ->  `if (!(c)) B else A`
+  rettype      an extern "C" callee's return type, limited to what its asm does (void only when it leaves
+               nothing in $v0 after its last call, a value type when it does)
+  inttype      a local's type among int / unsigned int / short / unsigned short / signed char / unsigned char
+  for2while    `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
+  flags        add or drop one allowed per-file flag (--sweep-flags also tries every flag and pair up front)
+  countdown    `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
+--focus regalloc multiplies the declaration and live-range passes by 4.
+
+Width guard: a candidate whose load/store widths or zero/sign extensions (lb/lh/lw.., andi 0xFF/0xFFFF,
+16/24-bit shift pairs) move further from the game's than the starting unit's did, in any one class, is
+rejected (it narrowed or widened a value); --no-width-guard turns it off. The banned shapes (do {} while (0),
+self-assignment, new out-of-line functions, everything scan.py rejects) are never scored.
+Candidates are still not proven equivalent: read any winner before keeping it, and cut it down to the edits
+that matter.
 """
 import argparse
 import multiprocessing as mp
@@ -959,7 +981,7 @@ class Mutator:
         cands = []
         for d in decls:
             ps = [p.strip() for p in d.group(3).split(",")]
-            if len(ps) < 2 or any(p in ("", "void", "...") for p in ps):
+            if any(p in ("", "void", "...") for p in ps):
                 continue
             types = []
             for p in ps:
@@ -990,10 +1012,11 @@ class Mutator:
         d, types, o, cl, args, cs = rng.choice(cands)
         n = len(types)
         perm = list(range(n))
-        while perm == list(range(n)):
-            rng.shuffle(perm)
+        if n > 1 and rng.random() < 0.5:       # a pass-through wrapper alone changes allocation too
+            while perm == list(range(n)):
+                rng.shuffle(perm)
         ret = re.sub(r"\s+", " ", d.group(1)).strip()
-        name = f"Call_{d.group(2)[5:]}_{''.join(map(str, perm))}"
+        name = f"Call_{d.group(2)[5:]}" + ("" if perm == list(range(n)) else "_" + "".join(map(str, perm)))
         helper = f"static inline {ret} {name}(" + ", ".join(f"{types[i]} a{i}" for i in perm) + ") { " + \
             ("" if ret == "void" else "return ") + f"{d.group(2)}(" + ", ".join(f"a{i}" for i in range(n)) + "); }\n"
         out = src[:cs] + f"{name}(" + ", ".join(args[i].strip() for i in perm) + ")" + src[cl + 1:]
@@ -1095,10 +1118,6 @@ def width_sig(words):
     return c
 
 
-def sig_dist(a, b):
-    return sum(abs(a[k] - b[k]) for k in set(a) | set(b))
-
-
 class Scorer:
     def __init__(self, name, wid):
         import match
@@ -1111,7 +1130,7 @@ class Scorer:
         self.path = self.dir / f"{name}.cpp"
         self.allowed = set(compiler_config().get("per_file", {}).get("allowed_cflags", []))
         self.base_funcs = None
-        self.width_limit = None               # set from the base: candidates may not drift further
+        self.width_limit = None               # per class, from the base: candidates may not drift further
         self.stats = {"illegal": 0, "error": 0, "compiled": 0, "width": 0}
 
     def legal(self, src):
@@ -1136,11 +1155,12 @@ class Scorer:
             self.stats["error"] += 1
             return None
         self.stats["compiled"] += 1
-        if not res.ok:
-            d = sig_dist(width_sig(res.ours.words), width_sig(res.target.words))
+        if not res.ok and self.width_limit != "off":
+            tsig, osig = width_sig(res.target.words), width_sig(res.ours.words)
+            d = {k: abs(osig[k] - tsig[k]) for k in set(osig) | set(tsig)}
             if self.width_limit is None:
                 self.width_limit = d
-            elif d > self.width_limit:
+            elif any(v > self.width_limit.get(k, 0) for k, v in d.items()):
                 self.stats["width"] += 1
                 return None
         return (1 if res.ok else 0, round(self.match.fuzzy(res), 3), -len(res.diffs))
@@ -1184,7 +1204,7 @@ def worker(args):
     sc.base_funcs = out_of_line_functions(mask_comments(base))
     mut = Mutator(unsafe, focus, sc.allowed)
     if not guard:
-        sc.width_limit = 10 ** 9
+        sc.width_limit = "off"
     base_score = sc.score(base)
     if base_score is None:
         outq.put(("error", wid, "base does not compile or fails scan"))

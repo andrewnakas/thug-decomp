@@ -1,4 +1,3 @@
-/* fuzzy: 80.1 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -41,6 +40,7 @@ struct Quat_0019B080 {
     float& operator[](int i) { return (&x)[i]; }
     float LengthSqr() const { return x * x + y * y + z * z + w * w; }
     void GetMatrix(Mat_0019B080& m, float s) const;
+    void FromMatrix(Mat_0019B080& m);
 };
 
 inline void Quat_0019B080::GetMatrix(Mat_0019B080& m, float s) const
@@ -127,6 +127,33 @@ static inline VecR_0019B080 Cross(const Vec_0019B080& a, const Vec_0019B080& b)
     return VecR_0019B080(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0.0f);
 }
 
+inline void Quat_0019B080::FromMatrix(Mat_0019B080& m)
+{
+    float tr = m[0][0] + m[1][1] + m[2][2];
+    float sq;
+    if (tr > 0.0f) {
+        sq = sqrtf(tr + 1.0f);
+        float h = sq * 0.5f;
+        sq = 0.5f / sq;
+        func_00119228(this, h);
+        func_00119230(this, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
+    } else {
+        int i = 0;
+        if (m[0][0] < m[1][1])
+            i = 1;
+        if (m[i][i] < m[2][2])
+            i = 2;
+        int j = (i + 1) % 3;
+        int k = (j + 1) % 3;
+        sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
+        (*this)[i] = sq * 0.5f;
+        sq = 0.5f / sq;
+        (*this)[j] = (m[j][i] + m[i][j]) * sq;
+        (*this)[k] = (m[k][i] + m[i][k]) * sq;
+        (*this)[3] = (m[k][j] - m[j][k]) * sq;
+    }
+}
+
 void Obj_0019B080::Right()
 {
     if (m_resting)
@@ -144,18 +171,18 @@ void Obj_0019B080::Right()
     if (slow) {
         target.r[2] = m_mat.r[2];
         target.r[2].y = 0.0f;
-        target.r[2].Normalize();
+        target[2].Normalize();
     } else {
         target.r[2] = m_vel;
-        target.r[2].Normalize();
+        target[2].Normalize();
     }
     if (target.r[2].x * m_mat.r[2].x + target.r[2].y * m_mat.r[2].y + target.r[2].z * m_mat.r[2].z < 0.0f) {
-        target.r[2].Negate();
+        target[2].Negate();
     }
-    target.r[1].Set(0.0f, 1.0f, 0.0f);
+    target[1].Set(0.0f, 1.0f, 0.0f);
     target.r[0] = Cross(target.r[1], target.r[2]);
     target.r[1] = Cross(target.r[2], target.r[0]);
-    target.r[3].Set(0.0f, 0.0f, 0.0f);
+    target[3].Set(0.0f, 0.0f, 0.0f);
     Slerp_0019B080 slerp;
     func_00102FD0(&slerp);
     func_00103000(&slerp, &m_mat, &target);
@@ -164,32 +191,11 @@ void Obj_0019B080::Right()
         func_00103930(&slerp, m1BC * m_dt * (lim / m1B8), &m_mat);
     } else {
         float lim = m136C < m1B8 ? m136C : m1B8;
-        func_00103930(&slerp, m1BC * (m_dt * 0.3f) * (lim / m1B8), &m_mat);
+        float dt = m_dt * 0.3f;
+        func_00103930(&slerp, m1BC * dt * (lim / m1B8), &m_mat);
     }
 
     Quat_0019B080 r;
-    Mat_0019B080& m = m_mat;
-    float tr = m[0][0] + m[1][1] + m[2][2];
-    if (tr > 0.0f) {
-        float sq = sqrtf(tr + 1.0f);
-        float h = sq * 0.5f;
-        sq = 0.5f / sq;
-        func_00119228(&r, h);
-        func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
-    } else {
-        int i = 0;
-        if (m[0][0] < m[1][1])
-            i = 1;
-        if (m[i][i] < m[2][2])
-            i = 2;
-        int j = (i + 1) % 3;
-        int k = (j + 1) % 3;
-        float sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
-        r[i] = sq * 0.5f;
-        sq = 0.5f / sq;
-        r[j] = (m[j][i] + m[i][j]) * sq;
-        r[k] = (m[k][i] + m[i][k]) * sq;
-        r[3] = (m[k][j] - m[j][k]) * sq;
-    }
+    r.FromMatrix(m_mat);
     m_rot = r;
 }

@@ -1,4 +1,4 @@
-/* fuzzy: 58.9 */
+/* fuzzy: 69.6 */
 struct C_00128078 {
     int GetWord(char* word, const char** p);
 };
@@ -9,7 +9,8 @@ int C_00128078::GetWord(char* word, const char** p)
     int ret = 0;
     do {
         const char* s = *p;
-        switch (*s) {
+        char c = *s;
+        switch (c) {
         case ' ':
             *word = *s;
             more = 0;
@@ -24,7 +25,7 @@ int C_00128078::GetWord(char* word, const char** p)
                 more = 0;
                 continue;
             } else {
-                *word = *s;
+                *word = c;
                 word++;
                 *word = **p;
             }

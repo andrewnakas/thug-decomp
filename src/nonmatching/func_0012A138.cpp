@@ -1,4 +1,4 @@
-/* fuzzy: 79.9 */
+/* fuzzy: 80.8 */
 // Camera-attached model update: places the base matrix from a tracked object, a named node or a
 // look-at target, applies the orbit rotation about the pivot and a distance-based scale, optionally
 // bobs the position, and pushes the result to every attached model.
@@ -54,6 +54,14 @@ struct Mat_0012A138 {
     void Translate(const Vec_0012A138& v)
     {
         row[3] += v;
+    }
+    void Translate(float x, float y, float z, float w)
+    {
+        Vec_0012A138& r = row[3];
+        r.x += x;
+        r.y += y;
+        r.z += z;
+        r.w += w;
     }
     // a * b via func_00323318, returned by value
     static Mat_0012A138 Mul(const Mat_0012A138& a, const Mat_0012A138& b)
@@ -289,9 +297,9 @@ extern "C" void func_0012A138(Cam_0012A138* self)
     self->m_angle[1] = ay;
     self->m_angle[2] = az;
     func_0012AC20(&s, self->m_order, ax, ay, az);
-    s.Translate(self->m_pivot);
-    Orbit_0012A138* orbit = &self->m_orbit;
     float d = self->m_dist;
+    s.Translate(self->m_pivot.x, self->m_pivot.y, self->m_pivot.z, self->m_pivot.w);
+    Orbit_0012A138* orbit = &self->m_orbit;
     v.y = orbit->m_scaleY * d;
     v.z = v.x = orbit->m_scaleXZ * d;
     v.w = 1.0f;

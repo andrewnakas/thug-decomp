@@ -1,4 +1,4 @@
-/* fuzzy: 91.6 */
+/* fuzzy: 96.6 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0029D068 {
@@ -7,6 +7,7 @@ union Vec_0029D068 {
         float x, y, z, w;
     } f;
     Vec_0029D068() {}
+    const float& operator[](int i) const { return (&f.x)[i]; }
     Vec_0029D068(float x, float y, float z, float w)
     {
         f.x = x;
@@ -25,20 +26,20 @@ union Vec_0029D068 {
 
 static inline Vec_0029D068 operator+(const Vec_0029D068& a, const Vec_0029D068& b)
 {
-    return Vec_0029D068(a.f.x + b.f.x, a.f.y + b.f.y, a.f.z + b.f.z, a.f.w + b.f.w);
+    return Vec_0029D068(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline void Add_0029D068(Vec_0029D068* r, const Vec_0029D068& a, const Vec_0029D068& b)
 {
-    r->f.x = a.f.x + b.f.x;
-    r->f.y = a.f.y + b.f.y;
-    r->f.z = a.f.z + b.f.z;
-    r->f.w = a.f.w + b.f.w;
+    r->f.x = a[0] + b[0];
+    r->f.y = a[1] + b[1];
+    r->f.z = a[2] + b[2];
+    r->f.w = a[3] + b[3];
 }
 
 static inline Vec_0029D068 operator*(const Vec_0029D068& a, float s)
 {
-    return Vec_0029D068(a.f.x * s, a.f.y * s, a.f.z * s, a.f.w * s);
+    return Vec_0029D068(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 static inline void operator+=(Vec_0029D068& a, const Vec_0029D068& b)
@@ -52,7 +53,7 @@ static inline void operator+=(Vec_0029D068& a, const Vec_0029D068& b)
 /* Cross product with w cleared. */
 static inline Vec_0029D068 Cross_0029D068(const Vec_0029D068& a, const Vec_0029D068& b)
 {
-    return Vec_0029D068(a.f.y * b.f.z - a.f.z * b.f.y, a.f.z * b.f.x - a.f.x * b.f.z, a.f.x * b.f.y - a.f.y * b.f.x, 0.0f);
+    return Vec_0029D068(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f);
 }
 
 union Row_0029D068 {
@@ -71,6 +72,7 @@ union Row_0029D068 {
 
 struct Mat_0029D068 {
     Row_0029D068 r[4];
+    Row_0029D068& operator[](int i) { return r[i]; }
     Mat_0029D068& operator=(const Mat_0029D068& o)
     {
         r[0].q = o.r[0].q;
@@ -362,8 +364,8 @@ void Obj_0029D068::Update()
     if (game->mode == 0xE8B4B836)
         func_0029C158(func_0029C320(), 1);
 
-    target.f.z = pos.f.z;
     target.f.x = pos.f.x;
+    target.f.z = pos.f.z;
     target.f.y += (pos.f.y + height - target.f.y) * func_001E5318(0x725AD02C, 0);
 
     Vec_0029D068 dir;
@@ -378,7 +380,7 @@ void Obj_0029D068::Update()
     m.r[0].f.w = 0.0f;
     m.r[2].f.w = 0.0f;
     m.r[1].f.w = 0.0f;
-    m.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
+    m[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
     camera->mat = m;
 
     Vec_0029D068 base = target;

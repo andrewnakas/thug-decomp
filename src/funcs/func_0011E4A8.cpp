@@ -1,4 +1,3 @@
-/* fuzzy: 85.4 */
 // Skeleton pose: builds each bone's matrix from its rotation and translation (or copies a fixed one),
 // applies per-bone scale and the parent transform, then multiplies every bone by its inverse-bind matrix.
 
@@ -70,14 +69,13 @@ static inline void Mul_0011E4A8(Vec_0011E4A8* dst, const Vec_0011E4A8* a, const 
 
 static inline void ScaleRows_0011E4A8(Mat_0011E4A8* m, const Vec_0011E4A8* s)
 {
-    Vec_0011E4A8* r = m->row;
-    Mul_0011E4A8(r, s, r);
-    r++;
-    Mul_0011E4A8(r, s, r);
-    r++;
-    Mul_0011E4A8(r, s, r);
-    r++;
-    Mul_0011E4A8(r, s, r);
+    Mul_0011E4A8(&m->row[0], s, &m->row[0]);
+    Vec_0011E4A8* r1 = &m->row[1];
+    Mul_0011E4A8(r1, s, r1);
+    Vec_0011E4A8* r2 = &m->row[2];
+    Mul_0011E4A8(r2, s, r2);
+    Vec_0011E4A8* r3 = &m->row[3];
+    Mul_0011E4A8(r3, s, r3);
 }
 
 static inline void Scale_0011E4A8(Vec_0011E4A8* v, float s)
@@ -94,8 +92,7 @@ extern "C" void func_0011E4A8(Skel_0011E4A8* self, const Vec_0011E4A8* rot, cons
     unsigned int* fixed = (unsigned int*)(self->m_data + 0x308);
     Bone_0011E4A8* bone = self->m_bones;
     Mat_0011E4A8* mat = self->m_mats;
-    int i;
-    for (i = 0; i < self->m_count; i++) {
+    for (int i = 0; i < self->m_count; i++) {
         if (!(bone->m_flags & 0x40000000)) {
             if (!(fixed[i] & bit)) {
                 func_0011E278(rot, pos, mat, 0, 0);
@@ -118,7 +115,7 @@ extern "C" void func_0011E4A8(Skel_0011E4A8* self, const Vec_0011E4A8* rot, cons
     Mat_0011E4A8* inv = func_0011F540(self->m_data);
     bone = self->m_bones;
     mat = self->m_mats;
-    for (i = 0; i < self->m_count; i++) {
+    for (int j = 0; j < self->m_count; j++) {
         if (!(bone->m_flags & 0x40000000)) {
             if (bone->m_flags & 0x20000000) {
                 Scale_0011E4A8(&mat->row[0], bone->m_scale.x);
@@ -126,8 +123,10 @@ extern "C" void func_0011E4A8(Skel_0011E4A8* self, const Vec_0011E4A8* rot, cons
                 Scale_0011E4A8(&mat->row[2], bone->m_scale.z);
             }
             Mat_0011E4A8 r;
-            Mat_0011E4A8 t = *inv;
-            func_00323318(&t, mat, &t);
+            Mat_0011E4A8 t;
+            Mat_0011E4A8* pt = &t;
+            *pt = *inv;
+            func_00323318(pt, mat, pt);
             r = t;
             *mat = r;
             mat->row[0].w = 0.0f;

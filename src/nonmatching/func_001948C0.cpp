@@ -1,4 +1,4 @@
-/* fuzzy: 97.3 */
+/* fuzzy: 99.1 */
 /* Vehicle component script member functions (assert path: gel/components/vehiclecomponent.cpp).
    Returns 0/1 for handled queries and commands, 2 for "not mine". */
 extern "C" float sqrtf(float);
@@ -94,10 +94,10 @@ inline void Vec_001948C0::Normalize()
     float len = sqrtf(func_0011D4C0(this));
     if (len > 0.0f) {
         float inv = 1.0f / len;
+        w *= inv;
         x *= inv;
         y *= inv;
         z *= inv;
-        w *= inv;
     }
 }
 

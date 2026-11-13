@@ -1,4 +1,4 @@
-/* fuzzy: 94.4 */
+/* fuzzy: 96.6 */
 struct Vec_001688F0 {
     float x, y, z, w;
 };
@@ -87,7 +87,8 @@ void func_001688F0()
     if (IsPal_001688F0()) {
         zv = ((fb + (hh * 0x380 >> 13)) & 0x1FF) | 0x101000000;
     } else {
-        zv = ((fb + (hh >> 3)) & 0x1FF) | 0x101000000;
+        zv = fb + (hh >> 3);
+        zv = (zv & 0x1FF) | 0x101000000;
     }
     Reg_001688F0(zv, 0x4E);
     func_001646D0(0);

@@ -1,4 +1,3 @@
-/* fuzzy: 90.6 */
 struct Node_001A23A8 {
     int m0;
     int m_tag;
@@ -25,10 +24,9 @@ struct Obj_001A23A8 {
     void Fn(unsigned int idx, char* buf, float* weight);
     Node_001A23A8* First()
     {
-        Node_001A23A8* n = m28;
-        if (n->m_tag == -1)
-            n = 0;
-        return n;
+        if (~m28->m_tag == 0)
+            return 0;
+        return m28;
     }
     Node_001A23A8* Nth(unsigned int idx)
     {

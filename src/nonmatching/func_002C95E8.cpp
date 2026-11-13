@@ -1,4 +1,4 @@
-/* fuzzy: 93.6 */
+/* fuzzy: 95.3 */
 struct Box_002C95E8 {
     unsigned char x;
     signed char y;
@@ -84,10 +84,10 @@ void Obj_002C95E8::Clamp()
         }
         {
             Box_002C95E8* b = &m4.Get()->bounds;
+            int lim = b->z + b->d - 1;
             signed char tz = t.z;
             signed char ez = tz;
             ez += t.d - 1;
-            int lim = b->z + b->d - 1;
             int off = (tz < b->z) ? b->z - tz : 0;
             if (lim < ez) off = lim - ez;
             *func_002BAA48(&m10, 2) += off;

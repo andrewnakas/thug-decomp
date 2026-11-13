@@ -1,4 +1,3 @@
-/* fuzzy: 87.1 */
 typedef int qword_001B66E0 __attribute__((mode(TI)));
 
 struct Vec_001B66E0 {
@@ -9,6 +8,7 @@ struct Vec_001B66E0 {
         };
     };
     Vec_001B66E0() {}
+    Vec_001B66E0(const Vec_001B66E0& o) { q = o.q; }
     Vec_001B66E0(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     float operator[](int i) const { return (&x)[i]; }
 };
@@ -28,8 +28,8 @@ public:
     int m0;
     int m_type;
     virtual void V0();
-    virtual void Move(Vec_001B66E0* pos);
-    virtual void Place(void* where, void* mat, Vec_001B66E0* pos);
+    virtual void Move(Vec_001B66E0 pos);
+    virtual void Place(void* where, void* mat, Vec_001B66E0 pos);
     virtual void V3();
     virtual void Disable();
     virtual void Enable();
@@ -87,16 +87,16 @@ void C_001B66E0::Update()
     if (on) {
     switch (s->m_type) {
     case 1: {
-        Vec_001B66E0 v = mC->m_dir * 36.0f;
-        v = mC->m_pos + v;
-        s->Move(&v);
+        Vec_001B66E0 v = mC->m_pos + mC->m_dir * 36.0f;
+        s->Move(v);
         break;
     }
     case 2: {
-        Vec_001B66E0 r = k->mF0;
-        s->m10 = r.x;
-        Vec_001B66E0 p = m30;
-        m1C->Place(m20, mC->m70, &p);
+        {
+            Vec_001B66E0 r = k->mF0;
+            s->m10 = r.x;
+        }
+        m1C->Place(m20, mC->m70, m30);
         break;
     }
     }

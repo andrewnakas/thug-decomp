@@ -1,4 +1,4 @@
-/* fuzzy: 72.1 */
+/* fuzzy: 72.2 */
 /* sym: _vt$11It_001FF970 = 0x00366B58 */
 
 struct LNode_001FF970 {
@@ -258,8 +258,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                     msg->ref.AddRef();
                     ItemB_001FF970* item = func_001FA6F0(func_001046B0(0x2C), msg);
                     item->m8 = d->m8;
-                    item->m18 = 0;
                     item->m28 = m0 + d->m18;
+                    item->m18 = 0;
                     c->q18.AddSorted(item);
                 }
             }
@@ -271,8 +271,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                     msg->ref.AddRef();
                     ItemB_001FF970* item = func_001FA6F0(func_001046B0(0x2C), msg);
                     item->m8 = d->m8;
-                    item->m18 = 0;
                     item->m28 = m0 + d->m18;
+                    item->m18 = 0;
                     c->q18.AddSorted(item);
                 }
             }
@@ -283,8 +283,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                 msg->ref.AddRef();
                 ItemB_001FF970* item = func_001FA6F0(func_001046B0(0x2C), msg);
                 item->m8 = d->m8;
-                item->m18 = 0;
                 item->m28 = m0 + d->m18;
+                item->m18 = 0;
                 c->q18.AddSorted(item);
             }
         }
@@ -299,8 +299,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                     msg->ref.AddRef();
                     ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);
                     item->m8 = d->mC;
-                    item->m20 = 0;
                     item->m28 = m0 + d->m18;
+                    item->m20 = 0;
                     item->m19 = d->m10;
                     if (d->m1C) {
                         item->m24 = d->m1C;
@@ -318,8 +318,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                     msg->ref.AddRef();
                     ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);
                     item->m8 = d->m8;
-                    item->m20 = 0;
                     item->m28 = m0 + d->m18;
+                    item->m20 = 0;
                     item->m19 = d->m10;
                     if (d->m1C) {
                         item->m24 = d->m1C;
@@ -336,8 +336,8 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                 msg->ref.AddRef();
                 ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);
                 item->m8 = d->m8;
-                item->m20 = 0;
                 item->m28 = m0 + d->m18;
+                item->m20 = 0;
                 item->m19 = d->m10;
                 if (d->m1C) {
                     item->m24 = d->m1C;

@@ -1,5 +1,10 @@
 /* fuzzy: 82.1 */
 /* sym: _$_13Item_002A0840 = 0x002B3168 */
+/* Not matching (parked): built with default flags (matched same-file neighbours func_0029FC98 and func_002A1588
+   break under -fno-gcse). The one blocker is gcse constant propagation: cse1 puts `any` (0, set in the first block)
+   into the copied loop-entry Valid test, gcse cprop folds it to constant 0, and jump2 then merges the entry test into
+   the latch copy (10 words short). The game keeps `sltu v0, a3, v0` (a3 = any) in the entry copy; the same source
+   under -fno-gcse produces it exactly. No natural source shape found that keeps the zero out of cprop. */
 extern char D_00366B58[];
 
 struct Iter_002A0840 {

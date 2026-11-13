@@ -1,4 +1,4 @@
-/* fuzzy: 70.6 */
+/* fuzzy: 71.9 */
 /* Texture dictionary loader: reads a texture file image from the D_00394320 stream (format version in
    D_00394324), inserts the dictionary into the priority-sorted list D_003942F4/D_003942F8, then for every texture
    computes the GS memory layout of its mip levels (VRAM double-buffered through D_00394304), swizzles 8/4-bit
@@ -69,7 +69,7 @@ extern Dict_001804E8* D_003942F4;
 extern Dict_001804E8* D_003942F8;
 extern Heap_001804E8* D_00388A70;
 
-extern "C" void func_00103F28(const char* fmt, ...);
+extern "C" int func_00103F28(const char* fmt, ...);
 extern "C" void func_00334148(int code);
 extern "C" Tex_001804E8* func_001819E8(unsigned int name);
 extern "C" void func_001644E8(int regs, int nreg, int flg, int prim, int pre, int eop, int nloop);
@@ -104,7 +104,7 @@ static inline void Tag(unsigned int v, unsigned int a)
 
 static inline void Close()
 {
-    int kind = (*(unsigned int*)D_00394278 >> 28) & 7;
+    short kind = (*(unsigned int*)D_00394278 >> 28) & 7;
     while ((unsigned int)D_00394274 & 0xF) {
         *(unsigned int*)D_00394274 = 0;
         D_00394274 += 4;
@@ -318,8 +318,7 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         int i;
         for (i = 0; i <= levels; i++) {
             unsigned int w = (1 << logW) >> i;
-            unsigned int h = (1 << logH) >> i;
-            height[i] = h;
+            height[i] = (1 << logH) >> i;
             width[i] = w;
             bw[i] = (w + 63) >> 6;
             if (bpp < 16 && bw[i] < 2)
@@ -371,6 +370,7 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
 
         /* the palette sits at the top of the dictionary's VRAM area */
         unsigned int cbp;
+        unsigned int lowBpp = bpp < 9;
         if (bpp < 16) {
             cbp = limit - 1;
             if (bpp != 4) {
@@ -393,12 +393,10 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
             continue;
         }
 
-        unsigned int cbp14 = cbp & 0x3FFF;
-        unsigned int lowBpp = bpp < 9;
-        unsigned int psm6 = psm & 0x3F;
-        unsigned int tw = logW & 0xF;
-        unsigned int th = logH & 0xF;
-        unsigned int cpsm4 = cpsm & 0xF;
+        int psm6 = psm & 0x3F;
+        int tw = logW & 0xF;
+        int cpsm4 = cpsm & 0xF;
+        int th = logH & 0xF;
         unsigned char* data;
 
         if (bpp < 16) {
@@ -438,8 +436,10 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         /* alternate small levels between the two halves of a page */
         for (i = 0; i <= levels; i++) {
             if (parity & 1) {
-                if ((bpp == 32 || bpp == 8) && !(pageW >> 1 < width[i]) && !(pageH < height[i]))
-                    addr[i] += 0x10;
+                if ((bpp == 32 || bpp == 8) && !(pageW >> 1 < width[i])) {
+                    if (!(pageH < height[i]))
+                        addr[i] += 0x10;
+                }
                 else if ((bpp == 16 || bpp == 4) && !(pageW < width[i]) && !(pageH >> 1 < height[i]))
                     addr[i] += 0x10;
             }
@@ -537,7 +537,7 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
                              (unsigned long)tw << 26 | (unsigned long)th << 30;
         if (psm != 1)
             tex0 |= (unsigned long)1 << 34;
-        t->m_tex0 = tex0 | (unsigned long)cbp14 << 37 | (unsigned long)cpsm4 << 51 | (unsigned long)1 << 61;
+        t->m_tex0 = tex0 | (unsigned long)(cbp & 0x3FFF) << 37 | (unsigned long)cpsm4 << 51 | (unsigned long)1 << 61;
         t->m_miptbp1 = (addr[1] & 0x3FFF) | (unsigned long)(bw[1] & 0x3F) << 14 | (unsigned long)(addr[2] & 0x3FFF) << 20 |
                        (unsigned long)(bw[2] & 0x3F) << 34 | (unsigned long)(addr[3] & 0x3FFF) << 40 |
                        (unsigned long)(bw[3] & 0x3F) << 54;

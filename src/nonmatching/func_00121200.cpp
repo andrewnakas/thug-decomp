@@ -1,4 +1,4 @@
-/* fuzzy: 91.1 */
+/* fuzzy: 99.3 */
 // Script command: reads x/y offsets, a scale and an angle from the params and sets a 2D transform built
 // around the centre of the unit square (translate -0.5, scale, rotate about z, translate back, offset).
 
@@ -31,10 +31,6 @@ extern "C" void func_00323318(Mat_00121200* out, const Mat_00121200* a, const Ma
 
 struct Mat_00121200 {
     Vec_00121200 row[4];
-    void Mul(const Mat_00121200& b)
-    {
-        func_00323318(this, &b, this);
-    }
     void Translate(const Vec_00121200& v)
     {
         row[3] += v;
@@ -47,8 +43,8 @@ extern "C" void* func_0011FE68(void* owner);
 extern "C" bool func_001E8618(void* params, unsigned int name);
 extern "C" bool func_001E7DE8(void* params, unsigned int name, int* out, int required);
 extern "C" bool func_001E7EB0(void* params, unsigned int name, float* out, int required);
-// builds a rotation matrix about axis (returned through the hidden result pointer)
-extern "C" Mat_00121200 func_00100700(const Vec_00121200* axis, float angle);
+// builds a rotation matrix about axis into out (returns out, like the matched func_00100700 unit)
+extern "C" Mat_00121200* func_00100700(Mat_00121200* out, const Vec_00121200* axis, float angle);
 extern "C" void func_0013E108(void* target, void* a, void* b, Mat_00121200* m);
 
 // Single VU0 macro-mode operations (the vector unit has no C++ spelling).
@@ -111,18 +107,30 @@ static inline void Identity_00121200(Mat_00121200* m)
     m->row[3].w = 1.0f;
 }
 
+// m = rotation(axis, a) applied to m
+static inline void Spin_00121200(Mat_00121200* m, const Vec_00121200* axis, float a)
+{
+    Mat_00121200 rot;
+    func_00100700(&rot, axis, a);
+    func_00323318(m, &rot, m);
+}
+
 extern "C" bool func_00121200(void* a0, void* a1, void* a, void* b)
 {
     void* params = func_0011FE68(D_00389520);
     if (!params) {
         return true;
     }
+    // game: beqz v0 after func_001E8618 goes to .L00121268 (b exit, v0 = 0), so a missing flag returns
+    // false too; only a present, zero flag carries on (beqz v1 -> .L00121270).
     if (func_001E8618(params, 0x8602F6EE)) {
         int off;
         func_001E7DE8(params, 0x8602F6EE, &off, 0);
         if (off) {
             return false;
         }
+    } else {
+        return false;
     }
     float x, y, scale, angle;
     func_001E7EB0(params, 0xCF6AA087, &x, 1);
@@ -135,12 +143,11 @@ extern "C" bool func_00121200(void* a0, void* a1, void* a, void* b)
     Identity_00121200(&m);
     v.Set(-0.5f, -0.5f, 0.0f, 0.0f);
     m.Translate(v);
-    v.y = v.z = v.x = scale * 0.01f;
+    v.z = v.y = v.x = scale * 0.01f;
     ScaleRows_00121200(&m, &v);
 
     v.Set(0.0f, 0.0f, 1.0f, 1.0f);
-    Mat_00121200 r = func_00100700(&v, angle * 0.017453294f);
-    m.Mul(r);
+    Spin_00121200(&m, &v, angle * 0.017453294f);
 
     v.Set(0.5f, 0.5f, 0.0f, 0.0f);
     m.Translate(v);

@@ -1,4 +1,4 @@
-/* fuzzy: 94.1 */
+/* fuzzy: 97.4 */
 /* Text draw: walks the string, handles the \C (colour), \S (special glyph), \B (button-font glyph) and \\ escapes,
    and emits one sprite (two UV/XY vertex pairs) per glyph into the VU1 batch, restarting the batch when the
    packet buffer fills up. */
@@ -106,7 +106,7 @@ void Text_001735F8::Draw()
     float space = (float)(f->m_space << 4) * m_scaleX * D_0038C0FC;
     const char* s = m_text;
 
-    for (;;) {
+    for (;; s++) {
         Font_001735F8* font = m_font;
         Glyph_001735F8* g = 0;
         int esc = 0;
@@ -166,7 +166,6 @@ void Text_001735F8::Draw()
             xb = x + (int)((float)(u1 - u0) * m_scaleX * D_0038C0FC);
         } else {
             x += (int)(space + spacing);
-            s++;
             continue;
         }
         if (!m_clip || !((x | xb | y0 | yb) & 0xFFFF0000)) {
@@ -193,20 +192,20 @@ void Text_001735F8::Draw()
                 func_00334148(1);
             }
             func_00164490(1);
+            unsigned int unpack = 0x6C000000;
             Put((((unsigned int)D_310 >> 3) & 0xFFFF) | 0x14000000);
             D_00394294 = D_00394280;
             Put(((unsigned short)D_00394280 & 0x3FF) | 0x6C014000);
             D_00394290 = 1;
             func_00164408(0x53, 2, 0, 0x156, 1, (unsigned int)D_4C0 >> 3);
+            D_00394284 = 0x20;
             D_00394288 = D_00394274;
             D_0039428C = 4;
-            D_00394284 = 0x20;
-            Put((((unsigned short)D_00394280 + 1) & 0x3FF) | 0x6C000000);
+            Put((((unsigned short)D_00394280 + 1) & 0x3FF) | unpack);
         }
         if (font != m_font) {
             End();
             Begin();
         }
-        s++;
     }
 }

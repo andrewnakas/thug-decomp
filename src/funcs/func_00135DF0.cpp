@@ -8,10 +8,10 @@ struct State_00135DF0 {
 };
 
 extern State_00135DF0 D_003BEB00;
-extern "C" void func_0014ABD0();
+extern "C" bool func_0014ABD0();   // returns 1: addiu v0,zero,1 at 0x0014AC0C
 
-extern "C" void func_00135DF0(Rgba_00135DF0* c)
+extern "C" bool func_00135DF0(Rgba_00135DF0* c)
 {
     D_003BEB00.m0 = *c;
-    func_0014ABD0();
+    return func_0014ABD0();
 }

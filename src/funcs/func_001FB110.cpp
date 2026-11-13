@@ -1,4 +1,3 @@
-/* fuzzy: 92.3 */
 struct Msg_001FB110 {
     unsigned char m0;
     unsigned char m1;
@@ -41,7 +40,7 @@ extern "C" int func_00202768(Conn_001FB110* c);
 extern "C" void func_001FE388(unsigned int* p, unsigned int v);
 extern "C" int func_0031BCE0(int sema);
 extern "C" int func_0031BCC0(int sema);
-extern "C" void func_001FF970(Obj_001FB110* self, int id, Msg_001FB110* m, int n);
+extern "C" void func_001FF970(Obj_001FB110* self, int id, Msg_001FB110* m);
 extern "C" int func_00202808(Conn_001FB110* c);
 extern "C" int func_001FEC38(Obj_001FB110* self, Conn_001FB110* c, int a, int b);
 extern "C" int func_00202BC0(Conn_001FB110* c);
@@ -71,7 +70,6 @@ void Obj_001FB110::Run(Conn_001FB110* c)
     if (!func_002011A0(this, c)) return;
     unsigned int lim = D_0038EC64;
     int done = 0;
-    unsigned short seq;
     while (!done && func_001FF410(this, c) && !func_00201488(this, c)) {
         if (func_00202778(c) && !func_00202758(c) && (m227C & 4)) {
             Msg_001FB110 ack;
@@ -92,17 +90,18 @@ void Obj_001FB110::Run(Conn_001FB110* c)
                 ack.m4 = &stamp;
                 ack.m2 = 4;
                 ack.m0 = 1;
-                func_001FF970(this, c->m48, &ack, 1);
+                func_001FF970(this, c->m48, &ack);
                 func_0031BCE0(m429C);
             }
         }
         func_0031BCC0(m429C);
-        seq = c->m4934;
+        unsigned short seq[1];
+        seq[0] = c->m4934;
+        msg.m4 = seq;
         msg.m2 = 2;
-        msg.m4 = &seq;
         msg.m0 = 9;
         msg.m8 = 0xFF;
-        func_001FF970(this, c->m48, &msg, 2);
+        func_001FF970(this, c->m48, &msg);
         func_0031BCE0(m429C);
         int before = func_00202808(c);
         if (!func_001FEC38(this, c, 0, 0)) done = 1;

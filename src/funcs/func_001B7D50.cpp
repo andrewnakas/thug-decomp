@@ -1,4 +1,3 @@
-/* fuzzy: 89.4 */
 typedef int qword_001B7D50 __attribute__((mode(TI)));
 
 struct Vec_001B7D50 {
@@ -66,7 +65,8 @@ struct Obj_001B7D50 {
 };
 
 extern "C" void func_0026B5B8(Skel_001B7D50* s, Mat_001B7D50* m);
-extern "C" Vec_001B7D50 func_0026B6A8(Skel_001B7D50* s);
+/* func_0026B6A8 reads $a2 (0x0026B6C8 daddu $a0,$a2 -> func_0026B6A0): the node is its third argument. */
+extern "C" Vec_001B7D50 func_0026B6A8(Skel_001B7D50* s, Node_001B7D50* n);
 extern "C" void func_001016A8(Vec_001B7D50* v, Vec_001B7D50* m);
 
 struct C_001B7D50 {
@@ -93,12 +93,12 @@ bool C_001B7D50::GetBonePos(Vec_001B7D50* out, int index)
             int i = 0;
             for (Node_001B7D50* n = skel->m_first; n; n = n->m_next) {
                 if (i == index) {
-                    Vec_001B7D50 p = func_0026B6A8(skel);
+                    Vec_001B7D50 p = func_0026B6A8(skel, n);
                     p -= obj->m_pos;
                     func_001016A8(&p, &obj->m_mat.row[1]);
                     p += obj->m_pos;
                     *out = p;
-                    return true;
+                    break;
                 }
                 i++;
             }

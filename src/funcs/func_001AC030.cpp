@@ -1,5 +1,3 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 59.7 */
 // One entry of the trick history ring (100 entries, newest at m_head).
 struct Hist_001AC030 {
     unsigned int time;
@@ -99,13 +97,13 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                 if (idx < 0)
                     idx += 100;
             }
-            if (func_001ABB20(this, ids[0], window, mask))
-                goto ok_flags;
-            goto fail;
+            if (!func_001ABB20(this, ids[0], window, mask))
+                goto fail;
+            { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
         }
-        if (func_001ABC58(this, ids[0], ids[1], window, mask))
-            goto ok_flags;
-        goto fail;
+        if (!func_001ABC58(this, ids[0], ids[1], window, mask))
+            goto fail;
+        { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
     }
 
     case 0xFFB718BD: {
@@ -113,32 +111,28 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 2, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             switch (stage) {
             case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1]) {
-                    stage = 1;
                     m_hist[idx].used = 1;
+                    stage = 1;
                 }
                 break;
             case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
                 break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -147,11 +141,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 2, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             switch (stage) {
@@ -170,15 +161,14 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
             case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
                 break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -220,7 +210,7 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         m_hist[found.v[0]].used = 1;
         m_hist[found.v[1]].used = 1;
         m_hist[found.v[2]].used = 1;
-        goto ok_flags;
+        { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
     }
 
     case 0x3C3028F4: {
@@ -230,7 +220,7 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         if (!func_001ABFF8(this, ids[1]))
             goto fail;
         if (func_001ABC58(this, ids[0], ids[1], window, mask))
-            goto ok_flags;
+            { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
         goto fail;
     }
 
@@ -239,32 +229,28 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 2, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             switch (stage) {
             case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
-                    stage = 1;
                     m_hist[idx].used = 1;
+                    stage = 1;
                 }
                 break;
             case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
                 break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -273,8 +259,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int got0 = 0;
         int got1 = 0;
-        int done = 0;
         unsigned int window = func_001ABDE8(this, args, 2, ids);
+        int done = 0;
         idx = m_head;
         for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
@@ -311,10 +297,11 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
             if (idx < 0)
                 idx += 100;
         }
-        if (!done)
-            return 0;
-        m_hist[idx].used = 1;
-        goto ok_flags;
+        if (done) {
+            m_hist[idx].used = 1;
+            { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
+        }
+        return 0;
     }
 
     case 0xC1AD35C0: {
@@ -324,11 +311,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         // ids[2], ids[1], ids[0] in order.
         unsigned int window = func_001ABDE8(this, args, 3, ids);
         stage = 0;
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             switch (stage) {
@@ -347,15 +331,14 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
             case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
                 break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -365,43 +348,45 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 3, ids);
         idx = m_head;
-        if (!m_count)
-            goto fail;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
+            switch (stage) {
+            case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
-                    stage = 1;
                     m_hist[idx].used = 1;
+                    stage = 1;
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1]) {
                     stage = 2;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 2) {
+                break;
+            case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
                     stage = 3;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 3) {
+                break;
+            case 3:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0]) {
                     stage = 4;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 4) {
+                break;
+            case 4:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
+                break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -411,46 +396,50 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 3, ids);
         idx = m_head;
-        if (!m_count)
-            goto fail;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
-                if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
-                    stage = 1;
-                    m_hist[idx].used = 1;
-                } else if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
-                    stage = 2;
-                    m_hist[idx].used = 1;
+            switch (stage) {
+            case 0:
+                if (!(m_hist[idx].flags & mask)) {
+                    if (m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
+                        m_hist[idx].used = 1;
+                        stage = 1;
+                    } else if (m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
+                        stage = 2;
+                        m_hist[idx].used = 1;
+                    }
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
                     stage = 3;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 2) {
+                break;
+            case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
                     stage = 3;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 3) {
+                break;
+            case 3:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0]) {
                     stage = 4;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 4) {
+                break;
+            case 4:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
-                    goto ok_flags;
+                    { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                 }
+                break;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -458,22 +447,18 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int idx;
         int k;
         unsigned int window = func_001ABDE8(this, args, 1, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                 m_hist[idx].flags |= flags;
-                goto ok;
+                { func_001ABE98(this, ids); return 1; }
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -481,22 +466,18 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int idx;
         int k;
         unsigned int window = func_001ABDE8(this, args, 1, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0]) {
                 m_hist[idx].flags |= flags;
-                goto ok;
+                { func_001ABE98(this, ids); return 1; }
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -505,11 +486,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 1, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             if (stage) {
@@ -519,14 +497,13 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                     return 1;
                 }
             } else if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0]) {
-                stage = 1;
                 m_hist[idx].used = 1;
+                stage = 1;
             }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -535,11 +512,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int k;
         int stage = 0;
         unsigned int window = func_001ABDE8(this, args, 3, ids);
-        if (!m_count)
-            goto fail;
         idx = m_head;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             switch (stage) {
@@ -572,7 +546,7 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].id == ids[0]) {
                     if (m_hist[idx].type == 1) {
                         m_hist[idx].used = 1;
-                        goto ok_flags;
+                        { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                     }
                     if (m_hist[idx].type == 2)
                         return 0;
@@ -582,7 +556,7 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].id == ids[1]) {
                     if (m_hist[idx].type == 1) {
                         m_hist[idx].used = 1;
-                        goto ok_flags;
+                        { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
                     }
                     if (m_hist[idx].type == 2)
                         return 0;
@@ -592,83 +566,74 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
     case 0xAC2B1445: {
         int idx;
         int k;
+        unsigned int window = func_001ABDE8(this, args, 3, ids);
         int g0 = 0;
         int g1 = 0;
-        int t2 = 0;
-        unsigned int window = func_001ABDE8(this, args, 3, ids);
         idx = m_head;
-        if (!m_count)
-            goto fail;
-        k = 0;
-        do {
+        int t2 = 0;
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             if (!g0 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0])) {
-                g0 = 1;
                 m_hist[idx].used = 1;
+                g0 = 1;
             }
             if (!g1 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1])) {
-                g1 = 1;
                 m_hist[idx].used = 1;
+                g1 = 1;
             }
             if (!t2 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2])) {
-                t2 = 1;
                 m_hist[idx].used = 1;
+                t2 = 1;
             }
             if (g0 && !g1 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]))
                 return 0;
             if (g1 && !g0 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]))
                 return 0;
             if (g0 && g1 && t2)
-                goto ok_flags;
+                { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
     case 0x395EC2D4: {
         int idx;
         int k;
+        unsigned int window = func_001ABDE8(this, args, 2, ids);
         int g0 = 0;
         int g1 = 0;
-        unsigned int window = func_001ABDE8(this, args, 2, ids);
         idx = m_head;
-        if (!m_count)
-            goto fail;
-        k = 0;
-        do {
+        for (k = 0; k < m_count; k++) {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
             if (!g0 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[0])) {
-                g0 = 1;
                 m_hist[idx].used = 1;
+                g0 = 1;
             }
             if (!g1 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1])) {
-                g1 = 1;
                 m_hist[idx].used = 1;
+                g1 = 1;
             }
             if (g0 && !g1 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]))
                 return 0;
             if (g1 && !g0 && (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]))
                 return 0;
             if (g0 && g1)
-                goto ok_flags;
+                { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
             idx--;
             if (idx < 0)
                 idx += 100;
-            k++;
-        } while (k < m_count);
+        }
         goto fail;
     }
 
@@ -676,20 +641,18 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         int idx;
         int k;
         unsigned int last = 0;
-        int found = 0;
-        int at = 0;
         for (int i = 0; i < 3; i++) {
             if (func_001AB330(m9A0[i]))
                 last = m9A0[i];
         }
+        int found = 0;
+        int at = 0;
         unsigned int window = func_001ABDE8(this, args, 1, ids);
         idx = m_head;
-        for (k = 0; k < m_count; k++) {
-            if (!(Since_001AC030(m_hist[idx].time) < window))
-                break;
+        for (k = 0; k < m_count && Since_001AC030(m_hist[idx].time) < window; k++) {
             if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1) {
-                found = 1;
                 if (m_hist[idx].id == ids[0]) {
+                    found = 1;
                     at = idx;
                 } else if (func_001AB330(m_hist[idx].id)) {
                     if (m_hist[idx].id != last)
@@ -704,13 +667,15 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         if (!found)
             goto fail;
         m_hist[at].flags |= flags;
-        goto ok_flags;
+        { func_001AB9B0(this, flags); func_001ABE98(this, ids); return 1; }
     }
 
     case 0xA8123ECF: {
         unsigned int a = args->m8;
-        unsigned int b = args->mC->m8;
-        unsigned int c = args->mC->mC->m8;
+        Node_001AC030* p = args->mC;
+        unsigned int b = p->m8;
+        p = p->mC;
+        unsigned int c = p->m8;
         int r = 0;
         if (func_001ABFF8(this, a) && func_001ABFF8(this, b)) {
             r = func_001ABFF8(this, c) != 0;
@@ -722,11 +687,6 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         goto fail;
     }
 
-ok_flags:
-    func_001AB9B0(this, flags);
-ok:
-    func_001ABE98(this, ids);
-    return 1;
 fail:
     func_001AB950(this);
     return 0;

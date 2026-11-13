@@ -1,4 +1,3 @@
-/* fuzzy: 89.2 */
 struct Node_001842E0 {
     unsigned char m0;
     unsigned char m_type;
@@ -123,7 +122,10 @@ int Obj_001842E0::CallMember(unsigned int name, void* params, Script_001842E0* s
         Node_001842E0* n = func_001E6E90(params, 0);
         if (n && n->m_type == 0xD) {
             int v = n->m_value;
-            int a = func_001F0CD0(script);
+            // The game stores the 0 first (sw $zero, 0x8($sp) at 0x00184644), then the call's result.
+            /* The game stores 0 to a's slot first (`sw $zero, 0x8($sp)` at 0x00184644); a is address-taken. */
+            int a = 0;
+            a = func_001F0CD0(script);
             func_001E84E8(params, D_0038C4B8, &a, 0);
             int b = 0;
             func_001E81F0(params, D_0038C4C0, &b, 0);

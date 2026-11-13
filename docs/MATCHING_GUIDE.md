@@ -391,6 +391,9 @@ rule. Where an exactly-matched unit already declares the same symbol, its qualif
 declaration and win: the vsync handler func_001F77B0 (matched) declares D_0038EAA4/EAA8 volatile but the counter
 D_00394118 plain even though the handler increments it, so func_001F79B0 uses the same split. Never add `volatile`
 to a variable no handler or thread touches just to force a reload.
+One narrow exception: in the 23 inline-asm-allowlisted units, a `volatile` *local* union that type-puns a VU0/COP2
+128-bit value through the stack is allowed (it stands in for the original's memory-operand asm, which the
+single-instruction-helper rule does not permit); comment it (func_0016FCF8).
 
 ## `-fno-gcse` is usually wrong (2026-11-13)
 

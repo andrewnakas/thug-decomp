@@ -1,5 +1,3 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 97.9 */
 struct Vec_0029B748 {
     float x, y, z, w;
 };
@@ -46,11 +44,11 @@ void Obj_0029B748::Update(Vec_0029B748* p)
     Grp_0029B748* g = m28;
     if (!g)
         return;
-    Node_0029B748* n = g->head;
-    if (!n)
+    if (!g->head)
         return;
-    Vec_0029B748* pos = &n->pos;
+    Node_0029B748* n = g->head;
     unsigned int type = 0x5DC3C690;
+    Vec_0029B748* pos = &n->pos;
     if (func_00298278(pos, p)) {
         if (func_002982F8(pos, p)) {
             func_0029B6E0(this);

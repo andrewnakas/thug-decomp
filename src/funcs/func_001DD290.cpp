@@ -1,4 +1,3 @@
-/* fuzzy: 87.7 */
 struct Params_001DD290 {
     float x, y, z;
     int mC;
@@ -39,7 +38,7 @@ extern Entry_001DD290 D_003EC2F8[];
 extern "C" bool func_001DC418();
 extern "C" Sound_001DD290* func_001DCA18(int a, int b);
 extern "C" bool func_001E53A0(unsigned int a, int b);
-extern "C" void func_001DC820(int a, int b, float* vol);
+extern "C" bool func_001DC820(int a, int b); /* game: reads only a0/a1 (a2 overwritten before jal func_001DD678), returns xori v0,v0,1 */
 extern "C" void func_001DD1E8(int a, int b, float* vol, Sound_001DD290* s);
 extern "C" int func_001E1CA0(void* p, int b, int c, float vol);
 extern "C" int func_001DC908(int a, int b);
@@ -51,7 +50,7 @@ int func_001DD290(int a, int id, int c, int d, Params_001DD290* p, float vol)
     if (!s) return 0;
     if (!d) d = id;
     if (!D_0038881C && func_001E53A0(0xD7BB618D, 0) && !p) {
-        func_001DC820(a, d, &vol);
+        func_001DC820(a, d);
     }
     func_001DD1E8(a, c, &vol, s);
     int idx = func_001E1CA0(s->m14, c, (s->m4 >> 4) & 1, vol);

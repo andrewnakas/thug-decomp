@@ -1,4 +1,7 @@
 /* fuzzy: 84.6 */
+/* blocked: the game zero-extends x0 and z0 again before storing them (andi $a2,$a0,0xFF at 0x002C8948,
+   andi $a0,$a1,0xFF at 0x002C8960); ours stores the lbu value. Tried unsigned char SetRange params, a direct
+   Set call, local uchar copies, int Set params and const-reference params: no change (19 words). */
 struct Box_002C88F0 {
     unsigned char x;
     signed char y;

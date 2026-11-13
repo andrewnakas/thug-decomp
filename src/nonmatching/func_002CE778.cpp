@@ -1,4 +1,6 @@
 /* fuzzy: 50.0 */
+/* blocked: the asm is a hand-written stub ("Handwritten function" in the split: jal with no frame, no $ra
+   save, nop-filled delay slots, falls into syscall Exit). No C++ compiled by SN ee-gcc produces a frameless call. */
 // Program exit (the thread's return address set up by the entry point): signals the semaphore that the
 // runtime registered, if the check succeeds, then leaves through the kernel's Exit system call (0x23).
 // The original is hand-written without a stack frame; this C++ does the same work with a normal frame.

@@ -1,4 +1,4 @@
-/* fuzzy: 89.7 */
+/* fuzzy: 93.9 */
 extern char D_00371C78[];
 extern char D_003781B8[];
 extern char D_003781C8[];
@@ -194,7 +194,6 @@ void Obj_002A09F8::Run()
     Mgr_002A09F8* m = m20;
     MsgDesc_002A09F8 msg;
     Info_002A09F8 info;
-    int mode;
     int time;
     Node_002A09F8* n;
     Node_002A09F8* next;
@@ -227,17 +226,17 @@ void Obj_002A09F8::Run()
             info.m11 = p->m30;
             info.m0 = p->m28;
             info.m4 = p->m2C;
-            info.mC = 0;
             info.m14 = p->m44;
+            info.mC = 0;
             func_00331A9C(info.m18, c->m1);
             info.m8 = 1;
             if (p->m14C & 0x10)
                 info.m8 |= 0x10;
             if (func_002B1FE8(p))
                 info.m8 |= 4;
-            msg.m8 = 0xFF;
-            msg.m_Id = 0x79;
             msg.m_Data = 0;
+            msg.m_Id = 0x79;
+            msg.m8 = 0xFF;
             msg.m_Length = 0;
             func_001FF970(m->m14, func_002B3080(p), &msg);
             msg.m_Data = &info;
@@ -257,8 +256,8 @@ void Obj_002A09F8::Run()
                 info.m11 = p->m30;
                 info.m0 = p->m28;
                 info.m4 = p->m2C;
-                info.mC = 0;
                 info.m14 = p->m44;
+                info.mC = 0;
                 func_00331A9C(info.m18, p->m34);
                 msg.m_Length = func_002616E0(p->m48, info.m28, 0x1000, 0) + 0x28;
                 msg.m_Data = &info;
@@ -280,8 +279,8 @@ void Obj_002A09F8::Run()
                 info.m11 = q->m30;
                 info.m0 = q->m28;
                 info.m4 = q->m2C;
-                info.mC = 0;
                 info.m14 = q->m44;
+                info.mC = 0;
                 func_00331A9C(info.m18, q->m34);
                 msg.m_Length = func_002616E0(q->m48, info.m28, 0x1000, flag) + 0x28;
                 msg.m_Data = &info;
@@ -313,7 +312,7 @@ void Obj_002A09F8::Run()
                 msg.m_Queue = 8;
                 func_001FF970(m->m14, func_002B3080(p), &msg);
             }
-            mode = func_002A58C0(m);
+            int mode = func_002A58C0(m);
             if (!func_002B1FC8(p) && mode == (int)0xB664035D) {
                 func_002BCDF8(func_002C0368());
                 int conn = func_002B3080(p);
@@ -331,9 +330,11 @@ void Obj_002A09F8::Run()
             func_001FF970(m->m14, func_002B3080(p), &msg);
         }
         if (!func_002B1FE8(p)) {
-            int cnt = 0;
+            int cnt;
             if (!func_002B1FC8(p) || !func_002A19A8(m))
                 cnt = sk->m30.Count();
+            else
+                cnt = 0;
             void* s = func_0022C6E0(sk, c->m1C, func_00202768(p->m1C), c->m11, cnt);
             func_002B1E70(p, s);
             if (!func_002B1FC8(p))
@@ -356,12 +357,12 @@ void Obj_002A09F8::Run()
                 func_002B2F40(q, time);
             }
         }
+        msg.m_Data = &time;
         msg.m_Length = 4;
         msg.m_Id = 0x25;
-        msg.m_Data = &time;
         msg.m8 = 0x80;
-        msg.m_Queue = 8;
         msg.m_Priority = 2;
+        msg.m_Queue = 8;
         func_001FF970(m->m14, func_002B3080(p), &msg);
         func_002B2F40(p, time);
         if (c)

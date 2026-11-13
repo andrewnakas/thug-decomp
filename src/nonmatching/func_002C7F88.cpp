@@ -96,6 +96,7 @@ int Obj_002C7F88::Nudge(int rot, int db, int dc)
             if (s.GetBox(idx)->x - s.b[idx] < gb.x) s.b[idx]--;
             if (gb.x + gb.w < s.GetBox(idx)->w + s.GetBox(idx)->x + s.c[idx]) s.c[idx]--;
         }
+        /* Empty loop kept by the instruction test: the game has it at 0x2C83BC-0x2C83F0 (slti/bnel loop). */
         for (idx = 0; idx < 2; idx++) {
         }
         func_002C0730(m4.Get(), &s);

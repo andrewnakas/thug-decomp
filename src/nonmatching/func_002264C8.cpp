@@ -1,10 +1,12 @@
-/* fuzzy: 90.2 */
+/* fuzzy: 95.2 */
 typedef int qword_002264C8 __attribute__((mode(TI)));
 
 extern char D_0038F9D0[];
 extern char D_0038F9F0[];
 extern char D_0038FA08[];
-extern int D_0038FA10[];
+/* 8-byte aligned .sdata word pair (0x0038FA10): as `long` the 5-byte copy below gives the game's lw + lbu
+   (0x00226664/0x00226668), the same idiom as matched func_001E0F20. */
+extern long D_0038FA10[];
 extern char D_0038FA18[];
 extern char D_003720D0[];
 extern char D_00372110[];

@@ -1,4 +1,5 @@
 /* fuzzy: 94.2 */
+/* note (phase3-b1): direct m120[i].s.*, Get(i)->s.*, S_00292F40* p local, and all-S2(i) forms all scored worse (9-45 words); the game keeps three copies of i*0x30+this (v1, v0, s0), one per inline accessor chain. */
 struct V_00292F40 { float x, y, z, w; };
 struct S_00292F40 { V_00292F40 pos; float h; float ang; char pad2[8]; };
 struct Entry_00292F40 {

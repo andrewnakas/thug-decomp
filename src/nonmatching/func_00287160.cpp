@@ -1,4 +1,5 @@
 /* fuzzy: 96.1 */
+/* blocked: 7 words, the final m540 = out copy. sched1 gives the store to this+0x540 three output-dependent stores via &m540 (prio 3) so all four lq issue first; the game interleaves lq/sq (its loads wait on the stores). Block copy, row copies, .q copies and a Set() member all give the same 7. */
 typedef int qword __attribute__((mode(TI)));
 union Row_00287160 {
     qword q;

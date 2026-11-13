@@ -1,16 +1,19 @@
-/* fuzzy: 97.8 */
 extern "C" void func_00105260(void* list, void* p);
 struct Heap_002AB0C0 {
     char pad0[0xF4];
     int mF4;
 };
 
-struct Ent_002AB0C0 {
-    char pad0[8];
-    int m8;
-    char mC[0x58 - 0xC];
-    char m58[0x94 - 0x58];
-    char* Get58() { return m58; }
+struct Slot_002AB0C0 {
+    int m0;
+    int m4;
+    char m8[0x54 - 0x8];
+    char m54[0x94 - 0x54];
+};
+
+struct Slots_002AB0C0 {
+    int m0;
+    Slot_002AB0C0 s[4];
 };
 
 struct Elem_002AB0C0 {
@@ -63,7 +66,7 @@ struct TaskB_002AB0C0 : Task_002AB0C0 {
 
 extern Heap_002AB0C0* D_00388A70;
 extern Mgr_002AB0C0* D_00392068;
-extern Ent_002AB0C0* D_0038C3C0;
+extern Slots_002AB0C0* D_0038C3C0;
 extern char* D_0038C308;
 extern char D_00378D18[];
 extern char D_00378C98[];
@@ -80,7 +83,7 @@ extern "C" void* func_001047F8(void* p, int pri);
 bool Cmd_002AB0C0()
 {
     Mgr_002AB0C0* mgr = D_00392068;
-    Ent_002AB0C0* tbl = D_0038C3C0;
+    Slots_002AB0C0* tbl = D_0038C3C0;
     char* g = D_0038C308;
     Elem_002AB0C0* e = func_002A56E0(mgr);
     if (func_002B1FE8(e) || func_002B1FF8(e)) return false;
@@ -90,9 +93,9 @@ bool Cmd_002AB0C0()
     func_00105260(g + 8, a);
     TaskB_002AB0C0* b = new TaskB_002AB0C0(func_0029F7D8, mgr);
     mgr->mB4 = b;
-    func_00105260(tbl[b->m24].mC, b);
-    b->m1C = tbl[b->m24].Get58();
-    b->m20 = tbl[b->m24].m8;
+    func_00105260(tbl->s[b->m24].m8, b);
+    b->m1C = tbl->s[b->m24].m54;
+    b->m20 = tbl->s[b->m24].m4;
     e->m14C |= 0x10000;
     func_0010A9B0(D_00388A70);
     return true;

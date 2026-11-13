@@ -1,4 +1,4 @@
-/* fuzzy: 67.9 */
+/* fuzzy: 69.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00208E80 {
@@ -33,6 +33,7 @@ struct Cell_00208E80 {
 extern Item_00208E80* D_003F3F70[];
 extern "C" void func_00101F38(Box_00208E80* b);
 extern "C" void func_003233B8(Vec_00208E80* dst, Vec_00208E80* src);
+static inline void Wrap_003233B8(Vec_00208E80* dst, Vec_00208E80* src) { func_003233B8(dst, src); }
 extern "C" int func_00207F80();
 
 struct Grid_00208E80 {
@@ -53,7 +54,7 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
     func_00101F38(&b);
     Vec_00208E80 d;
     d = Vec_00208E80(box->mx.x - box->mn.x, box->mx.y - box->mn.y, box->mx.z - box->mn.z, 1.0f);
-    func_003233B8(&d, &d);
+    Wrap_003233B8(&d, &d);
     d.x *= 0.5f;
     d.y *= 0.5f;
     d.z *= 0.5f;

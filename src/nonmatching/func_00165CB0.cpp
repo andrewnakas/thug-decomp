@@ -1,4 +1,4 @@
-/* fuzzy: 87.2 */
+/* fuzzy: 95.5 */
 extern int D_0034D870[];
 extern int D_0034D8F0[2][128];
 extern int D_0034DCF0[];
@@ -20,12 +20,12 @@ extern "C" void func_00165CB0(int base, int bw, int x0, int y0, int w, int h, un
             int px = x / 128;
             int rx = x % 128;
             int bx = rx / 32;
-            int r32 = rx % 32;
-            int page = px + py * pages;
-            int sub = D_0034D8F0[cy & 1][r32 + r4 * 32];
-            int n = D_0034DCF0[r32 + r4 * 32];
             int blk = D_0034D870[bx + by * 4];
+            int page = px + py * pages;
+            int r32 = rx % 32;
+            int sub = D_0034D8F0[cy & 1][r32 + r4 * 32];
             unsigned char* p = D_00393F38 + (b64 + (page << 11) + (blk << 6) + (cy << 4) + sub) * 4;
+            int n = D_0034DCF0[r32 + r4 * 32];
             if (n & 1) {
                 if (nib) {
                     p[n >> 1] = (p[n >> 1] & 0xF) | (*src & 0xF0);

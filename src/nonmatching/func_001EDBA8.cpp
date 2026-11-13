@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 91.7 */
+/* fuzzy: 92.1 */
 struct Heap_001EDBA8 {
     char pad[0xEC];
     int mEC;
@@ -45,8 +45,8 @@ extern "C" void func_001EC2A0(unsigned int crc, int x, unsigned char* p, int len
 void Load_001EDBA8(char* name, unsigned char* data, int a, int b)
 {
     unsigned char* p = data;
-    int done = 0;
     func_001EDA20(name, data, a, b);
+    int done = 0;
     if (b) {
         func_0010A950(D_00388A70, D_00388A70->mEC);
         D_0038E6F8 = (Entry_001EDBA8*)func_0010BDE0(0xC000);

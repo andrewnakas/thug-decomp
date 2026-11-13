@@ -1,4 +1,4 @@
-/* fuzzy: 43.8 */
+/* fuzzy: 50.7 */
 typedef int qword_00167A50 __attribute__((mode(TI)));
 
 struct V_00167A50 {
@@ -69,12 +69,12 @@ struct Obj_00167A50 {
 /* colours are stored scaled by 1/128 */
 static inline void SetColor(V_00167A50* dst, const V_00167A50* src)
 {
+    V_00167A50 s;
     V_00167A50 c;
     c.x = src->x;
     c.y = src->y;
     c.z = src->z;
     c.w = src->w;
-    V_00167A50 s;
     s.x = c.x * (1.0f / 128.0f);
     s.y = c.y * (1.0f / 128.0f);
     s.z = c.z * (1.0f / 128.0f);

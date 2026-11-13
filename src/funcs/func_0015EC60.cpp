@@ -1,4 +1,3 @@
-/* fuzzy: 93.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Row_0015EC60 {
@@ -18,10 +17,12 @@ struct Mat_0015EC60 {
     }
     Mat_0015EC60& operator=(const Mat_0015EC60& o)
     {
-        r[0] = o.r[0];
-        r[1] = o.r[1];
-        r[2] = o.r[2];
-        r[3] = o.r[3];
+        qword* d = &r[0].q;
+        const qword* s = &o.r[0].q;
+        d[0] = s[0];
+        d[1] = s[1];
+        d[2] = s[2];
+        d[3] = s[3];
         return *this;
     }
 };
@@ -144,7 +145,8 @@ void Emitter_0015EC60::Update()
         return;
 
     Burst_0015EC60* b = m_tail;
-    for (int i = 0; i < m_count; i++) {
+    int i;
+    for (i = 0; i < m_count; i++) {
         b->m_age += 1.0f / 60.0f;
         b++;
         if (b == End())
@@ -194,7 +196,7 @@ void Emitter_0015EC60::Update()
     D_00394274 = (unsigned char*)(t + 2);
 
     b = m_tail;
-    for (int i = 0; i < m_count; i++) {
+    for (i = 0; i < m_count; i++) {
         if (b == End())
             b = m_ring;
         ((float*)D_00394274)[0] = b->m_age;

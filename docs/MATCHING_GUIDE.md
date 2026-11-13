@@ -364,3 +364,20 @@ loop units around it still match. See docs/techniques/LAST_MILE.md for the measu
 - **Loops the game did not strength-reduce:** `for (i = 0; i < n;) { int k = i + 1; ...; i = k; }`.
 - **Split an aggregate local into per-row Vec locals** so they reuse freed temp slots.
 - **EABI mixed float/pointer arguments:** the prototype's argument order decides evaluation order.
+
+## Equivalence fixes need instruction-level proof (2026-11-13)
+
+A "behaviour fix" in a src/nonmatching unit can itself be wrong: #596's func_001E0F20 swapped its two indices the
+wrong way (the game computes `a1*0xCB0 + a0*0x28`, record = 2nd argument), and only a later exact match exposed it.
+So every equivalence fix must cite, in a comment or the PR body, the game's instructions it follows (the address
+arithmetic, the store width, the argument registers the callee reads), and a reviewer checks them against the asm.
+An exact match is proof; a higher fuzzy score is not. Boot-test the functional build after behaviour fixes land.
+
+More idioms from lane 2:
+- **Always-true first loop test** (`state = -1`): `while (a && b)`; rotation decides which constant is hoisted.
+- **Bit-test polarity** follows early `return false`s with a single final `return true`.
+- **One extra inline layer around an address-taken local** decides whether `&t` stays in a register (inline members
+  with their own temps, or an implicit derived-class ctor).
+- **Block-entry slots precede expression temps:** declare named Vec locals up front, assign via `operator*=`.
+- **toupper:** an inline taking `unsigned char d` stops CSE folding `c - 'a' + 'A'` into `c - 32`.
+- **7-byte copies:** 8-aligned types in `__builtin_memcpy` give the game's lw/lhu/lbu.

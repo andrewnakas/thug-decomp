@@ -1,4 +1,3 @@
-/* fuzzy: 73.8 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -46,6 +45,7 @@ Vec4_00172078 func_00172078(Node_00172078* node)
             big = s;
             small = n->m_sphere;
         }
+        float r = big.w;
         Vec4_00172078 d;
         d.x = small.x - big.x;
         d.y = small.y - big.y;
@@ -75,7 +75,7 @@ Vec4_00172078 func_00172078(Node_00172078* node)
         c.z = big.z + step.z;
         c.w = big.w + step.w;
         s = c;
-        s.w = big.w + t;
+        s.w = r + t;
     }
     return s;
 }

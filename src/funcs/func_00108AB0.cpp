@@ -1,4 +1,3 @@
-/* fuzzy: 84.9 */
 struct Heap_00108AB0 {
     char pad[0xD8];
     int m_D8;
@@ -56,11 +55,10 @@ extern "C" void func_0010A1E8(int dict, const char* name, void* item);
 
 static inline void* Alloc(int size, int top)
 {
-    Heap_00108AB0* heap = D_00388A70;
     if (top) {
-        return func_0010A638(heap, size, 1, heap->m_DC);
+        return func_0010A638(D_00388A70, size, 1, D_00388A70->m_DC);
     }
-    return func_0010A638(heap, size, 1, heap->m_D8);
+    return func_0010A638(D_00388A70, size, 1, D_00388A70->m_D8);
 }
 
 static inline int HeapId(int top)
@@ -119,7 +117,8 @@ void Loader_00108AB0::Load(const char* name, int async, int required, int top)
         buf = Alloc(size, top);
         func_0010BFC8();
         func_00110F68(buf, 1, size, fh);
-        if (D_0038881C && size != *(int*)buf) {
+        int hdr = *(int*)buf;
+        if (D_0038881C && size != hdr) {
             func_00103F28(D_0035AF98, path);
         }
         func_00110EF8(fh);

@@ -1,4 +1,3 @@
-/* fuzzy: 99.1 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_001CD048 {
@@ -215,6 +214,15 @@ static inline Vec_001CD048 Shake_001CD048(Skater_001CD048* sk)
     case 3:
     case 4:
         return sk->m60 * -18.0f;
+    case 0:
+        /* Pinned by elimination: m1C is the mode written only by the setter func_001BF130
+           (sw a1,0x1C at 001BF160), and every one of its 26 call sites passes a literal 0..4
+           (e.g. 001BEDB8 a1=0, 001C1148 a1=1, 001C79B0 a1=2, 001CBE38 a1=3, 001CB988 a1=4);
+           the only direct stores are 001F3910 (1) and 001F3D28 ($zero). The game's tree
+           (001CDCC4 beq 1, 001CDCCC slti 2 -> default) needs a value below 1 that shares the
+           default label: only 0 remains. Bulk writes checked: no call to the memcpy/memset family
+           (func_00331370-func_003317AC) in the 26 setter callers or the class's methods
+           (0x001BE000-0x001C0FFF), and no sd/sq covering 0x1C on the object there. */
     default:
         return Vec_001CD048(0.0f, 0.0f, 0.0f, 1.0f);
     }

@@ -1,4 +1,3 @@
-/* fuzzy: 81.5 */
 struct Params_001C6888;
 
 extern "C" void* func_001190D0(unsigned int size);
@@ -78,7 +77,8 @@ void Self_001C6888::UpdateSpeed()
             if (p)
                 func_001E6AE8(p, 3);
         }
-        goto set;
+        func_001A18C8(m_anim, 0, 0, v);
+        break;
     }
     case 3: {
         float s;
@@ -91,16 +91,11 @@ void Self_001C6888::UpdateSpeed()
             if (p)
                 func_001E6AE8(p, 3);
         }
-        if (func_002A19A8(D_00392068)) {
-            if (fabsf_001C6888(v - mC04) < 0.1f) {
-            set:
-                func_001A18C8(m_anim, 0, 0, v);
-            } else {
-                mC04 = v;
-                func_001A18C8(m_anim, 1, 0, v);
-            }
+        if (!func_002A19A8(D_00392068) || fabsf_001C6888(v - mC04) < 0.1f) {
+            func_001A18C8(m_anim, 0, 0, v);
         } else {
-            goto set;
+            mC04 = v;
+            func_001A18C8(m_anim, 1, 0, v);
         }
         break;
     }

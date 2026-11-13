@@ -1,4 +1,3 @@
-/* fuzzy: 77.3 */
 struct C_001B3A48 {
     char pad0[0x20];
     unsigned long m_flags;
@@ -24,10 +23,10 @@ void C_001B3A48::Handle(void* params)
     unsigned int id;
     if (!func_001E8398(params, 0x963DC198, &id, 0))
         return;
-    /* Not matching: the game's compare tree for this switch (root 0xBA1D1E94; the 0xD5B4F014 node's right side
-       jumping straight to the end) is what g++ builds when the original had one more case key strictly between
-       0xD5B4F014 and 0xE41199AF whose body did nothing. That key's value is not recoverable from the binary, so it is
-       left out rather than invented. */
+    /* case 0xDA0723DA: the value is inferred from the matched neighbour func_001B3870, which tests the same
+       0x963DC198 key against it (lui/ori 0xDA0723DA at 0x001B38CC); it is not shown in this function. The empty
+       case does what falling out of the switch does (no default), so gcc pruned its compare, but the node is
+       needed for the game's compare tree (root 0xBA1D1E94, the 0xD5B4F014 node's right side jumping to the end). */
     switch (id) {
     case 0x255ED86F:
     case 0xE6DFAEC7:
@@ -69,6 +68,7 @@ void C_001B3A48::Handle(void* params)
     case 0x46A9E949:
         func_001B5DA8(this, params);
         break;
+    case 0xDA0723DA:
     case 0xE41199AF:
     case 0xEC1CD520:
         break;

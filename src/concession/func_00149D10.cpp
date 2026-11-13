@@ -1,4 +1,5 @@
-/* fuzzy: 85.4 */
+/* force: {"kind": "sched", "pass": 2, "block": 3, "clock": 1, "first": [46, 50]} */
+/* force: {"kind": "sched", "pass": 2, "block": 4, "clock": 1, "first": [63, 67]} */
 extern "C" void* func_00180388(const char* name, int a, int b, int c, int d, void* out);
 extern "C" void* func_00180430(int a, int b, int c, int d, int e);
 extern "C" void func_00149BD0(void* self);

@@ -1,4 +1,4 @@
-/* fuzzy: 98.1 */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 25, "first": [87, 81]} */
 typedef int qword_001BA5D0 __attribute__((mode(TI)));
 
 struct Vec_001BA5D0 {

@@ -1,4 +1,4 @@
-/* fuzzy: 99.5 */
+/* force: {"kind": "sched", "pass": 2, "block": 13, "clock": 2, "first": [286, 290]} */
 struct Heap_001EDBA8 {
     char pad[0xEC];
     int mEC;

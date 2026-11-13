@@ -1,4 +1,5 @@
-/* fuzzy: 96.6 */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 3, "first": [17, 20]} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 8, "first": [36, 64]} */
 struct Vec_001688F0 {
     float x, y, z, w;
 };

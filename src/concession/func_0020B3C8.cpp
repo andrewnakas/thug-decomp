@@ -1,4 +1,4 @@
-/* fuzzy: 93.9 */
+/* force: {"kind": "sched", "pass": 2, "block": 4, "clock": 1, "first": [93, 184]} */
 extern "C" int func_001E8398(void* params, unsigned int name, unsigned int* out, int req);
 extern "C" int func_001E7C80(void* params, unsigned int name, const char** out, int req);
 extern "C" void func_001E6B90(void* params, unsigned int name);

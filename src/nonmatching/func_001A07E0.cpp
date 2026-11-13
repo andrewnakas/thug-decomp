@@ -8,7 +8,7 @@ struct Node_001A07E0 {
     virtual ~Node_001A07E0();
     Node_001A07E0* First();
     int Count();
-    void Trim(int max);
+    Node_001A07E0* Trim(int max);
     void Insert(Node_001A07E0* nn)
     {
         nn->m_prev = this;
@@ -53,7 +53,7 @@ inline int Node_001A07E0::Count()
     return cnt;
 }
 
-inline void Node_001A07E0::Trim(int max)
+inline Node_001A07E0* Node_001A07E0::Trim(int max)
 {
     int i = 0;
     Node_001A07E0* n = First();
@@ -65,6 +65,7 @@ inline void Node_001A07E0::Trim(int max)
         }
         n = next;
     }
+    return this;
 }
 
 struct Part_001A07E0 {
@@ -106,8 +107,7 @@ extern "C" Part_001A07E0* func_001A0718(C_001A07E0* self);
 
 void C_001A07E0::Fn(float f)
 {
-    Node_001A07E0* head = &m_head;
-    head->Trim(3);
+    Node_001A07E0* head = m_head.Trim(3);
     Part_001A07E0* part = head->Count() ? func_001A0718(this) : 0;
     if (part && func_0011A080(part, f)) {
         float sum = 0.0f;

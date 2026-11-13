@@ -39,6 +39,14 @@ The mutations are text- and brace-aware and stay inside one block of statements.
   for2while    `for (i; c; s) body` -> `i; while (c) { body s; }` (only without `continue`)
   flags        add or drop one allowed per-file flag (--sweep-flags also tries every flag and pair up front)
   countdown    `for (int i = 0; i < N; i++)` -> `for (int i = N - 1; i >= 0; i--)`   [unsafe: order changes]
+  tail_into_branches  `if (c) {A} else {B} T;`  <->  `if (c) {A T;} else {B T;}` (each copy is counted and
+               allocated before jump2 merges them; LAST_MILE.md 4.2)
+  goto_existing_label  a trailing copy of the code after a label (to its `return`)  <->  `goto L;`; or label
+               the function's final tail `done:` when an inner block repeats it (jump2 merges into existing
+               labels only)
+  return_for_break  in a loop followed only by `return X;`: `break;`  <->  `return X;` (loop rotation keeps
+               the code up to the last `break` in the exit test; LAST_MILE.md 4.1)
+  (tools/crossjump_explain.py shows which tails jump2 merged, to choose between the last three by hand)
 --focus regalloc multiplies the declaration and live-range passes by 4. --sweep-wrappers first calls each extern
 callee through a `static inline` pass-through (same arguments, same order), one callee at a time: in gcc 2.95 the
 inlined call is allocated and scheduled differently, and this alone matched func_001C9C38 and func_001FC238.
@@ -212,7 +220,8 @@ class Mutator:
     WEIGHTS = {"temp": 100, "inline": 20, "swap": 10, "reorder_decls": 10, "split": 10, "merge": 5,
                "commute": 5, "compound": 5, "chain": 5, "ineq": 5, "invert": 1, "inttype": 20, "rettype": 5,
                "merge_var": 5, "split_var": 10, "move_to_use": 10, "for2while": 5, "call_order": 5,
-               "nest_and": 5, "early_return": 5, "param": 5, "flags": 3, "countdown": 1}
+               "nest_and": 5, "early_return": 5, "param": 5, "flags": 3, "countdown": 1,
+               "tail_into_branches": 3, "goto_existing_label": 3, "return_for_break": 3}
     REGALLOC = {"move_to_use", "reorder_decls", "split_var", "merge_var", "split", "merge", "param", "temp",
                 "inline", "inttype"}
 
@@ -931,6 +940,230 @@ class Mutator:
         if kind == "wrap":
             return src[:s] + f"if ({ncond}) {{\n    " + src[a:b] + "\n    }" + src[b:]
         return src[:s] + f"if ({ncond})\n        return;\n    " + src[a + 1:b - 1].strip() + "\n" + src[b:]
+
+    # ------------------------------------------------ jump2 / loop-rotation shapes (LAST_MILE.md 4.1, 4.2)
+    # tools/crossjump_explain.py shows which tails jump2 merged; these passes move the merge point.
+
+    JUMPY = re.compile(r"\b(return|break|continue|goto)\b|^\s*\w+\s*:(?!:)", re.M)
+
+    @staticmethod
+    def _norm_ws(t):
+        return re.sub(r"\s+", " ", t).strip()
+
+    def _if_else_blocks(self, code, s, e):
+        """For `if (c) { A } else { B }` spanning code[s:e]: (o, c, k, c2, j, c3) or None."""
+        if not re.match(r"^\s*if\s*\(", code[s:e]):
+            return None
+        o = code.find("(", s)
+        c = match_close(code, o)
+        k = c + 1
+        while k < e and code[k].isspace():
+            k += 1
+        if k >= e or code[k] != "{":
+            return None
+        c2 = match_close(code, k)
+        j = c2 + 1
+        while j < e and code[j].isspace():
+            j += 1
+        if not code.startswith("else", j):
+            return None
+        j += 4
+        while j < e and code[j].isspace():
+            j += 1
+        if j >= e or code[j] != "{":
+            return None
+        c3 = match_close(code, j)
+        if code[c3 + 1:e].strip():
+            return None
+        return o, c, k, c2, j, c3
+
+    def m_tail_into_branches(self, src, rng):
+        """`if (c) { A } else { B } T;`  <->  `if (c) { A T; } else { B T; }` (facts 59/65/91: a tail written in
+        each branch is counted, allocated and reloaded per copy before jump2 merges the copies). Only when
+        neither arm leaves early, T declares nothing, and (forward) T is the last statement of its block."""
+        code, blocks = self._stmts(src)
+        cands = []
+        for st in blocks:
+            for k in range(len(st)):
+                s, e = st[k]
+                ie = self._if_else_blocks(code, s, e)
+                if not ie:
+                    continue
+                o, c, a, c2, j, c3 = ie
+                arm_a, arm_b = code[a + 1:c2], code[j + 1:c3]
+                if self.JUMPY.search(arm_a) or self.JUMPY.search(arm_b):
+                    continue
+                declared = set()
+                for (x0, x1) in split_statements(code, a, c2) + split_statements(code, j, c3):
+                    dm = TYPE_START.match(code[x0:x1])
+                    if dm:
+                        declared.add(dm.group(1))
+                # forward: the next statement, if it declares nothing and does not leave
+                if k + 1 < len(st):
+                    ts, te = st[k + 1]
+                    t = code[ts:te]
+                    if t.rstrip().endswith(";") and not TYPE_START.match(t) and not CONTROL.match(t) \
+                            and not re.search(r"\b(break|continue|goto)\b", t) and not (idents(t) & declared):
+                        cands.append(("in", s, e, ie, ts, te))
+                # backward: both arms end with the same simple statement
+                sa = split_statements(code, a, c2)
+                sb = split_statements(code, j, c3)
+                if sa and sb and len(sa) + len(sb) > 2:
+                    la, lb = code[sa[-1][0]:sa[-1][1]], code[sb[-1][0]:sb[-1][1]]
+                    if self._norm_ws(la) == self._norm_ws(lb) and la.rstrip().endswith(";") \
+                            and not TYPE_START.match(la) and not CONTROL.match(la) and not (idents(la) & declared):
+                        cands.append(("out", s, e, ie, sa[-1], sb[-1]))
+        if not cands:
+            return None
+        kind, s, e, (o, c, a, c2, j, c3), x, y = rng.choice(cands)
+        if kind == "in":
+            t = src[x:y].strip()
+            return (src[:c2] + f"    {t}\n    " + src[c2:c3] + f"    {t}\n    " + src[c3:x].rstrip() + "\n"
+                    + src[y:].lstrip("\n"))
+        (las, lae), (lbs, lbe) = x, y
+        t = src[las:lae].strip()
+        las = src.rfind("\n", 0, las) if not src[src.rfind("\n", 0, las) + 1:las].strip() else las
+        lbs = src.rfind("\n", 0, lbs) if not src[src.rfind("\n", 0, lbs) + 1:lbs].strip() else lbs
+        return src[:las] + src[lae:lbs] + src[lbe:e] + f"\n    {t}" + src[e:]
+
+    def m_goto_existing_label(self, src, rng):
+        """A trailing copy of the code after a user label `L:` (up to and including its `return`) becomes
+        `goto L;`, or the reverse (fact 101: a jump to an existing label can merge with later tails; a label
+        jump2 makes for a merge cannot). Without a label, the function's final `...; return ...;` tail may get
+        one (`done:`) when a nested block repeats it exactly."""
+        code = mask_comments(src)
+        fb = self._func_body(code)
+        if not fb:
+            return None
+        hs, ob, cb = fb
+        top = split_statements(code, ob, cb)
+        cands = []
+        # tails after existing labels
+        for k, (s, e) in enumerate(top):
+            m = re.match(r"^\s*([A-Za-z_]\w*)\s*:(?!:)", code[s:e])
+            if not m or m.group(1) in ("default", "case", "public", "private", "protected"):
+                continue
+            lab = m.group(1)
+            first = code[s + m.end():e]
+            tail = [first] + [code[a:b] for a, b in top[k + 1:]]
+            if not tail or not re.match(r"^\s*return\b", tail[-1]):
+                continue
+            ntail = [self._norm_ws(t) for t in tail if t.strip()]
+            for (bs, be) in code_blocks(code):
+                if not (ob < bs and be < cb):
+                    continue
+                st = split_statements(code, bs, be)
+                n = len(ntail)
+                if len(st) >= n and [self._norm_ws(code[a:b]) for a, b in st[-n:]] == ntail:
+                    cands.append(("goto", st[-n][0], st[-1][1], lab))
+            # reverse: `goto lab;` -> copy of the tail
+            for g in re.finditer(r"\bgoto\s+" + lab + r"\s*;", code[ob:cb]):
+                gs = ob + g.start()
+                if gs >= s:
+                    continue
+                cands.append(("copy", gs, ob + g.end(), " ".join(t.strip() for t in tail if t.strip())))
+        # no label yet: the function's last statements repeated at the end of an inner block
+        if not re.search(r"^\s*[A-Za-z_]\w*\s*:(?!:)", code[ob + 1:cb], re.M) and top and \
+                re.match(r"^\s*return\b", code[top[-1][0]:top[-1][1]]):
+            for n in (1, 2, 3):
+                if len(top) <= n:
+                    break
+                ntail = [self._norm_ws(code[a:b]) for a, b in top[-n:]]
+                if any(TYPE_START.match(code[a:b]) for a, b in top[-n:]):
+                    break
+                for (bs, be) in code_blocks(code):
+                    if not (ob < bs and be < cb) or bs > top[-n][0]:
+                        continue
+                    st = split_statements(code, bs, be)
+                    if len(st) >= n and [self._norm_ws(code[a:b]) for a, b in st[-n:]] == ntail:
+                        cands.append(("label", st[-n][0], st[-1][1], top[-n][0]))
+        if not cands:
+            return None
+        kind, a, b, x = rng.choice(cands)
+        if kind == "goto":
+            return src[:a] + f"goto {x};" + src[b:]
+        if kind == "copy":
+            return src[:a] + x + src[b:]
+        # kind == "label": x is where the final tail starts (after a, b)
+        return src[:a] + "goto done;" + src[b:x] + "done:\n    " + src[x:]
+
+    def _loops_followed_by_return(self, code, fb):
+        """[(loop start, body open, body close, the return statement text after the loop)] for top-level-block
+        loops whose next statement is the function's last statement, a `return` (or none, in a void function)."""
+        hs, ob, cb = fb
+        out = []
+        void = re.search(r"(?:^|\s)void\s+[\w:]+\s*\(", code[hs:ob]) is not None
+        for (bs, be) in code_blocks(code):
+            if not (ob <= bs and be <= cb):
+                continue
+            st = split_statements(code, bs, be)
+            for k, (s, e) in enumerate(st):
+                if not re.match(r"^\s*(for|while)\s*\(", code[s:e]):
+                    continue
+                if (bs, be) == (ob, cb):
+                    if k + 1 == len(st) - 1 and re.match(r"^\s*return\b[^;]*;\s*$", code[st[k + 1][0]:st[k + 1][1]]):
+                        ret = code[st[k + 1][0]:st[k + 1][1]].strip()
+                    elif k == len(st) - 1 and void:
+                        ret = "return;"
+                    else:
+                        continue
+                else:
+                    continue
+                o = code.find("(", s)
+                c = match_close(code, o)
+                kk = c + 1
+                while kk < e and code[kk].isspace():
+                    kk += 1
+                if kk < e and code[kk] == "{":
+                    out.append((s, kk, match_close(code, kk), ret))
+        return out
+
+    @staticmethod
+    def _own_level(code, a, b, pos):
+        """True if code[pos] (inside the loop body a..b) is not inside a nested loop or switch."""
+        for m in re.finditer(r"\b(for|while|switch|do)\b", code[a:b]):
+            p = a + m.start()
+            if p >= pos:
+                break
+            if m.group(1) == "while" and code[:p].rstrip().endswith("}"):
+                continue                              # the `while` of a do-while
+            q = code.find("{", p)
+            if q < 0 or q > b:
+                continue
+            if m.group(1) != "do":
+                o = code.find("(", p)
+                if o < 0 or o > q:
+                    continue
+                q2 = match_close(code, o)
+                q = code.find("{", q2)
+                if q < 0 or code[q2 + 1:q].strip():
+                    continue
+            if q < pos < match_close(code, q):
+                return False
+        return True
+
+    def m_return_for_break(self, src, rng):
+        """A loop followed only by `return X;` (or by the end of a void function): `break;` in the loop
+        <-> `return X;` (fact 102: expand_end_loop moves everything up to the last `break` into the exit test,
+        and a `return` is not an exit; MATCHING_GUIDE: `return` moves a found-block out of the loop)."""
+        code = mask_comments(src)
+        fb = self._func_body(code)
+        if not fb:
+            return None
+        cands = []
+        for (s, a, b, ret) in self._loops_followed_by_return(code, fb):
+            for m in re.finditer(r"\bbreak\s*;", code[a:b]):
+                p = a + m.start()
+                if self._own_level(code, a, b, p):
+                    cands.append((p, a + m.end(), ret))
+            for m in re.finditer(re.escape(ret).replace(r"\ ", r"\s*"), code[a:b]):
+                p = a + m.start()
+                if self._own_level(code, a, b, p):
+                    cands.append((p, a + m.end(), "break;"))
+        if not cands:
+            return None
+        p, q, rep = rng.choice(cands)
+        return src[:p] + rep + src[q:]
 
     LV = r"[A-Za-z_]\w*(?:(?:\.|->)[A-Za-z_]\w*|\[[A-Za-z_0-9]+\])*"
 

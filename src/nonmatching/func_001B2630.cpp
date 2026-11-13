@@ -1,4 +1,4 @@
-/* fuzzy: 84.7 */
+/* fuzzy: 93.7 */
 typedef int qword_001B2630 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 
@@ -79,7 +79,8 @@ void C_001B2630::Track()
     if (Cross_001B2630(m.r[2], d).y > 0.0f) {
         ang = 360.0f - ang;
     }
-    float dist = Length_001B2630(c) / Length_001B2630(Sub_001B2630(a, b));
+    Vec_001B2630 ba = Sub_001B2630(a, b);
+    float dist = Length_001B2630(c) / Length_001B2630(ba);
     if (dist > k) {
         k = 1.0f;
     } else {

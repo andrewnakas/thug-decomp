@@ -301,3 +301,13 @@ Structural findings these tools surfaced:
 - **Cross-jumping.** A "moved code" pair (our extra words = the game's missing words elsewhere) usually means the
   other copy survived cross-jumping or the blocks are in another order. Check the statement order of the
   duplicated tails.
+
+## Dead-looking code: the instruction test (ruling 2026-11-12)
+
+A statement whose result is never read is allowed **only if every instruction it produces exists in the game's
+asm**. Then the original source had it, and the compiler kept it, e.g. a value computed and stored to a stack
+local that nothing reads (func_00219A98) or a whole-vector copy that rewrites a member with its own value
+(func_002BB818). Add a comment citing the game's instructions. A statement that only steers the compiler (it emits
+nothing of its own, or emits instructions the game does not have) stays banned: dead initialisations folded away,
+self-assignments, empty branches, invented `case` values. Small local buffers such as `unsigned short seq[1]` passed
+as message data are ordinary C++.

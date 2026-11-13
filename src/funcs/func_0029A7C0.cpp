@@ -1,4 +1,3 @@
-/* fuzzy: 58.3 */
 struct Node_0029A7C0 {
     char pad[0x10];
     float x, y, z;
@@ -23,13 +22,12 @@ bool Obj_0029A7C0::Clip(Grp_0029A7C0* g, float x0, float z0, float x1, float z1,
     Node_0029A7C0* next;
     for (Node_0029A7C0* n = g->head; n; n = next) {
         next = n->next;
-        bool inside = x0 < n->x && n->x < x1 && z0 < n->z && n->z < z1;
-        bool hit = true;
-        if (inside) {
-            if (flag != true)
-                hit = false;
-        } else if (flag) {
-            hit = false;
+        bool hit = false;
+        if (x0 < n->x && n->x < x1 && z0 < n->z && n->z < z1) {
+            if (flag == true)
+                hit = true;
+        } else if (!flag) {
+            hit = true;
         }
         if (hit && func_0029A770(this, g, n))
             return true;

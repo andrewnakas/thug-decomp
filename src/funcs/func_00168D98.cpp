@@ -1,4 +1,3 @@
-/* fuzzy: 90.8 */
 extern unsigned char* D_00394274;
 extern "C" void func_001645F8(int a, int b, int c);
 extern "C" void func_001646D0(int a);
@@ -18,14 +17,19 @@ static inline void AddReg_00168D98(long data, int reg)
     D_00394274 = (unsigned char*)(p + 3);
 }
 
-static inline void AddTag_00168D98(int n)
+static inline void Add_00168D98(unsigned int a)
 {
     unsigned int* p = (unsigned int*)D_00394274;
-    p[0] = n | 0x04000000;
+    *p = a;
     D_00394274 = (unsigned char*)(p + 1);
 }
 
-extern "C" void func_00168D98(Tex_00168D98* tex, long alpha, int a, int b)
+static inline void AddTag_00168D98(unsigned short n)
+{
+    Add_00168D98(n | 0x4000000);
+}
+
+extern "C" void func_00168D98(Tex_00168D98* tex, long alpha, int a, bool b)
 {
     func_001645F8(a, 0, 0);
     AddReg_00168D98(alpha, 0x42);
@@ -34,8 +38,5 @@ extern "C" void func_00168D98(Tex_00168D98* tex, long alpha, int a, int b)
         AddReg_00168D98(tex->m30, 0x14);
     }
     func_001646D0(0);
-    int n = 2;
-    if (!b)
-        n = 1;
-    AddTag_00168D98(n);
+    AddTag_00168D98(b ? 2 : 1);
 }

@@ -1,4 +1,3 @@
-/* fuzzy: 86.5 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -44,7 +43,15 @@ extern "C" int func_001013F0(Mat_001013F0* m)
     float l1 = m->row[1].Length();
     float l2 = m->row[2].Length();
     if (l0 < 0.99f) {
-        if (l1 < 0.99f || l2 < 0.99f) {
+        if (l1 < 0.99f) {
+            // game: 0x0010148C `c.lt.s l2` then 0x00101490 `b` to the identity block: l2 was tested on this
+            // path and both outcomes reset the matrix (cross-jumping merged the two arms).
+            if (l2 < 0.99f) {
+                m->Ident();
+            } else {
+                m->Ident();
+            }
+        } else if (l2 < 0.99f) {
             m->Ident();
         } else {
             m->row[0] = Cross(m->row[1], m->row[2]);

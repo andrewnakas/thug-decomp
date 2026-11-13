@@ -1,4 +1,4 @@
-/* fuzzy: 86.6 */
+/* fuzzy: 97.4 */
 struct Obj_0012F420;
 struct Handle_0012F420;
 
@@ -50,7 +50,7 @@ struct Handle_0012F420 {
     operator Obj_0012F420*() const { return m_obj; }
 };
 
-static inline Handle_0012F420 Make_0012F420(const Handle_0012F420& t)
+static inline const Handle_0012F420& Make_0012F420(const Handle_0012F420& t)
 {
     return t;
 }
@@ -75,11 +75,6 @@ extern "C" Node_0012F420* func_001E5040(unsigned int value);
 extern "C" Thing_0012F420* func_001F0750(unsigned int name, int a, int b, int c, int d,
                                          int e, int f, int g, int h, int i);
 extern "C" int func_001EFDC0(Thing_0012F420* p);
-
-static inline Handle_0012F420 Find_0012F420(void* params)
-{
-    return Make_0012F420(func_0012DC18(D_00389A30, params, 0x40C698AF, 1));
-}
 
 bool Cmd_0012F420(void* params, void* script)
 {

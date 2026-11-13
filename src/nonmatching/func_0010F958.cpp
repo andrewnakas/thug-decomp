@@ -1,4 +1,4 @@
-/* fuzzy: 86.5 */
+/* fuzzy: 87.5 */
 /* sym: dpmul = 0x0033E220 */
 /* sym: litodp = 0x0033E798 */
 struct Timer_0010F958 {
@@ -31,8 +31,8 @@ extern "C" void func_0010F958()
     int sum = 0;
     int* f = t->frames;
     for (int i = 0; i < 4; i++) {
+        sum += f[i];
         int v = f[i];
-        sum += v;
         if (v < 2 || v > 10) {
             v = 1;
         }

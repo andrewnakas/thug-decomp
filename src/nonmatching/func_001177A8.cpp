@@ -1,4 +1,4 @@
-/* fuzzy: 87.1 */
+/* fuzzy: 91.5 */
 /* sym: GetX__13Anim_001177A8Pvi = 0x00115C68 */
 /* sym: GetY__13Anim_001177A8Pvi = 0x00115C98 */
 /* sym: Test__13Anim_001177A8 = 0x00115CC8 */
@@ -41,21 +41,22 @@ struct Vec_001177A8 {
         z = az;
         w = aw;
     }
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 static inline Vec_001177A8 operator-(const Vec_001177A8& a, const Vec_001177A8& b)
 {
-    return Vec_001177A8(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_001177A8(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_001177A8 operator+(const Vec_001177A8& a, const Vec_001177A8& b)
 {
-    return Vec_001177A8(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001177A8(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001177A8 operator*(const Vec_001177A8& a, float s)
 {
-    return Vec_001177A8(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001177A8(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 struct FKey_001177A8 {

@@ -1,4 +1,3 @@
-/* fuzzy: 83.2 */
 struct Blk_00183448 {
     unsigned char b[25];
 };
@@ -167,7 +166,7 @@ void Pad_00183448::Update()
         func_00182580(m_sub.m_cur, m_sub.m_press, m_sub.m_release);
         if (D_00388820) {
             int quit = 0;
-            if (m_sub.m_cur != 0 || (m_sub.m_word & 0xFFFFFF00) != 0x80808000 || m_sub.m_b[4] != 0x80) {
+            if (m_sub.m_cur != 0 || (s->m_word & 0xFFFFFF00) != 0x80808000 || s->m_b[4] != 0x80) {
                 D_0038ED80 = D_0038ED7C;
             }
             if (m_dev->m_port == 0) {

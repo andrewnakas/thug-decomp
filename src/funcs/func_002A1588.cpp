@@ -1,4 +1,3 @@
-/* fuzzy: 73.7 */
 extern char D_00371C78[];
 extern char D_00366B58[];
 extern char D_00378218[];
@@ -22,9 +21,18 @@ struct Iter2_002A1588 {
 
 struct Conn_002A1588 {
     char pad0[0x68];
-    int m68;
-    int Has(const int& f) { return m68 & f; }
+    unsigned int m68;
 };
+
+static inline unsigned int TestFlag_002A1588(Conn_002A1588* c, const unsigned int& mask)
+{
+    return c->m68 & mask;
+}
+
+static inline unsigned int HasFlag_002A1588(Conn_002A1588* c, int flag)
+{
+    return TestFlag_002A1588(c, flag);
+}
 
 struct Elem_002A1588 {
     char pad0[0x18];
@@ -80,7 +88,7 @@ void Obj_002A1588::Check()
             Elem_002A1588* next = func_002A5490(t, &it, 1);
             int kick = 0;
             if (!func_00202768(e->m1C)) {
-                if (e->m1C->Has(1)) {
+                if (HasFlag_002A1588(e->m1C, 1)) {
                     if (func_002026D0(e->m1C) > 20000) {
                         kick = 1;
                     } else if (func_00202808(e->m1C) > 20) {
@@ -88,6 +96,7 @@ void Obj_002A1588::Check()
                         int b = func_002B1FE8(e);
                         func_002A5A88(t, e, 5);
                         if (!b) func_0022CF98(sk, id);
+                        goto done;
                     }
                 } else if (func_002026D0(e->m1C) > 60000) {
                     kick = 1;
@@ -99,6 +108,7 @@ void Obj_002A1588::Check()
                     if (!b) func_0022CF98(sk, id);
                 }
             }
+        done:
             e = next;
         }
     } else {

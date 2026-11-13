@@ -1,4 +1,3 @@
-/* fuzzy: 73.5 */
 extern "C" void func_001E6AE8(void* p, int mode);
 extern "C" void func_0010A8D8(void* pool, void* p);
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
@@ -26,7 +25,7 @@ struct L_00188620 {
     E_00188620* m_items;
     int m_count;
     int m_alive;
-    bool m_changed;
+    int m_changed;
     void Compact();
 };
 
@@ -37,22 +36,22 @@ void L_00188620::Compact()
     if (!m_items) {
         return;
     }
-    int n = m_count;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < m_count; i++) {
         if (m_items[i].m_id == 0xC377C572) {
             dead++;
         }
     }
+    int n = m_count;
     if (!dead) {
         return;
     }
-    m_changed = true;
+    m_changed = 1;
     int live = n - dead;
     if (live == 0) {
-        for (i = 0; i < m_count; i++) {
-            if (m_items[i].m_obj) {
-                func_001E6AE8(m_items[i].m_obj, 3);
-                m_items[i].m_obj = 0;
+        for (int j = 0; j < m_count; j++) {
+            if (m_items[j].m_obj) {
+                func_001E6AE8(m_items[j].m_obj, 3);
+                m_items[j].m_obj = 0;
             }
         }
         if (m_items) {
@@ -65,11 +64,10 @@ void L_00188620::Compact()
     func_0010A950(D_00388A70, D_00388A70->mE4);
     E_00188620* items = (E_00188620*)func_0010A638(D_00388A70, live * 0x1C, 1, 0);
     func_0010A9B0(D_00388A70);
-    E_00188620* dst = items;
+    int k = 0;
     for (i = 0; i < m_count; i++) {
         if (m_items[i].m_id != 0xC377C572) {
-            *dst = m_items[i];
-            dst++;
+            items[k++] = m_items[i];
         } else if (m_items[i].m_obj) {
             func_001E6AE8(m_items[i].m_obj, 3);
             m_items[i].m_obj = 0;

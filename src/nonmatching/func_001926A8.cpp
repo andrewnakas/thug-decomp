@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse -fno-rerun-loop-opt */
-/* fuzzy: 70.9 */
+/* fuzzy: 87.4 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);
 extern "C" float func_00340F60(float a);
@@ -37,13 +37,14 @@ void Ring_001926A8::Build(int n, float rx, float rz, float h)
     int side = 0;
     do {
         for (int i = n - 1; i != -1; i--) {
-            m_verts[idx].x = (side ? rx : rz) * func_00340F60(2.0f * i * 3.1415f / n);
+            float fi = i;
+            m_verts[idx].x = (side ? rx : rz) * func_00340F60(2.0f * fi * 3.1415f / n);
             m_verts[idx].y = side ? h : -h;
-            m_verts[idx].z = (side ? rx : rz) * func_00341068(2.0f * i * 3.1415f / n);
+            m_verts[idx].z = (side ? rx : rz) * func_00341068(2.0f * fi * 3.1415f / n);
             m_verts[idx].w = 1.0f;
             m_verts[idx].m_flag = 0;
             idx++;
         }
-        side ^= 1;
+        side = 1 - side;
     } while (side);
 }

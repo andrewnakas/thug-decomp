@@ -1,4 +1,4 @@
-/* fuzzy: 76.2 */
+/* fuzzy: 84.1 */
 /* sym: __11Ev_00189750 = 0x00187C78 */
 /* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;
@@ -144,12 +144,8 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
         if (g) {
             N_00189750* head = &g->m_list;
             int count = 0;
-            N_00189750* n = head->NextA();
-            if (n) {
-                do {
-                    n = n->GetNext();
-                    count++;
-                } while (n);
+            for (N_00189750* n = head->NextA(); n; n = n->GetNext()) {
+                count++;
             }
             if (count == 1) {
                 func_001F1200(head->GetNext()->m_data, &ev, broadcast);
@@ -161,8 +157,8 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
                 N_00189750* m = head->NextA();
                 if (m) {
                     do {
-                        *r = &m->m_data->mE8;
                         *o = m->m_data;
+                        *r = &m->m_data->mE8;
                         m = m->NextA();
                         r++;
                         o++;
@@ -181,14 +177,14 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
         func_00189340(this, &ev, 0);
         if (ev.m_id != 0x36B2EE74 && !ev.Handled()) {
             Handler_00189750* h = func_001895B0(this, ev.m_id);
-            if (h) {
-                h->Handle(&ev, 0);
-            } else {
+            if (!h) {
                 Data_00189750* d = func_001F0D00(ev.m_id);
                 if (!d) {
                     func_00189018(m20, 1, 0x400);
                 }
                 func_001F1200(d, &ev, 0);
+            } else {
+                h->Handle(&ev, 0);
             }
         }
     }
@@ -201,11 +197,12 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
                 if (t) {
                     func_001EE608(t);
                     func_00187D28(&ev, 2, t->mC8);
-                    break;
+                    goto done;
                 }
             }
         }
     }
+done:
     if (!ev.Handled()) {
         func_00189BC0(this, &ev, 3, 0);
     }

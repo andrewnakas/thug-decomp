@@ -1,4 +1,4 @@
-/* fuzzy: 87.2 */
+/* fuzzy: 94.4 */
 typedef int qword_001BA000 __attribute__((mode(TI)));
 
 struct Vec_001BA000 {
@@ -12,9 +12,12 @@ struct Vec_001BA000 {
     Vec_001BA000(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     void Approach(const Vec_001BA000& t, float a, float b)
     {
-        x += (t.x - x) * a;
-        y += (t.y - y) * b;
-        z += (t.z - z) * a;
+        float nx = x + (t.x - x) * a;
+        float ny = y + (t.y - y) * b;
+        float nz = z + (t.z - z) * a;
+        x = nx;
+        y = ny;
+        z = nz;
         w = 1.0f;
     }
 };

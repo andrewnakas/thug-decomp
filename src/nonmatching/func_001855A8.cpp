@@ -1,4 +1,5 @@
 /* fuzzy: 98.4 */
+/* blocked: sched1 priority order in block 74 (case 0xD96C0A20 Length: dx*dx mul prio 18 vs params load prio 5) + global-alloc d.x/d.y tie (929/942); forced 26 -> 18 words (oracle) */
 /* Model/motion component script member functions: position, orientation, velocity queries, plus the
    "ask every sub-component, then the base class" fallback. */
  /* deg->rad, the game loads its .lit4 constants in a different order than the literals would compile */

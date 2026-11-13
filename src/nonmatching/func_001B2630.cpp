@@ -1,4 +1,5 @@
 /* fuzzy: 93.7 */
+/* blocked: sched2 priority difference (p.y load 113 prio 60 via the d.y neg vs p.x load 110 prio 59; forced 36 -> 15 words) (oracle) */
 typedef int qword_001B2630 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 

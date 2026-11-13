@@ -1,4 +1,4 @@
-/* fuzzy: 76.6 */
+/* fuzzy: 48.4 */
 struct Ent_001DAC80 {
     int id;
     int val;
@@ -14,17 +14,13 @@ struct Obj_001DAC80 {
 
 void Obj_001DAC80::Remove(int id)
 {
-    int i = m_start;
-    Ent_001DAC80* e = &m_ents[i];
-    for (;;) {
-        if (i >= m_count)
+    for (int i = m_start; i < m_count; i++) {
+        Ent_001DAC80* e = &m_ents[i];
+        if (e->id == id) {
+            m_count--;
+            *e = m_ents[m_count];
+            m_FC8--;
             return;
-        if (e->id == id)
-            break;
-        i++;
-        e++;
+        }
     }
-    m_count--;
-    *e = m_ents[m_count];
-    m_FC8--;
 }

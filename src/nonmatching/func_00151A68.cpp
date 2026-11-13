@@ -1,5 +1,5 @@
 /* cflags: -fno-strength-reduce */
-/* fuzzy: 50.0 */
+/* fuzzy: 82.9 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00151A68 {
@@ -7,6 +7,13 @@ struct Vec_00151A68 {
         struct { float x, y, z, w; };
         qword q;
     };
+    void Set(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
 };
 
 struct Mat_00151A68;
@@ -40,10 +47,7 @@ extern "C" void func_00143208(Obj_00151A68* o, int i, float t);
 
 static inline void Sub(Vec_00151A68& out, const Vert_00151A68& p, const Vec_00151A68& c)
 {
-    out.x = p.x - c.x;
-    out.y = p.y - c.y;
-    out.z = p.z - c.z;
-    out.w = 1.0f;
+    out.Set(p.x - c.x, p.y - c.y, p.z - c.z, 1.0f);
 }
 
 static inline void Add(Vec_00151A68& v, const Vec_00151A68& c)
@@ -66,16 +70,19 @@ extern "C" void func_00151A68(Obj_00151A68* o, float t)
     Tri_00151A68* tri = o->m2C;
     for (int i = 0; i < o->m20; i++) {
         Vec_00151A68 v[4];
-        Sub(v[0], tri->v[0], o->m0[i]);
-        Sub(v[1], tri->v[1], o->m0[i]);
-        Sub(v[2], tri->v[2], o->m0[i]);
-        v[0] = o->mC[i].Xform(&v[0]);
-        v[1] = o->mC[i].Xform(&v[1]);
-        v[2] = o->mC[i].Xform(&v[2]);
+        Vec_00151A68* c = &v[2];
+        Vec_00151A68* a = &v[0];
+        Vec_00151A68* b = &v[1];
+        Sub(*a, tri->v[0], o->m0[i]);
+        Sub(*b, tri->v[1], o->m0[i]);
+        Sub(*c, tri->v[2], o->m0[i]);
+        *a = o->mC[i].Xform(a);
+        *b = o->mC[i].Xform(b);
+        *c = o->mC[i].Xform(c);
         func_00143208(o, i, t);
-        Add(v[0], o->m0[i]);
-        Add(v[1], o->m0[i]);
-        Add(v[2], o->m0[i]);
+        Add(*a, o->m0[i]);
+        Add(*b, o->m0[i]);
+        Add(*c, o->m0[i]);
         Store(tri->v[0], v[0]);
         Store(tri->v[1], v[1]);
         Store(tri->v[2], v[2]);

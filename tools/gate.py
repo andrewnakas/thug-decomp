@@ -5,6 +5,9 @@
     python tools/gate.py --cold       # ignore the cache
     python tools/gate.py FILE...      # just these (still a full check of each)
 
+src/nonmatching units are scored (check_nonmatching); src/concession units must match under their recorded
+forced compiler decisions (check_concession, tools/concession.py).
+
 For each src/funcs/func_X.cpp:
   - it compiles through the pinned pipeline and MATCHes the original
     instruction for instruction, relocations resolved (tools/match.py)
@@ -30,7 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import match  # noqa: E402
-from common import BUILD, FUZZY_RE, ROOT, SRC_FUNCS, SRC_NONMATCHING, UNIT_RE  # noqa: E402
+from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATCHING, UNIT_RE  # noqa: E402
 
 UNIT_FILE = __import__("re").compile(r"^func_[0-9A-F]{8}\.cpp$")
 
@@ -62,6 +65,8 @@ def check(path):
         row = match.func_row(name)
     except KeyError as e:
         return path.name, [str(e)], []
+    if path.resolve().parent == SRC_CONCESSION.resolve():
+        return path.name, check_concession(path), []
     res = match.compare(name, path, outdir=BUILD / "gate" / str(os.getpid()))
     if res.error:
         return path.name, [res.error.strip().splitlines()[-1][:300]], []
@@ -102,6 +107,8 @@ def check_nonmatching(path, res):
     problems = []
     if (SRC_FUNCS / path.name).exists():
         problems.append("this function is matched in src/funcs: delete the src/nonmatching copy")
+    if (SRC_CONCESSION / path.name).exists():
+        problems.append("this function is in src/concession: delete the src/nonmatching copy")
     score = fuzzy(res)
     if res.ok:
         problems.append("it matches exactly: move it to src/funcs/")
@@ -120,6 +127,15 @@ def check_nonmatching(path, res):
                          if target is None and lit is None and sym and ("__" in sym or sym.startswith("_vt$"))})
     if unresolved:
         problems.append("unresolved C++ names (add `/* sym: NAME = 0xADDR */` lines): " + ", ".join(unresolved[:6]))
+    return problems
+
+
+def check_concession(path):
+    """src/concession/ holds C++ that matches exactly once its recorded `/* force: */` compiler decisions are
+    replayed in SN's cc1plus under gdb (tools/concession.py, tools/oracle.py). It must not match without them,
+    and it is never linked. The same section and one-function rules as src/funcs apply."""
+    import concession
+    problems, info = concession.verify(path.stem, path, wd=BUILD / "gate" / str(os.getpid()) / "concession")
     return problems
 
 
@@ -190,7 +206,8 @@ def main():
     import fresh
     fresh.ensure()
 
-    files = [Path(f) for f in a.files] or (sorted(SRC_FUNCS.glob("*.cpp")) + sorted(SRC_NONMATCHING.glob("*.cpp")))
+    files = [Path(f) for f in a.files] or (sorted(SRC_FUNCS.glob("*.cpp")) + sorted(SRC_NONMATCHING.glob("*.cpp"))
+                                           + sorted(SRC_CONCESSION.glob("*.cpp")))
     stray = [f for f in SRC_FUNCS.glob("*") if f.suffix != ".cpp" and f.is_file()]
     sh = shared_hash()
     cache = {}
@@ -201,7 +218,8 @@ def main():
     todo, passed = [], []
     for f in files:
         key = hashlib.sha256(f.read_bytes()).hexdigest() if f.exists() else None
-        nonm = f.resolve().parent == SRC_NONMATCHING.resolve()   # never cached: its verdict depends on src/funcs
+        # never cached: their verdicts depend on src/funcs
+        nonm = f.resolve().parent in (SRC_NONMATCHING.resolve(), SRC_CONCESSION.resolve())
         if key and not nonm and cache.get(f.name) == key:
             passed.append(f.name)
         else:
@@ -215,6 +233,8 @@ def main():
         for f, (fname, problems, lines) in zip(todo, ex.map(check, todo)):
             if f.resolve().parent == SRC_NONMATCHING.resolve():
                 fname = "nonmatching/" + fname
+            elif f.resolve().parent == SRC_CONCESSION.resolve():
+                fname = "concession/" + fname
             if problems:
                 bad += 1
                 for p in problems:

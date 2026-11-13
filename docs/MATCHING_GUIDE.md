@@ -446,3 +446,12 @@ that is otherwise dead (a copy/spill/compare such as func_00146B80's `daddu $s2,
 arms are what reproduces it: jump2 cross-jumps the arms after allocation and leaves exactly that trace (LAST_MILE
 fact 57). Comment the trace's address and that the original arms probably differed in a way that compiled the
 same. Never use it to steer scheduling without such a trace.
+
+## Concession tier (ruling 2026-11-13)
+
+This replaces the earlier ruling that a forced compile is never shippable. A unit whose residue
+`tools/oracle.py --force` proves to be only compiler-internal decisions may go to `src/concession/` with those
+decisions recorded as `/* force: */` lines (AGENTS.md, RULES.md rule 10). Forces are a diagnosis first: try the
+source levers in this guide and in docs/techniques/ORACLE.md ("From forced flip to source fix") before recording
+one, and move a concession unit to `src/funcs/` as soon as plain C++ matches.
+

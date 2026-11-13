@@ -135,6 +135,22 @@ units if the address is the same; a name mapped to two different addresses fails
 `include/game/cxx_symbols*.txt` files or edit shared headers in a PR (the judge never sees them): define the
 types your unit needs inside the `.cpp`.
 
+## Matches only with forced compiler decisions (`src/concession/`)
+
+When `tools/oracle.py --force` proves the only remaining difference is an internal compiler decision the source
+does not reach (a tie-break in global-alloc, a scheduler ready-list pick, a local-alloc order), the unit can move
+to `src/concession/` with its forces recorded:
+
+```sh
+.venv/bin/python tools/concession.py --find --write func_00112345   # search forces; on a match, move the unit
+.venv/bin/python tools/concession.py func_00112345                  # verify (gate.py does the same)
+```
+
+Each force is one `/* force: {...} */` line (at most 8; kinds `ga`, `la`, `sched`). The gate rejects a unit
+that matches without its forces (it belongs in `src/funcs/`). Concession units are never linked and count
+separately from concession-free matches. Try the source levers first (MATCHING_GUIDE.md); a concession is the
+last step, not the first.
+
 ## Equivalent but not matching yet (`src/nonmatching/`)
 
 When a function is readable and functionally equivalent but still differs from the game's code (register or

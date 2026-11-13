@@ -12,6 +12,7 @@ ASM = ROOT / "asm"
 BUILD = Path(os.environ.get("THUG_BUILD", ROOT / "build"))
 SRC_FUNCS = ROOT / "src" / "funcs"
 SRC_NONMATCHING = ROOT / "src" / "nonmatching"   # equivalent C++ that does not match yet: scored, never linked
+SRC_CONCESSION = ROOT / "src" / "concession"     # matches only with recorded compiler decisions forced (tools/concession.py)
 CONFIG = ROOT / "config"
 FUNCTIONS_CSV = CONFIG / "functions.us.csv"
 EXE_NAME = "SLUS_207.31"

@@ -1,4 +1,4 @@
-/* fuzzy: 87.8 */
+/* fuzzy: 89.4 */
 /* sym: _vt$10Comp118530 = 0x0035C638 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -53,7 +53,7 @@ struct Quat118530 {
         func_00119230(this, s * axis.x, s * axis.y, s * axis.z);
         func_00119228(this, func_00340F60(half));
     }
-    void Identity() { x = 0.0f; y = 0.0f; z = 0.0f; w = 1.0f; }
+    void Identity() { w = 1.0f; x = 0.0f; y = 0.0f; z = 0.0f; }
     void operator*=(const Quat118530& b)
     {
         Vec118530 va;

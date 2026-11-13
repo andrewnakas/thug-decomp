@@ -1,4 +1,4 @@
-/* fuzzy: 60.5 */
+/* fuzzy: 62.0 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -28,6 +28,11 @@ struct Vec_00199618 : Row_00199618 {
 static inline Vec_00199618 Sub_00199618(const Row_00199618& a, const Row_00199618& b)
 {
     return Vec_00199618(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+}
+
+static inline Vec_00199618 Add_00199618(const Row_00199618& a, const Row_00199618& b)
+{
+    return Vec_00199618(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
 
 static inline Vec_00199618 Scale_00199618(const Row_00199618& a, float s)
@@ -188,9 +193,10 @@ struct Car_00199618 {
 
     bool Frozen()
     {
+        bool frozen = false;
         if (m128 || (mC->mC & 1))
-            return true;
-        return false;
+            frozen = true;
+        return frozen;
     }
     void UpdateVel()
     {
@@ -252,7 +258,7 @@ void Car_00199618::Collide()
             if (Frozen())
                 goto done;
             func_00209B80(&q);
-            for (int i = q.m_count - 1; i != -1; i--) {
+            for (int i = q.m_count; i--;) {
                 TriFace_00199618* face = &q.face[i];
                 for (int j = 1; j != -1; j--) {
                     Contact_00199618* c = &D_003E49C0[m68];
@@ -293,7 +299,7 @@ void Car_00199618::Collide()
     } while (t != -1);
 
     if (m68 != 0) {
-        for (int i = m68 - 1; i != -1; i--) {
+        for (int i = m68; i--;) {
             D_003E49C0[i].m24 = 0.0f;
         }
         Row_00199618 P = m30;
@@ -307,11 +313,10 @@ void Car_00199618::Collide()
         do {
             iter++;
             done = 1;
-            for (int i = m68 - 1; i != -1; i--) {
+            for (int i = m68; i--;) {
                 Contact_00199618* c = &D_003E49C0[i];
                 Vec_00199618 r = Sub_00199618(c->p, m20);
-                Row_00199618 v = mB0;
-                v += Cross_00199618(mC0, r);
+                Vec_00199618 v = Add_00199618(mB0, Cross_00199618(mC0, r));
                 float vn = v.Dot(c->n);
                 if (vn > 0.0f)
                     continue;
@@ -325,11 +330,11 @@ void Car_00199618::Collide()
 
         if (m1380 && m68) {
             // Debug display of the contacts (body compiled out in this build).
-            for (int i = m68 - 1; i != -1; i--) {
+            for (int i = m68; i--;) {
             }
         }
         // Push-out forces.
-        for (int i = m68 - 1; i != -1; i--) {
+        for (int i = m68; i--;) {
             Contact_00199618* c = &D_003E49C0[i];
             if (c->m20 <= 0.0f)
                 continue;
@@ -343,13 +348,12 @@ void Car_00199618::Collide()
 
         // Friction.
         float mu = (m84 > D_00387824) ? m1A4 : m1AC;
-        for (int i = m68 - 1; i != -1; i--) {
+        for (int i = m68; i--;) {
             Contact_00199618* c = &D_003E49C0[i];
             if (c->m24 == 0.0f)
                 continue;
             Vec_00199618 r = Sub_00199618(c->p, m20);
-            Row_00199618 v = V;
-            v += Cross_00199618(W, r);
+            Vec_00199618 v = Add_00199618(V, Cross_00199618(W, r));
             float vn = v.Dot(c->n);
             Vec_00199618 tan = Sub_00199618(v, Scale_00199618(c->n, vn));
             float len = sqrtf(tan.Dot(tan));
@@ -367,7 +371,7 @@ void Car_00199618::Collide()
             V = Scale_00199618(P, m180);
             W = mD0.Rotate(L);
         }
-        for (int i = m68 - 1; i != -1; i--) {
+        for (int i = m68; i--;) {
             float n = D_003E49C0[i].m24;
             if (m1370 < n)
                 m1370 = n;
@@ -375,7 +379,7 @@ void Car_00199618::Collide()
 
         // Steering impulse along the ground.
         if (m34C != 0.0f && m120 >= 3 && !m358) {
-            for (int i = m68 - 1; i != -1; i--) {
+            for (int i = m68; i--;) {
                 Contact_00199618* c = &D_003E49C0[i];
                 Vec_00199618 r = Sub_00199618(c->p, m20);
                 Row_00199618 dir;
@@ -383,10 +387,8 @@ void Car_00199618::Collide()
                 float s = m34C * m1B0 * m90.Dot(c->n) * c->m24;
                 ApplyImpulse(r, Scale_00199618(dir, s));
                 if (m1380) {
-                    Row_00199618 a = c->p;
-                    a += c->n;
-                    Row_00199618 b = a;
-                    b += Scale_00199618(Scale_00199618(dir, s), D_0038782C);
+                    Row_00199618 a = Add_00199618(c->p, c->n);
+                    Vec_00199618 b = Add_00199618(a, Scale_00199618(Scale_00199618(dir, s), D_0038782C));
                     func_001235E8(&a, &b, 0xFF6400FF, 0xFF6400FF, 1);
                 }
             }

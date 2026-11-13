@@ -1,7 +1,8 @@
-/* fuzzy: 98.4 */
 /* sym: __13Coll_001C85E8 = 0x00209240 */
 /* sym: __12Box_001C85E8RC12Vec_001C85E8T1 = 0x00102340 */
 typedef int qword __attribute__((mode(TI)));
+union Vec_001C85E8;
+extern "C" void func_003233B8(Vec_001C85E8* out, Vec_001C85E8* in);
 union Vec_001C85E8 {
     qword q;
     float c[4];
@@ -22,6 +23,20 @@ union Vec_001C85E8 {
         c[3] += b.c[3];
     }
     float operator[](int i) const { return c[i]; }
+    void Set(float x, float y, float z, float w)
+    {
+        c[0] = x;
+        c[1] = y;
+        c[2] = z;
+        c[3] = w;
+    }
+    void Normalize() { func_003233B8(this, this); }
+    void Flip()
+    {
+        c[0] = -c[0];
+        c[1] = -c[1];
+        c[2] = -c[2];
+    }
 };
 
 extern "C" float fabsf(float);
@@ -67,8 +82,6 @@ struct Box_001C85E8 {
 extern "C" void* func_001DAD40();
 extern "C" void func_001DA948(void* s, Box_001C85E8* b);
 extern "C" void func_001DADB0(void* s);
-extern "C" void func_003233B8(Vec_001C85E8* out, Vec_001C85E8* in);
-static inline void Wrap_003233B8(Vec_001C85E8* out, Vec_001C85E8* in) { func_003233B8(out, in); }
 extern "C" float func_00341068(float);
 
 static inline void Add_001C85E8(Vec_001C85E8& r, const Vec_001C85E8& a, const Vec_001C85E8& b)
@@ -149,35 +162,25 @@ int Obj_001C85E8::Find(Vec_001C85E8* a, Vec_001C85E8* b, Vec_001C85E8* pos, Vec_
     Vec_001C85E8 d;
     Sub_001C85E8(d, *b, *a);
     Vec_001C85E8 n = d;
-    Wrap_003233B8(&n, &n);
+    n.Normalize();
     float ay = fabsf(n[1]);
     if (func_00341068(Param_001C85E8(0x98724EBC) * 0.017453294f) < ay)
         return 0;
-    Vec_001C85E8* side = &out->m10;
-    out->m10.c[0] = -d[2];
-    side->c[1] = 0.0f;
-    side->c[2] = d[0];
-    side->c[3] = 1.0f;
-    Wrap_003233B8(side, side);
+    out->m10.Set(-d[2], 0.0f, d[0], 1.0f);
+    out->m10.Normalize();
     if (!back) {
         if (Dot_001C85E8(out->m10, m60) < 0.0f) {
-            out->m10.c[0] = -out->m10[0];
-            side->c[1] = -side->c[1];
-            side->c[2] = -side->c[2];
+            out->m10.Flip();
         }
     } else {
         if (0.0f < Dot_001C85E8(out->m10, m60)) {
-            out->m10.c[0] = -out->m10[0];
-            side->c[1] = -side->c[1];
-            side->c[2] = -side->c[2];
+            out->m10.Flip();
         }
     }
     bool left = 0.0f < out->m10[2] * n[0] - out->m10[0] * n[2];
     unsigned int fl = out->m30->m58;
     if (((fl & 0x80) && left) || ((fl & 0x40) && !left)) {
-        out->m10.c[0] = -out->m10[0];
-        side->c[1] = -side->c[1];
-        side->c[2] = -side->c[2];
+        out->m10.Flip();
         left = !left;
     }
     Coll_001C85E8 c;
@@ -191,9 +194,7 @@ int Obj_001C85E8::Find(Vec_001C85E8* a, Vec_001C85E8* b, Vec_001C85E8* pos, Vec_
     if (m1C == 1 || !back) {
         fl = out->m30->m58;
         if (!(((fl & 0x80) && !left) || ((fl & 0x40) && left))) {
-            out->m10.c[0] = -out->m10[0];
-            side->c[1] = -side->c[1];
-            side->c[2] = -side->c[2];
+            out->m10.Flip();
             if (func_001C8CC8(this, &c, pos, out))
                 goto hit;
         }

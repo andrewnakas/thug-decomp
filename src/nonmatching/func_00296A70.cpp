@@ -49,11 +49,11 @@ struct Obj_00296A70 {
 
 extern char D_00391E10[];
 extern char D_00391E20[];
-/* D_00391E28 is the 8-byte .sdata string "goal_id". The game loads it with compiler-split %hi/%lo
-   (the compiler did not treat it as small data), except in the cross-jumped 0x259C59DD/0x5BD8050A tail,
-   where reload rematerialised it as an `la` macro that the assembler made gp-relative (0x2973DC). The
-   incomplete first declaration gives the compiler's view (not small), the completed one lets gcc emit
-   `.extern D_00391E28, 8` for the assembler, as the original literal's .sdata definition did. */
+/* D_00391E28 is the 8-byte .sdata string "goal_id". The game itself mixes both addressing forms for it in this
+   function: compiler-split %hi/%lo everywhere except the cross-jumped 0x259C59DD/0x5BD8050A tail, where reload
+   rematerialised it as an `la` macro that the assembler made gp-relative (0x002973DC). So the original translation
+   unit learned the symbol's size partway through: the incomplete first declaration is the compiler's view (not
+   small data), and the completed one lets gcc emit `.extern D_00391E28, 8` for the assembler. */
 extern char D_00391E28[];
 extern char D_00391E28[8];
 extern char D_00391E30[];

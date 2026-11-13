@@ -1,4 +1,4 @@
-/* fuzzy: 73.7 */
+/* fuzzy: 79.6 */
 extern "C" unsigned int func_0010FC30();
 extern "C" int func_00183330(int i);
 
@@ -22,9 +22,10 @@ struct Obj_001ABEC8 {
 
 void Obj_001ABEC8::Method(int i, int on)
 {
-    if (m9AC[i] != 0.0f) {
-        if (!on || m9AC[i] < (float)func_0010FC30())
-            m9AC[i] = 0.0f;
+    float* t = m9AC;
+    if (t[i] != 0.0f) {
+        if (!on || t[i] < (float)func_0010FC30())
+            t[i] = 0.0f;
         else
             return;
     }

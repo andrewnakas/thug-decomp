@@ -1,4 +1,4 @@
-/* fuzzy: 86.4 */
+/* fuzzy: 87.4 */
 struct Glyph_00224490 {
     unsigned short code;
     unsigned short pad;
@@ -64,7 +64,7 @@ unsigned short Glyph_00224490(unsigned char c)
         c = 0x6F;
         break;
     }
-    int set = 0;
+    int set;
     int start = 0;
     if (c >= 0x20 && c <= 0x2F) {
         start = 1;

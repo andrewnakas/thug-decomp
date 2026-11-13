@@ -1,5 +1,4 @@
-/* cflags: -fno-schedule-insns */
-/* fuzzy: 89.3 */
+/* fuzzy: 86.2 */
 /* near miss: 22 words; game schedules += loads as if off/pos may alias, and stores m94 before reloading m4C */
 typedef int qword __attribute__((mode(TI)));
 

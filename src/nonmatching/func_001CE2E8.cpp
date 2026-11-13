@@ -1,4 +1,4 @@
-/* fuzzy: 92.7 */
+/* fuzzy: 94.4 */
 struct Button_001CE2E8 {
     char pad[0x14];
     int m_pressed;
@@ -92,11 +92,9 @@ void Cam_001CE2E8::Update()
     float dt = func_0010FAB8();
     if (!m_free && !m_lerping) {
         float v = pad->m_stickY;
-        float target;
+        float target = v * -0.7f;
         if (v < 0.0f) {
             target = v * -0.97999996f;
-        } else {
-            target = v * -0.7f;
         }
         Approach_001CE2E8(m_tilt, target, dt);
         Approach_001CE2E8(m_pan, pad->m_stickX * 3.0f, dt);

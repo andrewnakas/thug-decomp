@@ -1,4 +1,4 @@
-/* fuzzy: 96.7 */
+/* fuzzy: 97.4 */
 /* sym: _vt$11Cb_00200C00 = 0x00366B58 */
 /* sym: __12Msg_00273DB0 = 0x001FA800 */
 typedef int qword_00273DB0 __attribute__((mode(TI)));
@@ -154,6 +154,7 @@ void Sync_00273DB0::SendUpdate()
     unsigned int mask;
     short boardId;
     int v1C_comp;
+    unsigned int flags;
     mask = 0;
     func_001FAA08(&bits);
     conn = func_002A39E0(D_00392068, m_skater->m_id);
@@ -187,7 +188,7 @@ void Sync_00273DB0::SendUpdate()
     }
     v1C_comp = func_00290888(comp);
     func_001FAA70(&bits, conn->m_time, 32);
-    unsigned int flags = func_00273A60(this);
+    flags = func_00273A60(this);
     func_001FAA70(&bits, flags, 9);
     if (online) {
         if (!D_00394158)

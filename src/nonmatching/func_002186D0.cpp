@@ -1,4 +1,4 @@
-/* fuzzy: 83.3 */
+/* fuzzy: 88.4 */
 typedef int qword_002186D0 __attribute__((mode(TI)));
 
 union Row_002186D0 {
@@ -57,8 +57,7 @@ static inline Mat_002186D0 operator*(const Mat_002186D0& a, const Mat_002186D0& 
 
 static inline Row_002186D0 operator*(Mat_002186D0& m, Row_002186D0& v)
 {
-    Row_002186D0 r = func_00323298(&m, &v);
-    return r;
+    return func_00323298(&m, &v);
 }
 
 extern "C" bool func_002186D0(void* params, Script_002186D0* script)

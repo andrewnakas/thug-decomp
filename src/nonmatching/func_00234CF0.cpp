@@ -1,4 +1,4 @@
-/* fuzzy: 80.8 */
+/* fuzzy: 85.7 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00234CF0 {
     qword q;
@@ -14,6 +14,11 @@ union Vec_00234CF0 {
         z = az;
         w = aw;
     }
+    Vec_00234CF0& operator=(const Vec_00234CF0& o)
+    {
+        q = o.q;
+        return *this;
+    }
     Vec_00234CF0 operator-(const Vec_00234CF0& b) const
     {
         return Vec_00234CF0(x - b.x, y - b.y, z - b.z, w - b.w);
@@ -23,6 +28,14 @@ union Vec_00234CF0 {
 
 struct Mat_00234CF0 {
     qword row[4];
+    Mat_00234CF0& operator=(const Mat_00234CF0& o)
+    {
+        row[0] = o.row[0];
+        row[1] = o.row[1];
+        row[2] = o.row[2];
+        row[3] = o.row[3];
+        return *this;
+    }
 };
 
 struct Bits_00234CF0 {

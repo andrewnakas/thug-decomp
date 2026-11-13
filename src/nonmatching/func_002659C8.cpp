@@ -1,4 +1,4 @@
-/* fuzzy: 93.8 */
+/* fuzzy: 94.2 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00375F50[];
@@ -102,7 +102,9 @@ extern "C" void func_002659C8(int gen, unsigned int time, unsigned int n, unsign
             info.m_group = g;
             info.m_net = func_002A7660(net);
             void* conn = func_002A52F0(net, gen);
-            infoMsg.Set(&info, sizeof(info), 0x4B);
+            infoMsg.m_data = &info;
+            infoMsg.m_size = sizeof(info);
+            infoMsg.m_type = 0x4B;
             func_001FF970(client, func_002B3080(conn), &infoMsg);
 
             info.m_gen = gen;

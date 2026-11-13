@@ -1,4 +1,4 @@
-/* fuzzy: 68.3 */
+/* fuzzy: 76.9 */
 typedef int qword_00209608 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -20,11 +20,9 @@ struct Vec_00209608 {
 
 static inline Vec_00209608 operator-(const Vec_00209608& a, const Vec_00209608& b)
 {
+    float x = a.x - b.x; float y = a.y - b.y; float z = a.z - b.z; float w = a.w - b.w;
     Vec_00209608 r;
-    r.x = a.x - b.x;
-    r.y = a.y - b.y;
-    r.z = a.z - b.z;
-    r.w = a.w - b.w;
+    r.x = x; r.y = y; r.z = z; r.w = w;
     return r;
 }
 static inline float Length_00209608(Vec_00209608 v)
@@ -142,6 +140,7 @@ float Obj_00209608::GetValue()
     float t = Length_00209608(p - v[1].p);
     t /= Length_00209608(v[2].p - v[1].p);
     float mid = v[1].val + (v[2].val - v[1].val) * t;
-    float u = sqrtf(v[0].p.x * v[0].p.x + v[0].p.y * v[0].p.y + v[0].p.z * v[0].p.z) / Length_00209608(p - v[0].p);
+    float u = sqrtf(v[0].p.x * v[0].p.x + v[0].p.y * v[0].p.y + v[0].p.z * v[0].p.z);
+    u /= Length_00209608(p - v[0].p);
     return v[0].val + (mid - v[0].val) * u;
 }

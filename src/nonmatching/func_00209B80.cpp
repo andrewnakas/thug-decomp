@@ -1,4 +1,4 @@
-/* fuzzy: 83.3 */
+/* fuzzy: 98.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00209B80 {
@@ -68,15 +68,15 @@ void Edges_00209B80::Merge()
     }
     int k = m1030;
     while (k--) {
+        Edge_00209B80* a = &m_in[k];
         if (used[k])
             continue;
-        Edge_00209B80* a = &m_in[k];
         int j = k;
         while (j--) {
             Edge_00209B80* b = &m_in[j];
             if ((Near_00209B80(a->pts[0].pos, b->pts[0].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[1].pos, 0.1f)) ||
                 (Near_00209B80(a->pts[0].pos, b->pts[1].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[0].pos, 0.1f))) {
-                if (0.99f < b->n.x * a->n.x + b->n.y * a->n.y + b->n.z * a->n.z)
+                if (0.99f < a->n.x * b->n.x + a->n.y * b->n.y + a->n.z * b->n.z)
                     used[j] = 1;
             }
         }
@@ -89,21 +89,30 @@ void Edges_00209B80::Merge()
             continue;
         int j = n;
         while (j--) {
+            Edge_00209B80* b = &m_in[j];
             if (used[j])
                 continue;
-            Edge_00209B80* b = &m_in[j];
             if (cur.n.x * b->n.x + cur.n.y * b->n.y + cur.n.z * b->n.z < 0.99f)
                 continue;
-            if (__builtin_fabsf(dirs[n].x * dirs[j].x + dirs[n].y * dirs[j].y + dirs[n].z * dirs[j].z) < 0.99f)
+            if (__builtin_fabsf(Dot_00209B80(dirs[n], dirs[j])) < 0.99f)
                 continue;
+            /* point copies field by field: the game's lq/sq, lbu/sb, lq/sq order (0020A0D4..0020A0EC) */
             if (Near_00209B80(cur.pts[0].pos, b->pts[0].pos, 0.1f)) {
-                cur.pts[0] = b->pts[1];
+                cur.pts[0].pos = b->pts[1].pos;
+                cur.pts[0].flag = b->pts[1].flag;
+                cur.pts[0].v = b->pts[1].v;
             } else if (Near_00209B80(cur.pts[0].pos, b->pts[1].pos, 0.1f)) {
-                cur.pts[0] = b->pts[0];
+                cur.pts[0].pos = b->pts[0].pos;
+                cur.pts[0].flag = b->pts[0].flag;
+                cur.pts[0].v = b->pts[0].v;
             } else if (Near_00209B80(cur.pts[1].pos, b->pts[0].pos, 0.1f)) {
-                cur.pts[1] = b->pts[1];
+                cur.pts[1].pos = b->pts[1].pos;
+                cur.pts[1].flag = b->pts[1].flag;
+                cur.pts[1].v = b->pts[1].v;
             } else if (Near_00209B80(cur.pts[1].pos, b->pts[1].pos, 0.1f)) {
-                cur.pts[1] = b->pts[0];
+                cur.pts[1].pos = b->pts[0].pos;
+                cur.pts[1].flag = b->pts[0].flag;
+                cur.pts[1].v = b->pts[0].v;
             } else {
                 continue;
             }

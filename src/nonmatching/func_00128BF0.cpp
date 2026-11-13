@@ -1,4 +1,4 @@
-/* fuzzy: 88.6 */
+/* fuzzy: 92.6 */
 #include "game/vector.h"
 
 struct Vec_00128BF0 {
@@ -51,6 +51,7 @@ static inline Vec_00128BF0 operator*(Mat_00128BF0& m, Vec_00128BF0& v)
 
 extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, float x, float y, float z)
 {
+    Mat_00128BF0 local;
     if (D_00388814 == 4)
         x = (int)(x * 0.9090909362f + 32.0f);
     else if (!D_0038882C)
@@ -105,7 +106,6 @@ extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, 
     void* o = func_0013B0E8(self);
     if (!o)
         return;
-    Mat_00128BF0 local;
     local = *func_00114E48(o);
     Vec_00128BF0* r = &local.row[3];
     r->Set(0.0f, 0.0f, 0.0f, 1.0f);

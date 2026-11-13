@@ -1,4 +1,4 @@
-/* fuzzy: 85.5 */
+/* fuzzy: 93.6 */
 // GS FINISH interrupt handler: acknowledges the event, advances the list of drawn packets to the next one
 // that has data for the current buffer and restarts the VIF1 / GIF transfers that were waiting for it.
 
@@ -17,8 +17,11 @@ struct Packet_00164AC8 {
 extern Packet_00164AC8* D_003942E8;
 extern Packet_00164AC8* D_003942EC;
 extern int D_00394094;
-extern int D_00393F34;
-extern int D_00393F30;
+// Flags shared with the main loop and the DMA-end interrupt handler func_00164920 (registered by func_001742D0 via func_0031B9B0(2, func_00164920, 0)): volatile (the game never fills a
+// branch delay slot with their stores, e.g. 0x00164BE4/0x00164BE8 `sw D_00393F30`/`sw D_00393F34`, then `b`
+// with the target's `lui` in its slot at 0x00164BF0).
+extern volatile int D_00393F34;
+extern volatile int D_00393F30;
 
 #define D1_CHCR (*(volatile unsigned int*)0x10009000)
 #define D1_QWC  (*(volatile unsigned int*)0x10009020)

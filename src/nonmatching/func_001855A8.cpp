@@ -1,4 +1,4 @@
-/* fuzzy: 32.7 */
+/* fuzzy: 72.1 */
 /* Model/motion component script member functions: position, orientation, velocity queries, plus the
    "ask every sub-component, then the base class" fallback. */
 extern float D_00387710; /* deg->rad, the game loads its .lit4 constants in a different order than the literals would compile */
@@ -15,25 +15,54 @@ struct Vec_001855A8 {
         qword q;
         struct { float x, y, z, w; };
     };
+    Vec_001855A8() {}
+    Vec_001855A8(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
     float Length() const { return sqrtf(x * x + y * y + z * z); }
+    Vec_001855A8& operator+=(const Vec_001855A8& b)
+    {
+        x += b.x;
+        y += b.y;
+        z += b.z;
+        w += b.w;
+        return *this;
+    }
 };
+
+static inline Vec_001855A8 operator*(const Vec_001855A8& v, float s)
+{
+    return Vec_001855A8(v.x * s, v.y * s, v.z * s, v.w * s);
+}
+
+static inline Vec_001855A8 operator-(const Vec_001855A8& a, const Vec_001855A8& b)
+{
+    return Vec_001855A8(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+}
+
+static inline Vec_001855A8 operator+(const Vec_001855A8& a, const Vec_001855A8& b)
+{
+    return Vec_001855A8(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+}
 
 struct Mat_001855A8 {
-    Vec_001855A8 r[4];
+    Vec_001855A8 right;
+    Vec_001855A8 up;
+    Vec_001855A8 at;
+    Vec_001855A8 trans;
+    Mat_001855A8& operator=(const Mat_001855A8& m)
+    {
+        right = m.right;
+        up = m.up;
+        at = m.at;
+        trans = m.trans;
+        return *this;
+    }
 };
-
-static inline void AddScaled(Vec_001855A8& d, const Vec_001855A8& v, float s)
-{
-    Vec_001855A8 t;
-    t.x = v.x * s;
-    t.y = v.y * s;
-    t.z = v.z * s;
-    t.w = v.w * s;
-    d.x += t.x;
-    d.y += t.y;
-    d.z += t.z;
-    d.w += t.w;
-}
 
 static inline void Cross(Vec_001855A8& d, const Vec_001855A8& a, const Vec_001855A8& b)
 {
@@ -61,7 +90,7 @@ struct Coll_001855A8 {
             }
         }
     } mC0;
-    char padC4[0x110 - 0xC4];
+    char padC4[0xE0 - 0xC4];
     ~Coll_001855A8() { mC0.Release(); }
 };
 
@@ -98,6 +127,11 @@ struct ModelComponent_001855A8 {
     SubComponent_001855A8* subs;        /* 0x100 */
     unsigned int flags;                 /* 0x104 */
 
+    void SetMatrix(const Mat_001855A8& m)
+    {
+        matrix = m;
+        displayMatrix = m;
+    }
     int CallMemberFunction(unsigned int name, void* params, Script_001855A8* script);
 };
 
@@ -132,34 +166,111 @@ extern "C" void func_003233B8(Vec_001855A8* out, Vec_001855A8* in);    /* normal
 int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params, Script_001855A8* script)
 {
     switch (name) {
-    case 0xC0CAAC4A:
-        func_001E72B0(script->params, 0xF0D90109, vel.Length());
+    case 0xC2404947: {
+        int tmp;
+        func_001E8870(params, 0, &tmp, 0);
         return 1;
+    }
 
     case 0x406998A5:
         func_00185300(this, params, 0);
-        return 1;
-
-    case 0x11FE9F71:
-        func_001E7410(script->params, 0x0C4C809E, vel.x, vel.y, vel.z);
         return 1;
 
     case 0xE90AAD2D:
         func_001E7410(script->params, 0x7F261953, pos.x, pos.y, pos.z);
         return 1;
 
+    case 0xF7251A64:
+        func_001E7FA8(params, 0xB9D31B0A, &pos, 0);
+        return 1;
+
+    case 0xC6F3BAA5: {
+        Vec_001855A8 dir;
+        dir.x = 0.0f;
+        dir.y = 0.0f;
+        dir.z = 1.0f;
+        dir.w = 1.0f;
+        Mat_001855A8 m;
+        if (func_001E7FA8(params, 0x455485EF, &dir, 0)) {
+            /* build an orthonormal frame looking along dir */
+            m.right.x = 1.0f; m.right.y = 0.0f; m.right.z = 0.0f; m.right.w = 0.0f;
+            m.up.x = 0.0f; m.up.y = 1.0f; m.up.z = 0.0f; m.up.w = 0.0f;
+            m.at.x = 0.0f; m.at.y = 0.0f; m.at.z = 1.0f; m.at.w = 0.0f;
+            m.trans.x = 0.0f; m.trans.y = 0.0f; m.trans.z = 0.0f; m.trans.w = 1.0f;
+            m.at = dir;
+            func_003233B8(&m.at, &m.at);
+            Cross(m.right, m.up, m.at);
+            func_003233B8(&m.right, &m.right);
+            Cross(m.up, m.at, m.right);
+            func_003233B8(&m.up, &m.up);
+            SetMatrix(m);
+        } else {
+            float rx = 0.0f, ry = 0.0f, rz = 0.0f;
+            func_001E7EB0(params, 0x7323E97C, &rx, 0);
+            func_001E7EB0(params, 0x0424D9EA, &ry, 0);
+            func_001E7EB0(params, 0x9D2D8850, &rz, 0);
+            rx *= D_00387710;
+            ry *= D_00387710;
+            rz *= D_00387710;
+            func_00100200(&m, rx, ry, rz);
+            SetMatrix(m);
+        }
+        return 1;
+    }
+
+    case 0xC1BFF0F3:
+        func_00185058(this);
+        return 1;
+
+    case 0x11FE9F71:
+        func_001E7410(script->params, 0x0C4C809E, vel.x, vel.y, vel.z);
+        return 1;
+
+    case 0xC0CAAC4A:
+        func_001E72B0(script->params, 0xF0D90109, vel.Length());
+        return 1;
+
+    case 0x5B6634D4:
+        func_00185128(this, 1);
+        return 1;
+
+    case 0xB60D1F35:
+        func_00185128(this, 0);
+        return 1;
+
+    case 0xB16619AE:
+        if (flags & 4)
+            return 1;
+        return 0;
+
     case 0x10C1C887: {
         float d = 0.0f;
         func_001E7EB0(params, 0x7323E97C, &d, 0);
-        AddScaled(pos, matrix.r[0], d);
+        pos += matrix.right * d;
         d = 0.0f;
         func_001E7EB0(params, 0x0424D9EA, &d, 0);
-        AddScaled(pos, matrix.r[1], d);
+        pos += matrix.up * d;
         d = 0.0f;
         func_001E7EB0(params, 0x9D2D8850, &d, 0);
-        AddScaled(pos, matrix.r[2], d);
+        pos += matrix.at * d;
         return 1;
     }
+
+    case 0xCA3C59A6:
+        func_001851B0(this, 0);
+        return 1;
+
+    case 0xCE0CA665:
+        func_001851B0(this, 1);
+        return 1;
+
+    case 0x28656D12:
+        flags |= 1;
+        return 1;
+
+    case 0xFF85D4D7:
+        flags &= ~1;
+        return 1;
 
     case 0x0168B09C: {
         /* is there collision in front of (or behind) the object? */
@@ -171,49 +282,36 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         float height = 3.0f;
         func_001E7EB0(params, 0x0AB21AF0, &height, 0);
         height *= 12.0f;
-        Vec_001855A8 p = pos;
-        AddScaled(p, matrix.r[1], height);
+        Vec_001855A8 p = pos + matrix.up * height;
         col.end = p;
         col.start = p;
-        Vec_001855A8* dir = func_001E8708(params, 0xDC7EE44A) ? &matrix.r[0] : &matrix.r[2];
-        AddScaled(col.end, *dir, dist);
+        Vec_001855A8* dir = func_001E8708(params, 0xDC7EE44A) ? &matrix.right : &matrix.at;
+        col.end += *dir * dist;
         if (func_002093E8(&col, 1, 0))
             return 1;
         return 0;
     }
 
-    case 0x28656D12:
-        flags |= 1;
+    case 0xB9ED09D2: {
+        Vec_001855A8 v = displayMatrix.at;
+        func_003233B8(&v, &v);
+        func_001E7318(script->params, D_0038C588, v.x);
+        func_001E7318(script->params, D_0038C590, v.y);
+        func_001E7318(script->params, D_0038C598, v.z);
         return 1;
+    }
 
-    case 0xFF85D4D7:
-        flags &= ~1;
-        return 1;
-
-    case 0xB16619AE:
-        return (flags & 4) != 0;
-
-    case 0x2A26FFA2: {
+    case 0xD96C0A20: {
         unsigned int id = 0;
-        float dot = 0.0f;
-        float angle = 0.0f;
-        func_001E8398(params, 0, &id, 1);
-        ModelComponent_001855A8* other = func_00184D70(id);
-        if (other) {
-            Vec_001855A8 fwd = matrix.r[0];
-            fwd.w = 0.0f;
-            func_003233B8(&fwd, &fwd);
-            Vec_001855A8 to;
-            to.x = other->pos.x - pos.x;
-            to.y = other->pos.y - pos.y;
-            to.z = other->pos.z - pos.z;
-            to.w = 0.0f;
-            func_003233B8(&to, &to);
-            dot = fwd.x * to.x + fwd.y * to.y + fwd.z * to.z;
-            angle = func_00100118(dot) * D_00387718 - 90.0f;
-        }
-        func_001E72B0(script->params, 0x7C6A7D7C, dot);
-        func_001E72B0(script->params, 0xC97F3AA9, angle);
+        func_001E8398(params, 0, &id, 0);
+        Vec_001855A8 p;
+        func_0022A090(func_00229668(id, 1), &p);
+        Vec_001855A8 d;
+        d.x = pos.x - p.x;
+        d.y = pos.y - p.y;
+        d.z = pos.z - p.z;
+        d.w = pos.w - p.w;
+        func_001E7318(script->params, D_0038C5A0, d.Length());
         return 1;
     }
 
@@ -234,36 +332,30 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         return 1;
     }
 
-    case 0xD96C0A20: {
+    case 0x2A26FFA2: {
         unsigned int id = 0;
-        func_001E8398(params, 0, &id, 0);
-        Vec_001855A8 p;
-        func_0022A090(func_00229668(id, 1), &p);
-        Vec_001855A8 d;
-        d.x = pos.x - p.x;
-        d.y = pos.y - p.y;
-        d.z = pos.z - p.z;
-        d.w = pos.w - p.w;
-        func_001E7318(script->params, D_0038C5A0, d.Length());
+        float dot = 0.0f;
+        float angle = 0.0f;
+        func_001E8398(params, 0, &id, 1);
+        ModelComponent_001855A8* other = func_00184D70(id);
+        if (other) {
+            Vec_001855A8 fwd = matrix.right;
+            fwd.w = 0.0f;
+            func_003233B8(&fwd, &fwd);
+            Vec_001855A8 to;
+            to = other->pos - pos;
+            to.w = 0.0f;
+            func_003233B8(&to, &to);
+            dot = fwd.x * to.x + fwd.y * to.y + fwd.z * to.z;
+            angle = func_00100118(dot) * D_00387718 - 90.0f;
+        }
+        func_001E72B0(script->params, 0x7C6A7D7C, dot);
+        func_001E72B0(script->params, 0xC97F3AA9, angle);
         return 1;
     }
 
-    case 0x5B6634D4:
-        func_00185128(this, 1);
-        return 1;
-
-    case 0xB60D1F35:
-        func_00185128(this, 0);
-        return 1;
-
-    case 0xB9ED09D2: {
-        Vec_001855A8 v = displayMatrix.r[2];
-        func_003233B8(&v, &v);
-        func_001E7318(script->params, D_0038C588, v.x);
-        func_001E7318(script->params, D_0038C590, v.y);
-        func_001E7318(script->params, D_0038C598, v.z);
-        return 1;
-    }
+    case 0xF8CFD515:
+        return vel.x * matrix.at.x + vel.y * matrix.at.y + vel.z * matrix.at.z < 0.0f;
 
     case 0x7DCC5FB9: {
         float speed = 0.0f;
@@ -282,73 +374,15 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         func_001E7EB0(params, 0, &speed, 0);
         return vel.Length() < speed;
     }
-
-    case 0xF8CFD515:
-        return vel.x * matrix.r[2].x + vel.y * matrix.r[2].y + vel.z * matrix.r[2].z < 0.0f;
-
-    case 0xF7251A64:
-        func_001E7FA8(params, 0xB9D31B0A, &pos, 0);
-        return 1;
-
-    case 0xC1BFF0F3:
-        func_00185058(this);
-        return 1;
-
-    case 0xC2404947: {
-        char tmp[16];
-        func_001E8870(params, 0, tmp, 0);
-        return 1;
-    }
-
-    case 0xCA3C59A6:
-        func_001851B0(this, 0);
-        return 1;
-
-    case 0xCE0CA665:
-        func_001851B0(this, 1);
-        return 1;
-
-    case 0xC6F3BAA5: {
-        Vec_001855A8 dir;
-        dir.x = 0.0f;
-        dir.y = 0.0f;
-        dir.z = 1.0f;
-        dir.w = 1.0f;
-        Mat_001855A8 m;
-        if (func_001E7FA8(params, 0x455485EF, &dir, 0)) {
-            /* build an orthonormal frame looking along dir */
-            m.r[0].x = 1.0f; m.r[0].y = 0.0f; m.r[0].z = 0.0f; m.r[0].w = 0.0f;
-            m.r[1].x = 0.0f; m.r[1].y = 1.0f; m.r[1].z = 0.0f; m.r[1].w = 0.0f;
-            m.r[2].x = 0.0f; m.r[2].y = 0.0f; m.r[2].z = 1.0f; m.r[2].w = 0.0f;
-            m.r[3].x = 0.0f; m.r[3].y = 0.0f; m.r[3].z = 0.0f; m.r[3].w = 1.0f;
-            m.r[2] = dir;
-            func_003233B8(&m.r[2], &m.r[2]);
-            Cross(m.r[0], m.r[1], m.r[2]);
-            func_003233B8(&m.r[0], &m.r[0]);
-            Cross(m.r[1], m.r[2], m.r[0]);
-            func_003233B8(&m.r[1], &m.r[1]);
-        } else {
-            float rx = 0.0f, ry = 0.0f, rz = 0.0f;
-            func_001E7EB0(params, 0x7323E97C, &rx, 0);
-            func_001E7EB0(params, 0x0424D9EA, &ry, 0);
-            func_001E7EB0(params, 0x9D2D8850, &rz, 0);
-            rx *= D_00387710;
-            ry *= D_00387710;
-            rz *= D_00387710;
-            func_00100200(&m, rx, ry, rz);
-        }
-        matrix = m;
-        displayMatrix = m;
-        return 1;
-    }
     }
 
     for (SubComponent_001855A8* c = subs; c; c = c->next) {
-        int r = c->CallMemberFunction(name, params, script);
-        if (r == 0)
-            return 0;
-        if (r == 1)
+        switch (c->CallMemberFunction(name, params, script)) {
+        case 1:
             return 1;
+        case 0:
+            return 0;
+        }
     }
     return func_001842E0(this, name, params, script);
 }

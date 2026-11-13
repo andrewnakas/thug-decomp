@@ -387,5 +387,7 @@ More idioms from lane 2:
 Declare a global or member `volatile` exactly when an interrupt/vsync handler (or another thread) also touches it,
 and say so in a comment naming the handler. That is what the original programmers had to write, and it shows in
 the asm as reloads the compiler would otherwise have folded. Per-variable choices are fine when they follow that
-rule (func_001F79B0: D_0038EAA4/EAA8 are read by the vsync handler func_001F77B0, D_00394118 is not). Never add
-`volatile` to a variable no handler touches just to force a reload.
+rule. Where an exactly-matched unit already declares the same symbol, its qualifiers are proof of the original
+declaration and win: the vsync handler func_001F77B0 (matched) declares D_0038EAA4/EAA8 volatile but the counter
+D_00394118 plain even though the handler increments it, so func_001F79B0 uses the same split. Never add `volatile`
+to a variable no handler or thread touches just to force a reload.

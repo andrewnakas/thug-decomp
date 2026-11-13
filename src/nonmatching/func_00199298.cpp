@@ -1,4 +1,5 @@
 /* fuzzy: 83.7 */
+/* blocked: game redoes var*var mult per access (cf. func_001118A0); no C++ shape found */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00199298 {

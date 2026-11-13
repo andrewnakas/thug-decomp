@@ -1,4 +1,5 @@
 /* fuzzy: 88.0 */
+/* blocked: global-alloc priority differences (116 vs 232, 128 vs 177; forced 67 -> 1 word) (oracle) */
 struct Heap_00148FE0 {
     char pad[0xD8];
     int mD8;

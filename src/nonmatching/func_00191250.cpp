@@ -1,4 +1,5 @@
 /* fuzzy: 95.7 */
+/* blocked: code shape (1 game-only insn; not a tie) (oracle) */
 /* Rigid-body contact solver for the points in D_003E4540 (0x30 each: position, normal, cached effective mass,
    accumulated normal impulse, rolling factor, in-contact and mass-cached flags). Up to 20 passes of normal
    impulses (restitution m24) until no contact point approaches; on failure it fires the m90 event or zeroes

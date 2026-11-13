@@ -1,4 +1,5 @@
 /* fuzzy: 99.0 */
+/* blocked: sched1 priority difference (scale load prio 30 vs 42) feeding a sched2 luid tie; forced = MATCH (oracle) */
 struct Anim_0011B148 {
     char pad0[0x18];
     float m_start;

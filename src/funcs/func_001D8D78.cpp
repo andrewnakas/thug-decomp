@@ -1,4 +1,3 @@
-/* fuzzy: 95.1 */
 extern "C" float fabsf(float x);
 typedef unsigned int u128_001D8D78 __attribute__((mode(TI)));
 
@@ -127,11 +126,17 @@ static inline Vec_001D8D78 Cross_001D8D78(const Vec_001D8D78& a, const Vec_001D8
 extern "C" void func_001D8D78(Mesh_001D8D78* m)
 {
     for (int i = 0; i < m->m_numFaces - 1; i++) {
+        // m_flags is 16 bits wide, so this bit test is always false: combine folds it to the game's
+        // 'daddu v0,zero,zero / bnez v0' (001D8DF8) after the face address is formed.
+        if (m->GetFace(i)->m_flags & 0x10000)
+            continue;
         Vec_001D8D78 pts[4];
         pts[0] = m->GetVert(m->GetIndex(i, 0));
         pts[1] = m->GetVert(m->GetIndex(i, 1));
         pts[2] = m->GetVert(m->GetIndex(i, 2));
         for (int j = i + 1; j < m->m_numFaces; j++) {
+            if (m->GetFace(j)->m_flags & 0x10000) // always false, as above (001D9140)
+                continue;
             pts[0] = m->GetVert(m->GetIndex(j, 0));
             pts[1] = m->GetVert(m->GetIndex(j, 1));
             pts[2] = m->GetVert(m->GetIndex(j, 2));
@@ -194,5 +199,8 @@ extern "C" void func_001D8D78(Mesh_001D8D78* m)
                 break;
             }
         }
+    }
+    // Empty face loop: the game keeps it as the nop-padded count-down loop at 001DA754-001DA780.
+    for (int i = 0; i < m->m_numFaces; i++) {
     }
 }

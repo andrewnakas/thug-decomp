@@ -1,4 +1,3 @@
-/* fuzzy: 71.8 */
 typedef int qword_001C66D0 __attribute__((mode(TI)));
 
 union Vec_001C66D0 {
@@ -17,8 +16,8 @@ struct Cam_001C66D0 {
     void Set(float speed, const Vec_001C66D0& dir)
     {
         m_active = 1;
-        m_speed = speed;
         m_dir = dir;
+        m_speed = speed;
     }
 };
 

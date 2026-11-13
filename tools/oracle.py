@@ -228,6 +228,22 @@ class Trace:
         return None
 
 
+def sched1_key(tr, uid, ug):
+    """How sched1 ordered the same two insns: its separating key, or None if never ready together."""
+    _, pk = tr.pick_of(uid, 1)
+    _, pg = tr.pick_of(ug, 1)
+    for first, other in ((pk, ug), (pg, uid)):
+        if first is None:
+            continue
+        e = tr.ready_at(1, first["block"], first["clock"], first["uid"])
+        if e is None:
+            continue
+        ks = {k["uid"]: k for k in e["ready"]}
+        if other in ks:
+            return rank_explain(ks[first["uid"]], ks[other], 1)[0]
+    return None
+
+
 def rank_explain(a, b, pass_):
     """Which rank_for_schedule key puts a ahead of b (a, b: key dicts). Returns (key, detail)."""
     if a["prio"] != b["prio"]:
@@ -312,10 +328,17 @@ def code_shape(tt, ot, d):
 GCSE_LINE = re.compile(r"^(CONST-PROP|COPY-PROP|PRE|PRE/HOIST|GCSE|HOIST)\b.*$")
 
 
+PRE_REGS = set()
+
+
 def gcse_report(unit, involved):
     """gcse.c's decisions from its own -dG log, marking the ones that touch a differing insn or its pseudos."""
     text = unit.files.get("gcse", "")
     lines = [l for l in text.splitlines() if GCSE_LINE.match(l)]
+    for l in lines:
+        m = re.search(r"(?:reaching reg is|to reg) (\d+)", l)
+        if m:
+            PRE_REGS.add(int(m.group(1)))
     if not lines:
         return
     print("\ngcse decisions (from the -dG log; * = touches a differing insn or one of its pseudos):")
@@ -326,6 +349,13 @@ def gcse_report(unit, involved):
         print(f"   {mark} {l}")
     print("   (expression numbers are hash-table order; PRE's reaching regs are new pseudos numbered in that order, "
           "and allocno_compare breaks priority ties by pseudo number)")
+
+
+REC = {"words": [], "forces": []}
+
+
+def rec(kind, **kw):
+    REC["words"].append(dict(kind=kind, **kw))
 
 
 def explain(unit, a, base=()):
@@ -349,6 +379,7 @@ def explain(unit, a, base=()):
     print(f"{unit.name}: " + ("MATCH" if res.ok else f"{ndiff} of {len(res.target.words)} words differ") +
           f"   (trace: {len(tr.ga)} global sort, {len(tr.find_reg)} find_reg, {len(tr.la)} local sorts, "
           f"{len(tr.ready)} ready lists, {len(tr.picks)} issues, {len(tr.delay)} delay fills)")
+    REC.update(ndiff=ndiff, nwords=len(res.target.words), traced=True)
     if res.ok:
         return
     d = word_map(unit, asm)
@@ -365,6 +396,7 @@ def explain(unit, a, base=()):
     forces = []          # (description, force spec)
     seen = set()
     shape = code_shape(tt, ot, d)
+    REC["shape"] = shape
     involved = set()
     for i in res.diffs:
         if d.word_uid and i < len(d.word_uid) and d.word_uid[i] is not None:
@@ -404,6 +436,7 @@ def explain(unit, a, base=()):
             print(f"      deciding pass: reorg (branch target differs, same branch). Our branch insn {uid}: {what}. "
                   f"A game target one word further means the game's slot holds a copy of the target's first insn "
                   f"(filled from the taken thread, branching to target+4); one word shorter, the reverse")
+            rec("reorg", uid=uid, shifted=False)
             continue
         in_slot = i > 0 and is_branch(ot[i - 1]) and is_branch(tt[i - 1])
         greg_only = gm == om and len(re.findall(r"\$\w+", g)) == len(re.findall(r"\$\w+", o)) and \
@@ -418,6 +451,7 @@ def explain(unit, a, base=()):
                     continue
                 print(head)
                 print(f"      deciding pass: reorg. {fill[0].upper() + fill[1:]}")
+                rec("reorg", uid=uid)
                 continue
             print(head)
             print(f"      ({fill}; the slot insn is right, its register is an allocation decision:)")
@@ -433,6 +467,7 @@ def explain(unit, a, base=()):
                 if p is None:
                     print(f"      deciding pass: reload / hard register ({R.hard_name(oh)} vs {R.hard_name(gh)}): "
                           f"no pseudo of insn {u} holds it")
+                    rec("reload", uid=u)
                     continue
                 gi = tr.ga_info(p.regno)
                 li = tr.la_info(p.regno)
@@ -453,6 +488,7 @@ def explain(unit, a, base=()):
                         who = q if qi["pos"] < gi["pos"] else p.regno
                         print(f"      competitor: pseudo {q} (priority {kq[0]}, allocno {kq[1]}) holds "
                               f"{R.hard_name(gh)} and conflicts; pseudo {who} went first, decided by {first}")
+                        rec("ga", p=p.regno, q=q, tie=kp[0] == kq[0], pre=bool({p.regno, q} & PRE_REGS), user=bool(p.user))
                         if qi["pos"] < gi["pos"]:
                             forces.append((f"global: pseudo {p.regno} before {q}",
                                            {"kind": "ga", "before": [p.regno, q]}))
@@ -465,6 +501,7 @@ def explain(unit, a, base=()):
                     if not holders:
                         print(f"      {R.hard_name(gh)} was free of conflicting global pseudos: find_reg's choice "
                               f"(REG_ALLOC_ORDER, preferences, call-clobbered avoidance)")
+                        rec("findreg", p=p.regno, pre=p.regno in PRE_REGS)
                 elif li is not None:
                     dq = li["d"]
                     print(f"      deciding pass: local-alloc, block {li['block']}. pseudo {p.regno} = quantity "
@@ -483,6 +520,7 @@ def explain(unit, a, base=()):
                         print(f"      competitor: quantity {q} (pseudos {x['regs']}, priority {qp}, life "
                               f"{x['birth']}..{x['death']}) holds {R.hard_name(gh)} and overlaps; "
                               f"{'it' if before else 'this one'} went first, decided by {first}")
+                        rec("la", p=p.regno, q=x["regs"][0], tie=qp == li["pri"], pre=bool(({p.regno} | set(x["regs"])) & PRE_REGS))
                         if before:
                             forces.append((f"local block {li['block']}: pseudo {p.regno} before {x['regs'][0]}",
                                            {"kind": "la", "block": li["block"], "before": [p.regno, x["regs"][0]]}))
@@ -490,6 +528,7 @@ def explain(unit, a, base=()):
                         print(f"      priority ties in the block: quantities {li['ties'][:10]}")
                 else:
                     print(f"      pseudo {p.regno}: allocated by neither sort (reload or a fixed register)")
+                    rec("reload", p=p.regno)
             continue
         # a different instruction at this position: scheduling (same insns, other order) or code shape
         if pass_filter not in (None, "sched", "sched1", "sched2"):
@@ -499,6 +538,7 @@ def explain(unit, a, base=()):
         print(head)
         if not cand or uid is None:
             print("      deciding pass: not a reordering (the game's instruction is not nearby in ours): code shape")
+            rec("shape_word", uid=uid)
             continue
         j = min(cand, key=lambda x: abs(x - i))
         ug = d.word_uid[j]
@@ -522,6 +562,7 @@ def explain(unit, a, base=()):
             if (spos.index(uid) > spos.index(ug)) != (rpos.index(uid) > rpos.index(ug)):
                 note = " (the order was changed by SN's MD_SCHED_REORDER hook, cc1plus 0x40D320)"
             if rpos.index(ug) > rpos.index(uid):
+                key = "busy"
                 why = (f"insn {ug} ranked higher but was not issued first: its function unit was busy or it was "
                        f"queued (actual_hazard)")
             else:
@@ -532,6 +573,7 @@ def explain(unit, a, base=()):
             print(f"      {uid}: prio {uo_k['prio']} weight {uo_k['weight']} deps {uo_k['ndep']} luid {uo_k['luid']}"
                   f"  |  {ug}: prio {ug_k['prio']} weight {ug_k['weight']} deps {ug_k['ndep']} luid {ug_k['luid']}")
             print(f"      {why}")
+            rec("sched", pass_=ps_, uid=uid, ug=ug, key=("busy" if rpos.index(ug) > rpos.index(uid) else key), s1=sched1_key(tr, uid, ug))
             forces.append((f"sched{ps_} block {e['block']} cycle {e['clock']}: issue {ug} before {uid}",
                            {"kind": "sched", "pass": ps_, "block": e["block"], "clock": e["clock"], "first": ug}))
             done = True
@@ -539,6 +581,7 @@ def explain(unit, a, base=()):
         if not done:
             print(f"      insn {ug} (the game's) was never in a ready list together with {uid}: a dependence or an "
                   f"earlier decision, not a ready-list tie")
+            rec("sched_dep", uid=uid, ug=ug)
     # forcing
     if a.force and forces:
         print("\nforcing (recompiled with one decision flipped in the compiler's memory):")
@@ -558,6 +601,7 @@ def explain(unit, a, base=()):
             nd = len(r.diffs) if not r.error else None
             tag = "MATCH" if r.ok else (f"{nd} words differ (was {ndiff})" if nd is not None else r.error[:60])
             print(f"   {desc}: {tag}")
+            REC["forces"].append(dict(desc=desc, force=f, nd=nd))
             if nd is not None and (best is None or nd < best[0]):
                 best = (nd, desc, f)
         if best:
@@ -579,6 +623,7 @@ def main():
                     help="with --force: keep the best flip and search again, up to N rounds (greedy)")
     ap.add_argument("--with", dest="with_", action="append", default=[], metavar="JSON",
                     help='apply this force before explaining, e.g. \'{"kind":"ga","before":[337,332]}\'')
+    ap.add_argument("--json", help="write a machine-readable summary (decisions, forces) to this file")
     ap.add_argument("--trace", action="store_true", help="print the raw decision trace and stop")
     a = ap.parse_args()
     if shutil.which("gdb") is None:
@@ -587,13 +632,23 @@ def main():
     wd = Path(a.keep) if a.keep else ROOT / "build" / "oracle" / a.name
     unit = Unit(a.name, src, wd)
     base = [json.loads(x) for x in a.with_]
+    rounds = []
     for rnd in range(a.chain + 1):
         if base:
             print(f"\n=== with forced decisions: {json.dumps(base)}")
+        REC.update(words=[], forces=[], shape=None, ndiff=None)
         best = explain(unit, a, base)
+        rounds.append(dict(base=list(base), ndiff=REC.get("ndiff"), nwords=REC.get("nwords"), shape=REC.get("shape"),
+                           words=REC["words"], forces=REC["forces"], best=best[:2] if best else None))
         if not (a.force and best) or best[0] == 0:
+            if best and best[0] == 0:
+                base = base + [best[2]]
             break
         base = base + [best[2]]
+    if a.json:
+        Path(a.json).write_text(json.dumps(dict(name=a.name, rounds=rounds, final=base,
+                                                forced_match=any(r["best"] and r["best"][0] == 0 for r in rounds),
+                                                pre_regs=sorted(PRE_REGS))))
 
 
 if __name__ == "__main__":

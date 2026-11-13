@@ -1,4 +1,4 @@
-/* fuzzy: 69.8 */
+/* fuzzy: 96.4 */
 /* Grass field setup: samples the ground height (feeler ray from +50000 down to -50000) on a 128-unit grid over
    the world bounding box (clamped to 0x15F x 0x12D cells), quantises heights into a shared table (within 0x1E0),
    keeps for each cell the highest of itself and its +x/+z/+xz neighbours, packs every row's non-empty span into
@@ -21,21 +21,25 @@ struct Box_0015C4C0 {
 
 extern "C" void func_00183CB8(int obj, int* ref);
 
+struct Ref_0015C4C0 {
+    int m_p;
+    ~Ref_0015C4C0()
+    {
+        if (m_p) {
+            func_00183CB8(m_p, &m_p);
+            m_p = 0;
+        }
+    }
+};
+
 struct Feeler_0015C4C0 {
     Vec_0015C4C0 m_start;
     Vec_0015C4C0 m_end;
     char pad20[0xA0 - 0x20];
     Vec_0015C4C0 m_point;
     Vec_0015C4C0 m_normal;
-    int m_ref;
+    Ref_0015C4C0 m_ref;
     char padC4[0xE0 - 0xC4];
-    ~Feeler_0015C4C0()
-    {
-        if (m_ref) {
-            func_00183CB8(m_ref, &m_ref);
-            m_ref = 0;
-        }
-    }
 };
 
 struct Row_0015C4C0 {
@@ -108,8 +112,8 @@ static inline int Abs(int v)
 void func_0015C4C0(Field_0015C4C0* o)
 {
     Box_0015C4C0 box;
-    func_00101F38(&box);
     o->m_ready = 0;
+    func_00101F38(&box);
     Box_0015C4C0* world = func_001324B8(&box);
     if (!world)
         return;
@@ -120,19 +124,19 @@ void func_0015C4C0(Field_0015C4C0* o)
     int z1 = (int)world->max.z / 128 + 1;
     if (x1 - x0 > 0x15E) {
         int d = (x1 - x0 - 0x15E) / 2;
-        x1 -= d;
         x0 += d;
+        x1 -= d;
     }
     if (z1 - z0 > 0x12C) {
         int d = (z1 - z0 - 0x12C) / 2;
-        z1 -= d;
         z0 += d;
+        z1 -= d;
     }
     int numHeights = 0;
-    o->m_rowCount = z1 - z0 + 1;
     o->m_originX = (float)(x0 << 7);
     o->m_originZ = (float)(z0 << 7);
     o->m_cols = x1 - x0 + 1;
+    o->m_rowCount = z1 - z0 + 1;
 
     func_0010A950(D_00388A70, D_00388A70->m_D8);
     unsigned char* grid = (unsigned char*)func_0010A638(D_00388A70, o->m_cols * o->m_rowCount, 1, 0);
@@ -140,15 +144,15 @@ void func_0015C4C0(Field_0015C4C0* o)
 
     Feeler_0015C4C0 f;
     func_00209240(&f);
-    int* slot = o->m_heights;
-    for (int z = z0; z <= z1; z++) {
-        float wz = (float)(z << 7);
-        for (int x = x0; x <= x1; x++) {
+    int x, z;
+    for (z = z0; z <= z1; z++) {
+        for (x = x0; x <= x1; x++) {
+            int idx = (z - z0) * o->m_cols + (x - x0);
             Vec_0015C4C0 v;
             v.x = (float)(x << 7);
             v.y = 50000.0f;
             v.w = 1.0f;
-            v.z = wz;
+            v.z = (float)(z << 7);
             func_00209360(&f, &v);
             v.y = -50000.0f;
             func_00209370(&f, &v);
@@ -157,7 +161,7 @@ void func_0015C4C0(Field_0015C4C0* o)
                 h = (int)(f.m_point.y * 16.0f);
             else
                 h = 800000;
-            unsigned char* cell = grid + ((z - z0) * o->m_cols + (x - x0));
+            unsigned char* cell = grid + idx;
             int found = -1;
             for (int i = 0; i < numHeights; i++) {
                 if (Abs(o->m_heights[i] - h) < 0x1E0) {
@@ -169,14 +173,14 @@ void func_0015C4C0(Field_0015C4C0* o)
                 *cell = found;
             } else {
                 *cell = numHeights;
+                o->m_heights[numHeights] = h;
                 numHeights++;
-                *slot++ = h;
             }
         }
     }
 
-    for (int z = z0; z <= z1; z++) {
-        for (int x = x0; x <= x1; x++) {
+    for (z = z0; z <= z1; z++) {
+        for (x = x0; x <= x1; x++) {
             int c = (z - z0) * o->m_cols + (x - x0);
             int r = (z - z0) * o->m_cols + (x + 1 - x0);
             int d = (z + 1 - z0) * o->m_cols + (x - x0);
@@ -193,17 +197,17 @@ void func_0015C4C0(Field_0015C4C0* o)
     o->m_rows = D_003CBDE0;
     o->m_cells = (unsigned char*)(D_003CBDE0 + o->m_rowCount);
     unsigned short total = 0;
-    for (int z = 0; z < o->m_rowCount; z++) {
+    for (z = 0; z <= o->m_rowCount; z++) {
         unsigned short first = 0;
         unsigned short last = o->m_cols - 1;
         int any = 0;
-        for (int x = 0; x < o->m_cols; x++) {
+        for (x = 0; x < o->m_cols; x++) {
             if (o->m_heights[grid[z * o->m_cols + x]] != 800000) {
-                if (any) {
-                    last = x;
-                } else {
+                if (!any) {
                     first = x;
                     any = 1;
+                } else {
+                    last = x;
                 }
             }
         }
@@ -211,7 +215,7 @@ void func_0015C4C0(Field_0015C4C0* o)
             o->m_rows[z].m_start = first;
             o->m_rows[z].m_end = last;
             o->m_rows[z].m_offset = total;
-            for (int x = first; x <= last; x++) {
+            for (x = first; x <= last; x++) {
                 o->m_cells[total] = grid[z * o->m_cols + x];
                 total++;
             }

@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 73.1 */
+/* fuzzy: 83.8 */
 struct Obj_001276E0;
 struct Handle_001276E0;
 
@@ -108,8 +108,7 @@ extern "C" void func_00123DB0(Obj_001276E0* e, int a, int b, float sx, float sy)
 
 static inline Handle_001276E0 First_001276E0(Obj_001276E0* o)
 {
-    Handle_001276E0 t(o->m54.m_obj);
-    return t;
+    return Handle_001276E0(o->m54.m_obj);
 }
 
 static inline Handle_001276E0 Next_001276E0(Obj_001276E0* o)
@@ -122,7 +121,7 @@ extern "C" void func_001276E0(Obj_001276E0* self, char** strs, int n)
 {
     Mgr_001276E0* mgr = D_00389A30;
     func_00124118(self, 0);
-    Handle_001276E0 h(First_001276E0(self));
+    Handle_001276E0 h(First_001276E0(self).m_obj);
     while (h) {
         Handle_001276E0 next = Next_001276E0(h);
         func_0012D8B0(mgr, h->m18, 1, 0, 0);
@@ -181,11 +180,7 @@ extern "C" void func_001276E0(Obj_001276E0* self, char** strs, int n)
         Obj_001276E0* e = func_00125F10(func_001046B0(0x1E0));
         func_0010A9B0(D_00388A70);
         mgr->Add(e);
-        {
-            Handle_001276E0 parent(self);
-            Handle_001276E0 child(e);
-            func_0012DA10(mgr, parent, child, 1);
-        }
+        func_0012DA10(mgr, Handle_001276E0(self), Handle_001276E0(e), 1);
         func_00126260(e, self->m1A0);
         func_001262A0(e, self->m1A4[line]);
         line++;

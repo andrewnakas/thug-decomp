@@ -1,7 +1,7 @@
-/* fuzzy: 40.7 */
+/* fuzzy: 79.6 */
 typedef int qword_001671A8 __attribute__((mode(TI)));
 
-struct V_001671A8 {
+struct R_001671A8 {
     union {
         qword_001671A8 q;
         struct {
@@ -10,8 +10,43 @@ struct V_001671A8 {
     };
 };
 
+struct V_001671A8 {
+    union {
+        qword_001671A8 q;
+        struct {
+            float x, y, z, w;
+        };
+    };
+    V_001671A8() {}
+    V_001671A8(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
+};
+
+static inline V_001671A8 operator-(const V_001671A8& a)
+{
+    return V_001671A8(-a.x, -a.y, -a.z, -a.w);
+}
+
+static inline V_001671A8 operator-(const R_001671A8& a)
+{
+    return V_001671A8(-a.x, -a.y, -a.z, -a.w);
+}
+
+static inline V_001671A8 operator*(const V_001671A8& a, float s)
+{
+    return V_001671A8(a.x * s, a.y * s, a.z * s, a.w * s);
+}
+
+struct M_001671A8;
+extern "C" void func_00323298(V_001671A8* out, M_001671A8* m, const V_001671A8* v);
+
 struct M_001671A8 {
-    V_001671A8 r[4];
+    R_001671A8 r[4];
     M_001671A8& operator=(const M_001671A8& o)
     {
         r[0] = o.r[0];
@@ -21,9 +56,15 @@ struct M_001671A8 {
         return *this;
     }
     /* inverse of a rigid transform: transpose the rotation, rotate and negate the translation */
+    V_001671A8 Xform(const V_001671A8& v)
+    {
+        V_001671A8 out;
+        func_00323298(&out, this, &v);
+        return out;
+    }
     void InvertOrtho()
     {
-        V_001671A8 t = r[3];
+        R_001671A8 t = r[3];
         float dx = t.x * r[0].x + t.y * r[0].y + t.z * r[0].z;
         float dy = t.x * r[1].x + t.y * r[1].y + t.z * r[1].z;
         float dz = t.x * r[2].x + t.y * r[2].y + t.z * r[2].z;
@@ -38,7 +79,6 @@ struct M_001671A8 {
 };
 
 extern "C" void func_00323318(M_001671A8* out, void* a, M_001671A8* b);
-extern "C" void func_00323298(V_001671A8* out, void* m, V_001671A8* v);
 extern char D_003E1080[];
 extern char D_003E1240[];
 extern char D_003E12C0[];
@@ -56,44 +96,24 @@ extern "C" void func_00167A50(Obj_001671A8* self);
 
 void Obj_001671A8::SetMatrix(M_001671A8* src)
 {
-    M_001671A8 m;
-    m = *src;
-    func_00323318(&m, D_003E1080, &m);
-
     M_001671A8 inv;
-    inv = m;
+    {
+        M_001671A8 m;
+        M_001671A8* pm = &m;
+        *pm = *src;
+        func_00323318(pm, D_003E1080, pm);
+        inv = m;
+        m_world = m;
+    }
     inv.InvertOrtho();
-    m_world = m;
-
-    V_001671A8 pos;
-    pos.x = -inv.r[3].x;
-    pos.y = -inv.r[3].y;
-    pos.z = -inv.r[3].z;
-    pos.w = -inv.r[3].w;
-    V_001671A8 scaled;
-    scaled.x = pos.x * 16.0f;
-    scaled.y = pos.y * 16.0f;
-    scaled.z = pos.z * 16.0f;
-    scaled.w = pos.w * 16.0f;
-    m_pos = scaled;
+    m_pos = -inv.r[3] * 16.0f;
     m_pos.x = (float)(int)m_pos.x;
     m_pos.y = (float)(int)m_pos.y;
     m_pos.z = (float)(int)m_pos.z;
 
-    V_001671A8 neg;
-    neg.x = -m_pos.x;
-    neg.y = -m_pos.y;
-    neg.z = -m_pos.z;
-    neg.w = -m_pos.w;
-    V_001671A8 out;
-    func_00323298(&out, this, &neg);
-    V_001671A8 t;
-    t.x = out.x * 0.0625f;
-    t.y = out.y * 0.0625f;
-    t.z = out.z * 0.0625f;
-    t.w = out.w * 0.0625f;
-    m.r[3] = t;
-
+    M_001671A8 m;
+    m = m_world;
+    m.r[3].q = (m_world.Xform(V_001671A8(-m_pos.x, -m_pos.y, -m_pos.z, -m_pos.w)) * 0.0625f).q;
     M_001671A8 tmp;
     func_00323318(&tmp, D_003E1240, &m);
     func_00323318(&m_view, D_003E12C0, &tmp);

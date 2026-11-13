@@ -1,13 +1,13 @@
-/* fuzzy: 41.0 */
 struct Vec_0020A348 {
-    float x, y, z, w;
+    float c[4];
     Vec_0020A348() {}
-    Vec_0020A348(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    Vec_0020A348(float ax, float ay, float az, float aw) { c[0] = ax; c[1] = ay; c[2] = az; c[3] = aw; }
+    const float& operator[](int i) const { return c[i]; }
 };
 
 static inline Vec_0020A348 operator+(const Vec_0020A348& a, const Vec_0020A348& b)
 {
-    return Vec_0020A348(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_0020A348(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 extern "C" void func_001235E8(const Vec_0020A348* a, const Vec_0020A348* b, unsigned int c0, unsigned int c1, int flag);

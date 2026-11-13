@@ -1,4 +1,3 @@
-/* fuzzy: 49.5 */
 struct Flags_0020DA30 {
     char pad0[5];
     unsigned char m5;
@@ -39,43 +38,81 @@ bool Get_0020DA30(Obj_0020DA30* o, unsigned int name)
         return false;
     switch (name) {
     case 0xBC6B118F:
-        return o->m1C->m7;
+        if (o->m1C->m7)
+            return true;
+        break;
     case 0xE3006FC4:
-        return o->m1C->m8;
+        if (o->m1C->m8)
+            return true;
+        break;
     case 0x85981897:
-        return o->m1C->m6;
+        if (o->m1C->m6)
+            return true;
+        break;
     case 0x4B358AEB:
-        return o->m1C->m5;
+        if (o->m1C->m5)
+            return true;
+        break;
     case 0xB7231A95:
-        return o->m1C->m7 && o->m1C->m6;
+        if (o->m1C->m7 && o->m1C->m6)
+            return true;
+        break;
     case 0xA50950C5:
-        return o->m1C->m7 && o->m1C->m5;
+        if (o->m1C->m7 && o->m1C->m5)
+            return true;
+        break;
     case 0xD8847EFA:
-        return o->m1C->m8 && o->m1C->m6;
+        if (o->m1C->m8 && o->m1C->m6)
+            return true;
+        break;
     case 0x786B8B68:
-        return o->m1C->m8 && o->m1C->m5;
+        if (o->m1C->m8 && o->m1C->m5)
+            return true;
+        break;
     case 0x2B489A86:
-        return o->m1C->mA;
+        if (o->m1C->mA)
+            return true;
+        break;
     case 0x321C9756:
-        return o->m1C->mC;
+        if (o->m1C->mC)
+            return true;
+        break;
     case 0x7323E97C:
-        return o->m1C->mB;
+        if (o->m1C->mB)
+            return true;
+        break;
     case 0x20689278:
-        return o->m1C->m9;
+        if (o->m1C->m9)
+            return true;
+        break;
     case 0x26B0C991:
-        return o->m1C->mD;
+        if (o->m1C->mD)
+            return true;
+        break;
     case 0xBFB9982B:
-        return o->m1C->mF;
+        if (o->m1C->mF)
+            return true;
+        break;
     case 0xF2F1F64E:
-        return o->m1C->mE;
+        if (o->m1C->mE)
+            return true;
+        break;
     case 0x6BF8A7F4:
-        return o->m1C->m10;
+        if (o->m1C->m10)
+            return true;
+        break;
     case 0x767A45D7:
-        return o->m1C->m17;
+        if (o->m1C->m17)
+            return true;
+        break;
     case 0xBD30325B:
-        return o->m1C->m18;
+        if (o->m1C->m18)
+            return true;
+        break;
     case 0x9D2D8850:
-        return o->m1C->m19;
+        if (o->m1C->m19)
+            return true;
+        break;
     }
     return false;
 }

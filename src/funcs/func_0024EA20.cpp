@@ -1,4 +1,3 @@
-/* fuzzy: 81.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0024EA20 {
@@ -6,6 +5,14 @@ struct Vec_0024EA20 {
         struct { float x, y, z, w; };
         qword q;
     };
+    Vec_0024EA20() {}
+    Vec_0024EA20(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
 };
 
 struct Mat_0024EA20 {
@@ -64,11 +71,7 @@ bool Obj_0024EA20::Fn()
         p.w += e->m50.w;
         if (func_001325F0(&p, 6.0f)) {
             Vec_0024EA20* s = func_00114E18(func_00203EC0(func_0022DD38(D_0038FC78)));
-            Vec_0024EA20 d;
-            d.x = s->x - e->m50.x;
-            d.y = s->y - e->m50.y;
-            d.z = s->z - e->m50.z;
-            d.w = s->w - e->m50.w;
+            Vec_0024EA20 d(s->x - e->m50.x, s->y - e->m50.y, s->z - e->m50.z, s->w - e->m50.w);
             float len = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
             int maxd;
             func_001E7DE8(m20, 0x856FAB92, &maxd, 1);

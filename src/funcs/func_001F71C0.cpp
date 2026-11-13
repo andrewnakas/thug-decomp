@@ -1,4 +1,3 @@
-/* fuzzy: 64.3 */
 typedef int qword_001F71C0 __attribute__((mode(TI)));
 
 struct Tag_001F71C0 {
@@ -56,7 +55,7 @@ extern Env_001F71C0 D_003F2F40;
 extern const Tag_001F71C0 D_00366448;
 
 extern "C" int func_0031B468(int ch);
-extern "C" void func_00344B98(void* draw, short psm, short w, short h, short ztest, short zpsm);
+extern "C" int func_00344B98(void* draw, short psm, short w, short h, short ztest, short zpsm);
 extern "C" int func_0031BF20(int mode);
 extern "C" int func_003312D8(int mode, int timeout);
 extern "C" int func_00344D80(void* draw);
@@ -76,21 +75,22 @@ void func_001F71C0(int r, int g, int b, int w, int h)
         Tag_001F71C0 t;
     } tag;
     tag.t = D_00366448;
-    Env_001F71C0* env = &D_003F2F40;
-    if (env->m18 == 0) {
+    long* p = &D_003F2F40.m18;
+    if (*p == 0) {
         return;
     }
     int ch = func_0031B468(2);
-    env->m50.q = 0;
-    env->m50.tag.NLOOP = 8;
-    env->m50.tag.EOP = 1;
-    env->m50.tag.NREG = 1;
-    env->m50.tag.REGS0 = 0xE;
-    func_00344B98(env->m60, 0, w, ((h + 31) / 32 + (h / 2 + 31) / 32) * 64, 0, 0);
-    env->m80 = 0;
+    qword_001F71C0* gif = &D_003F2F40.m50.q;
+    *gif = 0;
+    D_003F2F40.m50.tag.NLOOP = 8;
+    D_003F2F40.m50.tag.EOP = 1;
+    D_003F2F40.m50.tag.NREG = 1;
+    D_003F2F40.m50.tag.REGS0 = 0xE;
+    func_00344B98(D_003F2F40.m60, 0, w, ((h / 2 + 31) / 32 + (h + 31) / 32) * 64, 0, 0);
+    D_003F2F40.m80 = 0;
     func_0031BF20(0);
     func_003312D8(0, 0);
-    func_00344D80(&env->m50);
+    func_00344D80(gif);
 
     Packet_001F71C0 pkt;
     qword_001F71C0 buf[6];

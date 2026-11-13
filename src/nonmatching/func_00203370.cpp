@@ -1,4 +1,4 @@
-/* fuzzy: 89.7 */
+/* fuzzy: 93.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00203370 {
@@ -7,6 +7,12 @@ struct Vec_00203370 {
         qword q;
     };
 };
+
+struct Mtx_00203370;
+extern "C" Mtx_00203370* func_00100890(Mtx_00203370* m, float a);
+extern "C" Mtx_00203370* func_00100928(Mtx_00203370* m, float a);
+extern "C" Mtx_00203370* func_001009C0(Mtx_00203370* m, float a);
+extern "C" void func_00323318(Mtx_00203370* d, Mtx_00203370* a, Mtx_00203370* b);
 
 struct Mtx_00203370 {
     Vec_00203370 row[4];
@@ -18,6 +24,21 @@ struct Mtx_00203370 {
         row[2].q = o.Row(2).q;
         row[3].q = o.Row(3).q;
         return *this;
+    }
+    void RotX(float a)
+    {
+        Mtx_00203370 t;
+        func_00323318(this, func_00100890(&t, a), this);
+    }
+    void RotY(float a)
+    {
+        Mtx_00203370 t;
+        func_00323318(this, func_00100928(&t, a), this);
+    }
+    void RotZ(float a)
+    {
+        Mtx_00203370 t;
+        func_00323318(this, func_001009C0(&t, a), this);
     }
     void Identity()
     {
@@ -64,10 +85,6 @@ extern "C" int func_001E9378(int s, int node);
 extern "C" void func_0022A090(int node, Vec_00203370* pos);
 extern "C" void func_00186398(Obj_00203370* o, int f);
 extern "C" void func_0022A268(int s, Vec_00203370* rot);
-extern "C" Mtx_00203370* func_00100890(Mtx_00203370* m, float a);
-extern "C" Mtx_00203370* func_00100928(Mtx_00203370* m, float a);
-extern "C" Mtx_00203370* func_001009C0(Mtx_00203370* m, float a);
-extern "C" void func_00323318(Mtx_00203370* d, Mtx_00203370* a, Mtx_00203370* b);
 extern "C" void func_001B6BC0(int h, Vec_00203370* p);
 extern "C" void func_001B6BD0(int h, Vec_00203370* p);
 
@@ -86,10 +103,9 @@ void Obj_00203370::Place(int node)
     m->Identity();
     Vec_00203370* r = &rot;
     if (r->x != 0.0f || r->y != 0.0f || r->z != 0.0f) {
-        Mtx_00203370 t;
-        func_00323318(m, func_00100890(&t, r->x), m);
-        func_00323318(m, func_00100928(&t, r->y), m);
-        func_00323318(m, func_001009C0(&t, r->z), m);
+        m->RotX(r->x);
+        m->RotY(r->y);
+        m->RotZ(r->z);
     }
     m2E0->m20 = m2E0->mC->m70;
     Vec_00203370* up = &m70.row[1];

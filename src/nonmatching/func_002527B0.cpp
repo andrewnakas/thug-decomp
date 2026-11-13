@@ -1,4 +1,4 @@
-/* fuzzy: 93.3 */
+/* fuzzy: 96.2 */
 /* sym: __12Str_002527B0PCc = 0x00104028 */
 /* sym: _$_12Str_002527B0 = 0x001040A8 */
 /* sym: __12Str_002527B0RC12Str_002527B0 = 0x00104068 */
@@ -47,6 +47,13 @@ extern "C" Str_002527B0 func_00252608(Obj_002527B0* o, int idx);
 extern "C" char* func_002526B8(Obj_002527B0* o);
 extern "C" unsigned int func_001F0D78(const char* s);
 
+static inline int Upper_002527B0(int c)
+{
+    unsigned char d = c - 'a';
+    if (d < 26)
+        c = d + 'A';
+    return c;
+}
 Str_002527B0 GetText_002527B0(Obj_002527B0* o, unsigned int key)
 {
     char buf[256];
@@ -75,8 +82,7 @@ Str_002527B0 GetText_002527B0(Obj_002527B0* o, unsigned int key)
     case 0x2523853D: {
         char c = *func_002526B8(o);
         bool vowel = false;
-        if ((unsigned char)(c - 'a') < 26)
-            c = (unsigned char)(c - 'a') + 'A';
+        c = Upper_002527B0(c);
         if (c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')
             vowel = true;
         func_003331D0(buf, D_00390748, GetText_002527B0(o, func_001F0D78(D_00374E50)).Get(),

@@ -1,4 +1,4 @@
-/* fuzzy: 79.5 */
+/* fuzzy: 96.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct V_001C2500 {
@@ -17,10 +17,11 @@ union Vec_001C2500 {
         v.w = w;
     }
     float Dot(const Vec_001C2500& b) const { return v.x * b.v.x + v.y * b.v.y + v.z * b.v.z; }
-    Vec_001C2500 operator*(float s) const { return Vec_001C2500(v.x * s, v.y * s, v.z * s, v.w * s); }
+    const float& operator[](int i) const { return (&v.x)[i]; }
+    Vec_001C2500 operator*(float s) const { return Vec_001C2500((*this)[0] * s, (*this)[1] * s, (*this)[2] * s, (*this)[3] * s); }
     Vec_001C2500 operator+(const Vec_001C2500& b) const
     {
-        return Vec_001C2500(v.x + b.v.x, v.y + b.v.y, v.z + b.v.z, v.w + b.v.w);
+        return Vec_001C2500((*this)[0] + b[0], (*this)[1] + b[1], (*this)[2] + b[2], (*this)[3] + b[3]);
     }
 };
 
@@ -46,6 +47,14 @@ struct Obj_001C2500 {
     Vec_001C2500 m_B70;
     Vec_001C2500 m_B80;
     float m_B90;
+    float Approach(float target, float speed)
+    {
+        if (0.0f <= target && target < speed)
+            return speed;
+        if (target < 0.0f && 0.0f < speed)
+            target += speed;
+        return speed + (target - speed) * (Param_001C2500(0xF085443B) * m_98);
+    }
     void Update();
 };
 
@@ -71,15 +80,11 @@ void Obj_001C2500::Update()
     sideSpeed += (sideTarget - sideSpeed) * (Param_001C2500(0xF085443B) * m_98);
     float fwdTarget = Param_001C2500(0x896C8888) * scale * (m_A0.v.x * m_B70.v.x + m_A0.v.y * m_B70.v.y + m_A0.v.z * m_B70.v.z);
     float fwdSpeed = (m_40.v.x * m_B70.v.x + m_40.v.y * m_B70.v.y + m_40.v.z * m_B70.v.z);
-    if (!(0.0f <= fwdTarget && fwdTarget < fwdSpeed)) {
-        if (fwdTarget < 0.0f && 0.0f < fwdSpeed) {
-            fwdTarget += fwdSpeed;
-        }
-        fwdSpeed += (fwdTarget - fwdSpeed) * (Param_001C2500(0xF085443B) * m_98);
-    }
+    fwdSpeed = Approach(fwdTarget, fwdSpeed);
     m_40 = m_B70 * fwdSpeed + side * sideSpeed;
-    vel.v.x += m_B80.v.x;
-    vel.v.y += m_B80.v.y;
-    vel.v.z += m_B80.v.z;
-    vel.v.w += m_B80.v.w;
+    Vec_001C2500& pos = m_40;
+    pos.v.x += m_B80.v.x;
+    pos.v.y += m_B80.v.y;
+    pos.v.z += m_B80.v.z;
+    pos.v.w += m_B80.v.w;
 }

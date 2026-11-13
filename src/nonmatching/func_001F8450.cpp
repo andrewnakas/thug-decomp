@@ -1,4 +1,4 @@
-/* fuzzy: 83.8 */
+/* fuzzy: 86.5 */
 extern "C" void func_001F83C8();
 extern "C" void func_001F8430();
 extern char D_003F3770[];
@@ -41,11 +41,11 @@ void func_001F8450()
     sp.init = 0;
     sp.option = 0;
     int sema = func_0031BCA0(&sp);
-    tp.prio = 1;
     tp.entry = func_001F83C8;
     tp.stack = D_003F3770;
     tp.gp = D_0038F3F0;
     tp.stackSize = 0x800;
+    tp.prio = 1;
     func_0031BAC0(func_0031BAA0(&tp), sema);
     func_00327FD0(func_001F8430, sema);
 }

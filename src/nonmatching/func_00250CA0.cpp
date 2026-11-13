@@ -1,4 +1,4 @@
-/* fuzzy: 70.6 */
+/* fuzzy: 85.2 */
 extern void* D_0038FC78;
 extern char D_00390688[];
 extern char D_00374B88[];
@@ -125,14 +125,14 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
     if (mid <= low)
         low = mid - 0.1f;
 
-    for (i = 0; i < 7; i++) {
+    for (i = 0; i < 7; ) {
         float level;
-        m_ent[i + 1].m_pos = order[i];
-        Entry_00250CA0* e = &m_ent[i + 1];
+        int n = i + 1;
+        m_ent[n].m_pos = order[i];
         if (func_001E8248(m_params, 0x1CC6F48D, &names, 0))
-            func_00104110(&e->m_name, func_001E91C0(names, i));
+            func_00104110(&m_ent[n].m_name, func_001E91C0(names, i));
         else
-            func_00104110(&e->m_name, func_002624F0(func_002629B8(mgr, func_00262830(mgr, cand[i]))));
+            func_00104110(&m_ent[n].m_name, func_002624F0(func_002629B8(mgr, func_00262830(mgr, cand[i]))));
 
         if (i == 0) {
             level = high;
@@ -160,9 +160,10 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
         } while (lo == hi);
 
         for (int k = 0; k < 3; k++)
-            e->m_score[k] = Round_00250CA0(base - 2.0f + func_001000D0(1.9f));
-        e->m_score[hi] = Round_00250CA0(best);
-        e->m_score[lo] = Round_00250CA0(worst);
+            m_ent[n].m_score[k] = Round_00250CA0(base - 2.0f + func_001000D0(1.9f));
+        m_ent[n].m_score[hi] = Round_00250CA0(best);
+        m_ent[n].m_score[lo] = Round_00250CA0(worst);
+        i = n;
     }
 
     func_00103F28(D_00390688);
@@ -184,9 +185,9 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
     }
 
     m_judge[0] = D_00390690;
-    m8 = -1;
     m_judge[1] = D_00390698;
     m_judge[2] = D_003906A0;
     m_judge[3] = D_003906A8;
     m_judge[4] = D_003906B0;
+    m8 = -1;
 }

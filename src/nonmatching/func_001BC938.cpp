@@ -64,6 +64,10 @@ struct Desc_001BC938 {
     int m_E0;
     Vec_001BC938 m_F0[3];
     int m_120;
+    /* Equivalence fix, proven by the game's instructions: desc is at sp+0 (func_00142708 gets `daddu $a1, $sp, $zero`
+       at 0x001BD390) and the fields after m_120 sit at 0x128.., not 0x124..: `sw $v0, 0x120($sp)` (0x001BD02C),
+       `sb $v0, 0x128($sp)` .. `sb $v0, 0x133($sp)` (0x001BD070-0x001BD1CC), `addiu $a2, $sp, 0x134/0x13C/0x138/0x140/
+       0x144/0x148/0x14C` for the param reads (0x001BD1D4-0x001BD264). Hence the 4-byte m_124 gap. */
     int m_124;
     unsigned char m_128[12];
     unsigned int m_134;

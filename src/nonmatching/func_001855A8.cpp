@@ -1,4 +1,4 @@
-/* fuzzy: 72.1 */
+/* fuzzy: 93.1 */
 /* Model/motion component script member functions: position, orientation, velocity queries, plus the
    "ask every sub-component, then the base class" fallback. */
 extern float D_00387710; /* deg->rad, the game loads its .lit4 constants in a different order than the literals would compile */
@@ -16,7 +16,15 @@ struct Vec_001855A8 {
         struct { float x, y, z, w; };
     };
     Vec_001855A8() {}
+    const float& operator[](int i) const { return (&x)[i]; }
     Vec_001855A8(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
+    void Set(float ax, float ay, float az, float aw)
     {
         x = ax;
         y = ay;
@@ -26,27 +34,27 @@ struct Vec_001855A8 {
     float Length() const { return sqrtf(x * x + y * y + z * z); }
     Vec_001855A8& operator+=(const Vec_001855A8& b)
     {
-        x += b.x;
-        y += b.y;
-        z += b.z;
-        w += b.w;
+        x += b[0];
+        y += b[1];
+        z += b[2];
+        w += b[3];
         return *this;
     }
 };
 
 static inline Vec_001855A8 operator*(const Vec_001855A8& v, float s)
 {
-    return Vec_001855A8(v.x * s, v.y * s, v.z * s, v.w * s);
+    return Vec_001855A8(v[0] * s, v[1] * s, v[2] * s, v[3] * s);
 }
 
 static inline Vec_001855A8 operator-(const Vec_001855A8& a, const Vec_001855A8& b)
 {
-    return Vec_001855A8(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_001855A8(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_001855A8 operator+(const Vec_001855A8& a, const Vec_001855A8& b)
 {
-    return Vec_001855A8(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001855A8(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 struct Mat_001855A8 {
@@ -54,6 +62,13 @@ struct Mat_001855A8 {
     Vec_001855A8 up;
     Vec_001855A8 at;
     Vec_001855A8 trans;
+    void Ident()
+    {
+        right.x = 1.0f; right.y = 0.0f; right.z = 0.0f; right.w = 0.0f;
+        up.x = 0.0f; up.y = 1.0f; up.z = 0.0f; up.w = 0.0f;
+        at.x = 0.0f; at.y = 0.0f; at.z = 1.0f; at.w = 0.0f;
+        trans.x = 0.0f; trans.y = 0.0f; trans.z = 0.0f; trans.w = 1.0f;
+    }
     Mat_001855A8& operator=(const Mat_001855A8& m)
     {
         right = m.right;
@@ -67,9 +82,9 @@ struct Mat_001855A8 {
 static inline void Cross(Vec_001855A8& d, const Vec_001855A8& a, const Vec_001855A8& b)
 {
     Vec_001855A8 t;
-    t.x = a.y * b.z - a.z * b.y;
-    t.y = a.z * b.x - a.x * b.z;
-    t.z = a.x * b.y - a.y * b.x;
+    t.x = a[1] * b[2] - a[2] * b[1];
+    t.y = a[2] * b[0] - a[0] * b[2];
+    t.z = a[0] * b[1] - a[1] * b[0];
     t.w = 0.0f;
     d = t;
 }
@@ -125,7 +140,7 @@ struct ModelComponent_001855A8 {
     Vec_001855A8 vel;                   /* 0xB0 */
     Mat_001855A8 displayMatrix;         /* 0xC0 */
     SubComponent_001855A8* subs;        /* 0x100 */
-    unsigned int flags;                 /* 0x104 */
+    int flags;                 /* 0x104 */
 
     void SetMatrix(const Mat_001855A8& m)
     {
@@ -142,7 +157,7 @@ extern char D_0038C5A0[];
 extern char D_00361A38[];
 
 extern "C" float func_00100118(float x);    /* acos */
-extern "C" void func_00100200(Mat_001855A8* m, float x, float y, float z);
+extern "C" Mat_001855A8* func_00100200(Mat_001855A8* m, float x, float y, float z);
 extern "C" int func_001842E0(ModelComponent_001855A8* self, unsigned int name, void* params, Script_001855A8* script);
 extern "C" ModelComponent_001855A8* func_00184D70(unsigned int id);
 extern "C" void func_00185058(ModelComponent_001855A8* self);
@@ -193,10 +208,7 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         Mat_001855A8 m;
         if (func_001E7FA8(params, 0x455485EF, &dir, 0)) {
             /* build an orthonormal frame looking along dir */
-            m.right.x = 1.0f; m.right.y = 0.0f; m.right.z = 0.0f; m.right.w = 0.0f;
-            m.up.x = 0.0f; m.up.y = 1.0f; m.up.z = 0.0f; m.up.w = 0.0f;
-            m.at.x = 0.0f; m.at.y = 0.0f; m.at.z = 1.0f; m.at.w = 0.0f;
-            m.trans.x = 0.0f; m.trans.y = 0.0f; m.trans.z = 0.0f; m.trans.w = 1.0f;
+            m.Ident();
             m.at = dir;
             func_003233B8(&m.at, &m.at);
             Cross(m.right, m.up, m.at);
@@ -285,8 +297,10 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         Vec_001855A8 p = pos + matrix.up * height;
         col.end = p;
         col.start = p;
-        Vec_001855A8* dir = func_001E8708(params, 0xDC7EE44A) ? &matrix.right : &matrix.at;
-        col.end += *dir * dist;
+        if (func_001E8708(params, 0xDC7EE44A))
+            col.end += matrix.right * dist;
+        else
+            col.end += matrix.at * dist;
         if (func_002093E8(&col, 1, 0))
             return 1;
         return 0;
@@ -306,11 +320,7 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         func_001E8398(params, 0, &id, 0);
         Vec_001855A8 p;
         func_0022A090(func_00229668(id, 1), &p);
-        Vec_001855A8 d;
-        d.x = pos.x - p.x;
-        d.y = pos.y - p.y;
-        d.z = pos.z - p.z;
-        d.w = pos.w - p.w;
+        Vec_001855A8 d = pos - p;
         func_001E7318(script->params, D_0038C5A0, d.Length());
         return 1;
     }
@@ -321,11 +331,7 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         ModelComponent_001855A8* other = func_00184D70(id);
         float feet = 0.0f;
         if (other) {
-            Vec_001855A8 d;
-            d.x = pos.x - other->pos.x;
-            d.y = pos.y - other->pos.y;
-            d.z = pos.z - other->pos.z;
-            d.w = pos.w - other->pos.w;
+            Vec_001855A8 d = pos - other->pos;
             feet = d.Length() * D_00387714;
         }
         func_001E7318(script->params, D_00361A38, feet);

@@ -1,4 +1,4 @@
-/* fuzzy: 70.4 */
+/* fuzzy: 91.9 */
 /* Vehicle component script member functions (assert path: gel/components/vehiclecomponent.cpp).
    Returns 0/1 for handled queries and commands, 2 for "not mine". */
 extern "C" float sqrtf(float);
@@ -33,49 +33,57 @@ struct Vec_001948C0 {
 struct Mat_001948C0 {
     Vec_001948C0 r[4];
     Vec_001948C0& operator[](int i) { return r[i]; }
+    Mat_001948C0& operator=(const Mat_001948C0& m)
+    {
+        r[0] = m.r[0];
+        r[1] = m.r[1];
+        r[2] = m.r[2];
+        r[3] = m.r[3];
+        return *this;
+    }
     /* row vector times the 3x3 part, w passed through */
     Vec_001948C0 Rotate(const Vec_001948C0& p) const
     {
         Vec_001948C0 o;
-        o.x = p.x * r[0].x + p.y * r[1].x + p.z * r[2].x;
-        o.y = p.x * r[0].y + p.y * r[1].y + p.z * r[2].y;
-        o.z = p.x * r[0].z + p.y * r[1].z + p.z * r[2].z;
-        o.w = p.w;
+        o.x = p[0] * r[0].x + p[1] * r[1].x + p[2] * r[2].x;
+        o.y = p[0] * r[0].y + p[1] * r[1].y + p[2] * r[2].y;
+        o.z = p[0] * r[0].z + p[1] * r[1].z + p[2] * r[2].z;
+        o.w = p[3];
         return o;
     }
 };
 
 static inline Vec_001948C0 Scale(const Vec_001948C0& v, float s)
 {
-    return Vec_001948C0(v.x * s, v.y * s, v.z * s, v.w * s);
+    return Vec_001948C0(v[0] * s, v[1] * s, v[2] * s, v[3] * s);
 }
 
 static inline Vec_001948C0 Neg(const Vec_001948C0& v)
 {
-    return Vec_001948C0(-v.x, -v.y, -v.z, -v.w);
+    return Vec_001948C0(-v[0], -v[1], -v[2], -v[3]);
 }
 
 static inline void Add(Vec_001948C0& d, const Vec_001948C0& v)
 {
-    d.x += v.x;
-    d.y += v.y;
-    d.z += v.z;
-    d.w += v.w;
+    d.x += v[0];
+    d.y += v[1];
+    d.z += v[2];
+    d.w += v[3];
 }
 
 static inline void Sub(Vec_001948C0& d, const Vec_001948C0& v)
 {
-    d.x -= v.x;
-    d.y -= v.y;
-    d.z -= v.z;
-    d.w -= v.w;
+    d.x -= v[0];
+    d.y -= v[1];
+    d.z -= v[2];
+    d.w -= v[3];
 }
 
 static inline float FeetToInches(float f) { return f * 12.0f; }
 
 static inline Vec_001948C0 FeetToInches(const Vec_001948C0& v)
 {
-    return Vec_001948C0(FeetToInches(v.x), FeetToInches(v.y), FeetToInches(v.z), FeetToInches(v.w));
+    return Vec_001948C0(FeetToInches(v[0]), FeetToInches(v[1]), FeetToInches(v[2]), FeetToInches(v[3]));
 }
 
 extern "C" float func_0011D4C0(Vec_001948C0* q);
@@ -102,15 +110,14 @@ static inline void QuatToMatrix_001948C0(Mat_001948C0& m, const Vec_001948C0& q)
     float xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
     float yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
     m.r[0].x = 1.0f - (yy + zz);
-    m.r[0].y = xy - wz;
-    m.r[0].z = xz + wy;
     m.r[1].x = xy + wz;
-    m.r[1].y = 1.0f - (xx + zz);
-    m.r[1].z = yz - wx;
     m.r[2].x = xz - wy;
+    m.r[0].y = xy - wz;
+    m.r[1].y = 1.0f - (xx + zz);
     m.r[2].y = yz + wx;
+    m.r[0].z = xz + wy;
+    m.r[1].z = yz - wx;
     m.r[2].z = 1.0f - (xx + yy);
-    m.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 struct Model_001948C0 {
@@ -245,17 +252,19 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
             Add(pos, FeetToInches(FeetToInches(m->r[1])));
             Sub(pos, FeetToInches(FeetToInches(m->r[2])));
             model->pos = pos;
-            matrix.r[0] = Neg(m->r[0]);
-            matrix.r[1] = m->r[1];
-            matrix.r[2] = Neg(m->r[2]);
+            matrix[0] = Neg(m->r[0]);
+            matrix[1] = m->r[1];
+            matrix[2] = Neg(m->r[2]);
 
             /* matrix -> quaternion */
             Vec_001948C0 q;
             float trace = matrix.r[0].x + matrix.r[1].y + matrix.r[2].z;
+            float s;
             if (trace > 0.0f) {
-                float s = sqrtf(trace + 1.0f);
-                func_00119228(&q, s * 0.5f);
+                s = sqrtf(trace + 1.0f);
+                float w = s * 0.5f;
                 s = 0.5f / s;
+                func_00119228(&q, w);
                 func_00119230(&q, (matrix.r[2].y - matrix.r[1].z) * s, (matrix.r[0].z - matrix.r[2].x) * s,
                               (matrix.r[1].x - matrix.r[0].y) * s);
             } else {
@@ -266,7 +275,7 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
                     i = 2;
                 int j = (i + 1) % 3;
                 int k = (j + 1) % 3;
-                float s = sqrtf(matrix[i][i] - (matrix[j][j] + matrix[k][k]) + 1.0f);
+                s = sqrtf(matrix[i][i] - (matrix[j][j] + matrix[k][k]) + 1.0f);
                 q[i] = s * 0.5f;
                 s = 0.5f / s;
                 q[j] = (matrix[j][i] + matrix[i][j]) * s;
@@ -277,6 +286,7 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
 
             orient.Normalize();
             QuatToMatrix_001948C0(matrix, orient);
+            matrix.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
             model->matrix = matrix;
             func_00196BE0(this);
         }

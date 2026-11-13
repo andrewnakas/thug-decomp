@@ -1,4 +1,4 @@
-/* fuzzy: 75.9 */
+/* fuzzy: 91.6 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0029D068 {
@@ -6,6 +6,14 @@ union Vec_0029D068 {
     struct {
         float x, y, z, w;
     } f;
+    Vec_0029D068() {}
+    Vec_0029D068(float x, float y, float z, float w)
+    {
+        f.x = x;
+        f.y = y;
+        f.z = z;
+        f.w = w;
+    }
     void Set(float x, float y, float z, float w)
     {
         f.x = x;
@@ -17,12 +25,7 @@ union Vec_0029D068 {
 
 static inline Vec_0029D068 operator+(const Vec_0029D068& a, const Vec_0029D068& b)
 {
-    Vec_0029D068 r;
-    r.f.x = a.f.x + b.f.x;
-    r.f.y = a.f.y + b.f.y;
-    r.f.z = a.f.z + b.f.z;
-    r.f.w = a.f.w + b.f.w;
-    return r;
+    return Vec_0029D068(a.f.x + b.f.x, a.f.y + b.f.y, a.f.z + b.f.z, a.f.w + b.f.w);
 }
 
 static inline void Add_0029D068(Vec_0029D068* r, const Vec_0029D068& a, const Vec_0029D068& b)
@@ -33,22 +36,9 @@ static inline void Add_0029D068(Vec_0029D068* r, const Vec_0029D068& a, const Ve
     r->f.w = a.f.w + b.f.w;
 }
 
-static inline void Scale_0029D068(Vec_0029D068* r, const Vec_0029D068& a, float s)
-{
-    r->f.x = a.f.x * s;
-    r->f.y = a.f.y * s;
-    r->f.z = a.f.z * s;
-    r->f.w = a.f.w * s;
-}
-
 static inline Vec_0029D068 operator*(const Vec_0029D068& a, float s)
 {
-    Vec_0029D068 r;
-    r.f.x = a.f.x * s;
-    r.f.y = a.f.y * s;
-    r.f.z = a.f.z * s;
-    r.f.w = a.f.w * s;
-    return r;
+    return Vec_0029D068(a.f.x * s, a.f.y * s, a.f.z * s, a.f.w * s);
 }
 
 static inline void operator+=(Vec_0029D068& a, const Vec_0029D068& b)
@@ -62,16 +52,25 @@ static inline void operator+=(Vec_0029D068& a, const Vec_0029D068& b)
 /* Cross product with w cleared. */
 static inline Vec_0029D068 Cross_0029D068(const Vec_0029D068& a, const Vec_0029D068& b)
 {
-    Vec_0029D068 r;
-    r.f.x = a.f.y * b.f.z - a.f.z * b.f.y;
-    r.f.y = a.f.z * b.f.x - a.f.x * b.f.z;
-    r.f.z = a.f.x * b.f.y - a.f.y * b.f.x;
-    r.f.w = 0.0f;
-    return r;
+    return Vec_0029D068(a.f.y * b.f.z - a.f.z * b.f.y, a.f.z * b.f.x - a.f.x * b.f.z, a.f.x * b.f.y - a.f.y * b.f.x, 0.0f);
 }
 
+union Row_0029D068 {
+    qword q;
+    struct {
+        float x, y, z, w;
+    } f;
+    void Set(float x, float y, float z, float w)
+    {
+        f.x = x;
+        f.y = y;
+        f.z = z;
+        f.w = w;
+    }
+};
+
 struct Mat_0029D068 {
-    Vec_0029D068 r[4];
+    Row_0029D068 r[4];
     Mat_0029D068& operator=(const Mat_0029D068& o)
     {
         r[0].q = o.r[0].q;
@@ -235,15 +234,15 @@ void Obj_0029D068::Update()
     case 5: {
         int flags = input->flags;
         if (flags & 0x1000000) {
-            if (flags & 0x1000)
-                out = 1;
             if (flags & 0x2000)
                 in = 1;
-        } else {
             if (flags & 0x1000)
-                up = 1;
+                out = 1;
+        } else {
             if (flags & 0x2000)
                 down = 1;
+            if (flags & 0x1000)
+                up = 1;
         }
         break;
     }
@@ -294,10 +293,7 @@ void Obj_0029D068::Update()
     {
         Vec_0029D068 end;
         Vec_0029D068 off;
-        off.f.x = 0.0f;
-        off.f.z = 0.0f;
-        off.f.y = height + 10.0f;
-        off.f.w = 1.0f;
+        off.Set(0.0f, height + 10.0f, 0.0f, 1.0f);
         Add_0029D068(&end, pos, off);
         func_00209370(&c, &end);
     }
@@ -336,23 +332,13 @@ void Obj_0029D068::Update()
             sz = 0.5f;
     }
 
-    Vec_0029D068 move;
-    {
-        Vec_0029D068 dx;
-        Vec_0029D068 mx;
-        Vec_0029D068 dz;
-        Vec_0029D068 mz;
-        Scale_0029D068(&mx, right, sx);
-        Scale_0029D068(&mz, fwd, sz);
-        Scale_0029D068(&dx, mx, speed);
-        Scale_0029D068(&dz, mz, speed);
-        Add_0029D068(&move, dx, dz);
-    }
+    Vec_0029D068 move = right * sx * speed + fwd * sz * speed;
     Vec_0029D068 old = pos;
     pos += move;
     {
         Vec_0029D068 probe = old;
-        if (!func_0029CA28(this, &probe, func_001E5318(0xC7210318, 0))) {
+        bool blocked = !func_0029CA28(this, &probe, func_001E5318(0xC7210318, 0));
+        if (blocked) {
             Coll_0029D068 c2;
             func_00209240(&c2);
             func_00209360(&c2, &old);
@@ -360,11 +346,16 @@ void Obj_0029D068::Update()
             probe.f.y += 120.0f;
             func_00209370(&c2, &probe);
             Vec_0029D068 back;
-            if (func_002093E8(&c2, 1, 0)
-                || (back = old, !func_0029CA28(this, &back, func_001E5318(0x56C2BFF2, 0))))
+            if (func_002093E8(&c2, 1, 0)) {
                 pos = old;
-            else
-                height = heightFloor;
+            } else {
+                back = old;
+                bool stuck = !func_0029CA28(this, &back, func_001E5318(0x56C2BFF2, 0));
+                if (stuck)
+                    pos = old;
+                else
+                    height = heightFloor;
+            }
         }
     }
 
@@ -381,16 +372,13 @@ void Obj_0029D068::Update()
     dir.f.y = func_00341068(pitch);
 
     Mat_0029D068 m;
-    m.r[2] = dir;
-    m.r[0] = right;
-    m.r[1] = Cross_0029D068(dir, right);
+    m.r[2].q = dir.q;
+    m.r[0].q = right.q;
+    m.r[1].q = Cross_0029D068(dir, right).q;
     m.r[0].f.w = 0.0f;
     m.r[2].f.w = 0.0f;
     m.r[1].f.w = 0.0f;
-    m.r[3].f.x = 0.0f;
-    m.r[3].f.y = 0.0f;
-    m.r[3].f.z = 0.0f;
-    m.r[3].f.w = 1.0f;
+    m.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
     camera->mat = m;
 
     Vec_0029D068 base = target;

@@ -1,4 +1,4 @@
-/* fuzzy: 66.6 */
+/* fuzzy: 70.3 */
 /* Texture dictionary loader: reads a texture file image from the D_00394320 stream (format version in
    D_00394324), inserts the dictionary into the priority-sorted list D_003942F4/D_003942F8, then for every texture
    computes the GS memory layout of its mip levels (VRAM double-buffered through D_00394304), swizzles 8/4-bit
@@ -44,7 +44,7 @@ struct Dict_001804E8 {
     Dict_001804E8* m_next;     /* 0x00 */
     float m_priority;          /* 0x04 */
     int m_group;               /* 0x08 */
-    int m_type;                /* 0x0C */
+    unsigned int m_type;       /* 0x0C */
     unsigned char* m10;
     unsigned char* m14;
     char pad18[0x30 - 0x18];
@@ -121,7 +121,7 @@ static inline unsigned int Read()
 
 static inline unsigned int* Align16(unsigned int* p)
 {
-    return (unsigned int*)(((int)p + 15) & -16);
+    return (unsigned int*)(((unsigned int)p + 15) & ~15);
 }
 
 extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8* dict, int front, int overlay,
@@ -257,7 +257,7 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         if (t->m_flags & 1)
             D_00394320 = Align16(D_00394320);
 
-        int bpp;
+        unsigned int bpp;
         unsigned int colors;
         if (psm == 0) {
             bpp = 32;
@@ -281,16 +281,20 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
         int vbpp = bpp == 24 ? 32 : bpp;
         int clutBits;
         if (bpp < 16) {
-            if (cpsm == 0) {
+            switch (cpsm) {
+            case 0:
                 clutBits = 32;
-            } else if (cpsm == 2) {
+                break;
+            case 2:
                 clutBits = 16;
-            } else {
+                break;
+            default:
                 func_00103F28(D_00361340, psm);
                 func_00334148(1);
-                clutBits = 0;
+                goto noClut;
             }
         } else {
+        noClut:
             clutBits = 0;
         }
 
@@ -299,15 +303,13 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
             for (int base = 0; base < 256; base += 32) {
                 for (int k = 0; k < 8; k++) {
                     if (cpsm == 0) {
-                        unsigned int* c = D_00394320 + base + k;
-                        unsigned int tmp = c[8];
-                        c[8] = c[16];
-                        c[16] = tmp;
+                        unsigned int tmp = D_00394320[base + k + 8];
+                        D_00394320[base + k + 8] = D_00394320[base + k + 16];
+                        D_00394320[base + k + 16] = tmp;
                     } else {
-                        unsigned short* c = (unsigned short*)D_00394320 + base + k;
-                        unsigned short tmp = c[8];
-                        c[8] = c[16];
-                        c[16] = tmp;
+                        unsigned short tmp = ((unsigned short*)D_00394320)[base + k + 8];
+                        ((unsigned short*)D_00394320)[base + k + 8] = ((unsigned short*)D_00394320)[base + k + 16];
+                        ((unsigned short*)D_00394320)[base + k + 16] = tmp;
                     }
                 }
             }

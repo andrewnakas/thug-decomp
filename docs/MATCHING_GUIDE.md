@@ -381,3 +381,11 @@ More idioms from lane 2:
 - **Block-entry slots precede expression temps:** declare named Vec locals up front, assign via `operator*=`.
 - **toupper:** an inline taking `unsigned char d` stops CSE folding `c - 'a' + 'A'` into `c - 32`.
 - **7-byte copies:** 8-aligned types in `__builtin_memcpy` give the game's lw/lhu/lbu.
+
+## `volatile` follows interrupt access (ruling 2026-11-13)
+
+Declare a global or member `volatile` exactly when an interrupt/vsync handler (or another thread) also touches it,
+and say so in a comment naming the handler. That is what the original programmers had to write, and it shows in
+the asm as reloads the compiler would otherwise have folded. Per-variable choices are fine when they follow that
+rule (func_001F79B0: D_0038EAA4/EAA8 are read by the vsync handler func_001F77B0, D_00394118 is not). Never add
+`volatile` to a variable no handler touches just to force a reload.

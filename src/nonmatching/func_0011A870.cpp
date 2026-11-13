@@ -1,4 +1,4 @@
-/* fuzzy: 72.0 */
+/* fuzzy: 90.9 */
 class Node_0011A870 {
 public:
     int m_0;
@@ -6,8 +6,9 @@ public:
     int m_8;
     Node_0011A870* m_next;
     Node_0011A870* m_prev;
+    bool IsEnd() { return m_pri == -1; }
     virtual void V0();
-    virtual int V1(int flag, float a, float b);
+    virtual int V1(float a, float b, int flag);
 };
 
 static inline Node_0011A870* Valid_0011A870(Node_0011A870* n)
@@ -35,11 +36,10 @@ public:
     }
     Node_0011A870* First()
     {
-        Node_0011A870* n = m_next;
-        if (n->m_pri == -1) {
+        if (m_next->IsEnd()) {
             return 0;
         }
-        return n;
+        return m_next;
     }
     Node_0011A870* GetItem(unsigned int index)
     {
@@ -87,7 +87,7 @@ extern "C" void func_0011A870(Ctrl_0011A870* self, float a, float b)
     int count = self->m_list.Count();
     for (int i = 0; i < count; i++) {
         Node_0011A870* n = self->m_list.GetItem(i);
-        if (n->V1(0, a, b)) {
+        if (n->V1(a, b, 0)) {
             func_00118350(n, func_0011AB18(self));
         }
     }

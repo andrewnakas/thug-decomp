@@ -1,4 +1,4 @@
-/* fuzzy: 73.4 */
+/* fuzzy: 77.9 */
 struct Heap_00171690 {
     char pad[0xD8];
     void* m_D8;
@@ -43,11 +43,12 @@ void func_00171690(Node_00171690* node, Vec_00171690* out, int reset)
         ofs[0] = (int)(node->m_pos[0] * 16.0f);
         ofs[1] = (int)(node->m_pos[1] * 16.0f);
         for (int i = 0; i < count; i++) {
-            Vec_00171690* d = &out[D_00393F48];
-            d->f[0] = (float)(src->i[0] + ofs[0]) * 0.0625f;
-            d->f[1] = (float)(src->i[1] + ofs[1]) * 0.0625f;
-            d->f[3] = 1.0f;
-            d->f[2] = (float)(src->i[2] + ofs[2]) * 0.0625f;
+            /* plain float* stores: the game reloads D_00393F48 after them (lw at 0x001717BC) */
+            float* d = out[D_00393F48].f;
+            d[0] = (float)(src->i[0] + ofs[0]) * 0.0625f;
+            d[1] = (float)(src->i[1] + ofs[1]) * 0.0625f;
+            d[3] = 1.0f;
+            d[2] = (float)(src->i[2] + ofs[2]) * 0.0625f;
             src++;
             D_00393F48 = D_00393F48 + 1;
         }

@@ -1,4 +1,4 @@
-/* fuzzy: 81.7 */
+/* fuzzy: 85.4 */
 /* sym: _vt$11It_00104A80 = 0x0035A988 */
 class Obj_00104A80 {
 public:
@@ -42,10 +42,18 @@ public:
         }
         return 0;
     }
-    Obj_00104A80* First(Node_00104A80* h)
+    Obj_00104A80* Advance2(Node_00104A80* c)
+    {
+        m_cur = c->m_prev->Valid();
+        if (!m_cur) {
+            return 0;
+        }
+        return m_cur->GetData();
+    }
+    Obj_00104A80* First(Node_00104A80* h, It_00104A80* self)
     {
         m_cur = h;
-        return Advance(m_cur);
+        return self->Advance2(h);
     }
 };
 
@@ -67,20 +75,22 @@ extern "C" void func_00104A80(Mgr_00104A80* m, int unused, int mask)
     do {
         It_00104A80 it;
         It_00104A80* p = &it;
-        Obj_00104A80* o = p->First(&m->m_head);
+        Obj_00104A80* o = it.First(&m->m_head, p);
         m->m_restart = 0;
-        while (o) {
-            Obj_00104A80* cur = o;
-            o = p->Advance(it.m_cur);
-            if (cur->m4 == 0 && cur->m10 != m->m_pass) {
-                cur->m10 = m->m_pass;
-                if ((cur->m14 & mask) == 0) {
-                    cur->Update();
+        if (o) {
+            do {
+                Obj_00104A80* cur = o;
+                o = p->Advance(it.m_cur);
+                if (cur->m4 == 0 && cur->m10 != m->m_pass) {
+                    cur->m10 = m->m_pass;
+                    if ((cur->m14 & mask) == 0) {
+                        cur->Update();
+                    }
                 }
-            }
-            if (m->m_restart) {
-                break;
-            }
+                if (m->m_restart) {
+                    break;
+                }
+            } while (o);
         }
     } while (m->m_restart);
 }

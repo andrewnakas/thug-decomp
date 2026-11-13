@@ -1,4 +1,4 @@
-/* fuzzy: 93.6 */
+/* fuzzy: 94.6 */
 // GS FINISH interrupt handler: acknowledges the event, advances the list of drawn packets to the next one
 // that has data for the current buffer and restarts the VIF1 / GIF transfers that were waiting for it.
 
@@ -61,10 +61,9 @@ int func_00164AC8(int)
     GS_CSR = (GS_CSR & ~0x30FL) | 1;
     GS_BUSDIR &= ~1L;
     if (D_003942EC) {
-        for (D_003942EC = D_003942EC->m_next; D_003942EC; D_003942EC = *(Packet_00164AC8**)D_003942EC) {
-            if (D_003942EC->m_count[D_00394094 ? 0 : 1] != 0) {
-                break;
-            }
+        D_003942EC = D_003942EC->m_next;
+        while (D_003942EC && D_003942EC->m_count[D_00394094 ? 0 : 1] == 0) {
+            D_003942EC = *(Packet_00164AC8**)D_003942EC;
         }
         Packet_00164AC8* cur = D_003942EC;
         if (cur) {

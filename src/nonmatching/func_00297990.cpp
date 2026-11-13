@@ -1,4 +1,4 @@
-/* fuzzy: 96.4 */
+/* fuzzy: 98.4 */
 /* nonmatch func_00297990: best earlier draft (thug-claude-lane3/work/nm67/wt2/func_00297990.nm.cpp), 5 of 154 words differ. */
 /* near miss (5 words): v0/v1 swap in org = verts[idx[0]] qword copy (address/data regs). Tried decl permutations, *(verts+idx[0]), .q copy, temp index. r3 wt2 also: org/up decl order and org init placement (size change or 8 words), verts[*idx], unsigned/short idx, byte-offset form: no change. */
 typedef int qword __attribute__((mode(TI)));
@@ -65,7 +65,8 @@ extern "C" void func_00297990(Vec_00297990* pos, Vec_00297990* dir, Vec_00297990
         d.f.z = v->f.z - org.f.z;
         d.f.w = v->f.w - org.f.w;
         func_00323298(&t, &m, &d);
-        d = t;
+        /* r = d too: the game stores the copy to r as well (sq $v0, 0xA0($sp) at 0x00297BB0) before its fields are written. */
+        r = d = t;
         r.f.x = d.f.x + pos->f.x;
         r.f.y = d.f.y + pos->f.y;
         r.f.z = d.f.z + pos->f.z;

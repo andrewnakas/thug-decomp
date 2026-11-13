@@ -1,4 +1,4 @@
-/* fuzzy: 95.8 */
+/* fuzzy: 97.7 */
 extern "C" float sqrtf(float);
 extern "C" int func_0010FC30();
 
@@ -316,6 +316,10 @@ void Skater_0027CD28::DoAirPhysics()
             D_00390EF8 = 1;
         }
         break;
+    // The compare tree has a node between 0x0AC90769 and 0x3506CE64 and one between 0x3506CE64 and
+    // 0xA549B57B; the matched sibling func_00291130 (same key, +0x1C) tests 0x255ED86F and 0x8D10119D.
+    case 0x255ED86F:
+    case 0x8D10119D:
     case 0xA549B57B:
         break;
     }
@@ -362,10 +366,10 @@ void Skater_0027CD28::DoAirPhysics()
         if (!m_state->m_onRail)
             func_0027ECE0(this);
         if (m_state->m_onRail) {
-            Body_0027CD28* b = m_body;
             Ray_0027CD28& ray = m_ray;
-            ray.m_start = b->m_pos + b->m_mat[1] * 36.0f;
-            ray.m_end = b->m_pos - b->m_mat[1] * 200.0f;
+            Body_0027CD28* b = m_body;
+            m_ray.m_start = b->m_pos + b->m_mat[1] * 36.0f;
+            m_ray.m_end = b->m_pos - b->m_mat[1] * 200.0f;
             if (func_0028E1C0(this, 0x10, 0))
                 m_59C->m_20 = m_state->m_13C = ray.m_6C;
         } else {

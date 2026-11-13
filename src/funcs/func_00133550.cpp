@@ -1,4 +1,3 @@
-/* fuzzy: 87.8 */
 /* sym: __13Inst_00133550 = 0x001D5608 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
@@ -14,6 +13,8 @@ struct Mesh_00133550 {
     char pad0[8];
     unsigned short m8;
     int GetCount() { return m8; }
+    Vec_00133550* Min() { return &m10; }
+    Vec_00133550* Max() { return &m20; }
     char padA[6];
     Vec_00133550 m10;
     Vec_00133550 m20;
@@ -65,9 +66,9 @@ extern "C" int func_00133550(void* p0, char* name, char* buf, int* outCount, Ins
     if (data) {
         Header_00133550* h = (Header_00133550*)data;
         *outCount = h->m4;
-        char* base = (char*)(h + 1);
-        *outMesh = (Mesh_00133550*)base;
-        char* p1 = base + (*outCount << 6);
+        data += sizeof(Header_00133550);
+        *outMesh = (Mesh_00133550*)data;
+        char* p1 = data + (*outCount << 6);
         p1 = (char*)((unsigned int)(p1 + 15) & 0xFFFFFFF0);
         char* p2 = p1 + (h->m14 * 12 + h->m18 * 6);
         char* p3 = p2 + h->m8;
@@ -83,9 +84,9 @@ extern "C" int func_00133550(void* p0, char* name, char* buf, int* outCount, Ins
             func_001D7EE8(&(*outMesh)[i]);
             (*outInst)[i].Bind(&(*outMesh)[i]);
             if ((*outMesh)[i].GetCount() > 0) {
-                func_00102358(box, &(*outMesh)[i].m10);
+                func_00102358(box, (*outMesh)[i].Min());
                 any = 1;
-                func_00102358(box, &(*outMesh)[i].m20);
+                func_00102358(box, (*outMesh)[i].Max());
             }
         }
         if (!any) {

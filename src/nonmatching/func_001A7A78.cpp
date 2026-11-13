@@ -1,4 +1,4 @@
-/* fuzzy: 82.9 */
+/* fuzzy: 83.1 */
 struct Obj_001A7A78 {
     char pad0[0x1C];
     int m1C;
@@ -38,17 +38,21 @@ void Obj_001A7A78::Fn()
             return;
         }
         float n = m34 + m28 * m210;
-        m34 = n;
-        if (n > m30)
-            m34 = m30;
+        if (!(n > m30)) {
+            m34 = n;
+            return;
+        }
+        m34 = m30;
     } else if (m34 > m30) {
         if (m2C == 0.0f) {
             m34 = m30;
             return;
         }
         float n = m34 - m2C * m210;
-        m34 = n;
-        if (n < m30)
-            m34 = m30;
+        if (!(n < m30)) {
+            m34 = n;
+            return;
+        }
+        m34 = m30;
     }
 }

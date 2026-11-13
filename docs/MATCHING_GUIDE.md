@@ -252,3 +252,32 @@ A sweep of all 460 nonmatching units found no new exact match. Its word-count ga
 coincidental alignment where checked (func_002D41E0, func_002BD080, func_002A0840 all got worse by fuzzy score),
 so judge the flag by `match.py`'s fuzzy score and by the asm itself, not by the differing-word count. Try it as `/* cflags: -mno-split-addresses */` when the game loads a global's address as a
 whole and you get split loads. Neighbouring functions from one source file should share the flag.
+
+## Where is the mismatch, and which C++ makes this asm? (`diffmap.py`, `shapedb.py`)
+
+Two tools for large near misses whose problems are structural (loop and switch shapes, missing inlines, types).
+
+- `tools/diffmap.py NAME [--src F] [--callsite] [--regions N] [--asm] [--html OUT] [--json OUT]` compiles the unit
+  as match.py does and once more with `-g`. This cc1plus writes stabs line notes (`.stabn 68`), and `-g` does not
+  change the code (shapedb's build checks it on every matched unit). A label next to each note, assembled by SN's
+  own as, maps every word of ours to its C++ line. Our words are aligned with the game's the way `match.fuzzy`
+  aligns them (difflib over register-free shapes), and each unaligned stretch is aligned again on opcodes. Every
+  word is then `ok`, `reg` (same instruction, other registers), `diff` (same opcode, other immediate or target),
+  `extra` (ours only) or `miss` (the game's only, charged to the line of our word just before it). The output is
+  the source with per-line counts and a heat mark, then the worst regions, worst first: game address range, our
+  offsets, the statements involved and any inlined helper lines. gcc 2.95 records no call site for inlined code,
+  so its words carry the inline body's line numbers. Every listing also charges them to the calling statement
+  (`<< inlined here`), and `--callsite` charges them there in the per-line counts too. `--html` writes a
+  side-by-side heat view (source | aligned game/ours asm).
+- `tools/shapedb.py build [-j3]` indexes every src/funcs unit into `build/shapedb/shapes.sqlite` (git-ignored;
+  incremental: unchanged units are reused). It cuts each unit's game asm into basic blocks and turns every
+  instruction into a register- and address-free shape token (opcode, register class arg/temp/saved/float/sp/zero,
+  immediate class, memory base and offset class, relocation kind, branch direction). It stores each block and
+  each window of 2–3 blocks with a MinHash/LSH signature and the unit's word → line map. Run it through
+  `memgate` (`memgate --need 4 --max 8 -- .venv/bin/python tools/shapedb.py build -j3`).
+- `tools/shapedb.py query NAME [--block ADDR] [--top N] [--regions N]` takes the game's words of the worst
+  diffmap regions of a src/nonmatching unit, or the basic block at `--block` (that needs no unit at all). It
+  prints the matched units whose blocks have the most similar shape, with their asm and the exact C++ lines that
+  produced it (`[inlined]` lines come from an inline helper, `[calls inline]` is the statement that called it).
+  Use it as "this idiom produced this exact code" and read the hit's source; a hit is a lead, not a recipe.
+  `shapedb.py loo` runs the leave-one-out retrieval test.

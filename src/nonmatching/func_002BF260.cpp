@@ -1,8 +1,10 @@
-/* fuzzy: 64.9 */
+/* fuzzy: 66.3 */
 struct Box_002BF260 {
     unsigned char x;
     signed char y;
     int GetY() const { return y; }
+    int GetX() const { return x; }
+    int GetZ() const { return z; }
     unsigned char z;
     unsigned char w;
     unsigned char h;
@@ -77,9 +79,9 @@ Node_002BF260* Obj_002BF260::Move(Item_002BF260* it, int dx, int dy, int dz)
         info.has = 1;
         rec = *r;
         func_002C0BE0(this, r);
-        *func_002BAA48(&rec.boxes[info.idx], 0) = rec.boxes[info.idx].x + dx;
+        *func_002BAA48(&rec.boxes[info.idx], 0) = rec.boxes[info.idx].GetX() + dx;
         *func_002BAA48(&rec.boxes[info.idx], 1) = rec.boxes[info.idx].GetY() + dy;
-        *func_002BAA48(&rec.boxes[info.idx], 2) = rec.boxes[info.idx].z + info.GetA();
+        *func_002BAA48(&rec.boxes[info.idx], 2) = rec.boxes[info.idx].GetZ() + info.GetA();
     }
     func_002BE958(this, it, 0);
     *func_002BAA48(&b, 0) += dx;

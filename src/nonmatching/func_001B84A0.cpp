@@ -1,4 +1,4 @@
-/* fuzzy: 97.3 */
+/* fuzzy: 97.5 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -490,8 +490,9 @@ void Cam_001B84A0::Update()
     float d0 = t.right.Dot(cm->right);
     float d1 = t.up.Dot(cm->up);
     float d2 = t.at.Dot(cm->at);
-    bool aligned = d0 > D_00387A2C && d1 > D_00387A2C && d2 > D_00387A2C;
-    if (!aligned) {
+    if (d0 > D_00387A2C && d1 > D_00387A2C && d2 > D_00387A2C)
+        goto aligned;
+    {
         func_00103000(m164, cm, &t);
         Mat_001B84A0 old = *cm;
         *cm = t;
@@ -518,6 +519,7 @@ void Cam_001B84A0::Update()
             mD8 = D_00387A34;
         }
     }
+aligned:
     m50 = cm->right;
     m60 = cm->up;
     // Position.

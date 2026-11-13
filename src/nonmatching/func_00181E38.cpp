@@ -1,4 +1,4 @@
-/* fuzzy: 86.7 */
+/* fuzzy: 91.0 */
 /* Downloads a rectangle of GS local memory to main memory (host <- local transfer): builds a small VIF/GIF
    packet (BITBLTBUF, TRXPOS, TRXREG, FINISH, TRXDIR = 1), sends it over the VIF1 DMA channel, reverses the
    bus direction and DMAs the image into dst, then restores the bus. The game's two `sync` barriers after the
@@ -37,19 +37,18 @@ void func_00181E38(void* dst, short sbp, short psm, short ssax, short ssay, shor
 {
     Packet_00181E38 pkt;
     qword buf[10];
-    int bits;
+    int qwc;
 
     if (psm == 0)
-        bits = w * h * 32;
+        qwc = (w * h * 32) >> 7;
     else if (psm == 1)
-        bits = w * h * 24;
+        qwc = (w * h * 24) >> 7;
     else if (psm == 2)
-        bits = w * h * 16;
+        qwc = (w * h * 16) >> 7;
     else if (psm == 0x13)
-        bits = w * h * 8;
+        qwc = (w * h * 8) >> 7;
     else
-        bits = w * h * 4;
-    int qwc = bits >> 7;
+        qwc = (w * h * 4) >> 7;
     int sbw = width >> 6;
     if (qwc > 0x7FFF) {
         func_00103F28(D_00361498, 0x195, D_003614E0);
@@ -66,7 +65,7 @@ void func_00181E38(void* dst, short sbp, short psm, short ssax, short ssay, shor
     func_00323258(&pkt, 0x50000006);
     func_00323270(&pkt, 0x1000000000008005);
     func_00323270(&pkt, 0xE);
-    func_00323270(&pkt, (long)sbp | ((long)sbw << 16) | ((long)psm << 24));
+    func_00323270(&pkt, ((long)sbw << 16) | (long)sbp | ((long)psm << 24));
     func_00323270(&pkt, 0x50);
     func_00323270(&pkt, (long)ssax | (ssay << 16));
     func_00323270(&pkt, 0x51);

@@ -1,4 +1,4 @@
-/* fuzzy: 91.4 */
+/* fuzzy: 93.9 */
 /* nonmatch func_002C2880: best earlier draft (thug-claude-lane2/work/wk23/mine/nm_func_002C2880.cpp), 578 of 628 words differ (size 0x9c0, want 0x9d0). */
 /* sym: __12Box_002C2880UcScUcUcUcUc = 0x002BAA28 */
 struct Box_002C2880 {
@@ -165,13 +165,14 @@ void Loader_002C2880::Load()
             int any = 0;
             func_002BB298(p, multi->mC);
             for (unsigned int k = 0; k < multi->mC; k++) {
+                unsigned int n = count++;
                 Array_002C2880* pos = 0;
                 Struct_002C2880* sub = func_001E9378(multi, k);
                 int rot = 0;
                 int sid = func_001E6E90(sub, 0)->m8;
                 func_001E8248(sub, 0, &pos, 1);
                 Elem_002C2880* e = func_002B7740(m0, sid, 1);
-                ids[count++] = sid;
+                ids[n] = sid;
                 Box_002C2880 box;
                 func_002B6C58(e, &box);
                 box.SetPos(func_001E9270(pos, 0), func_001E9270(pos, 1), func_001E9270(pos, 2));

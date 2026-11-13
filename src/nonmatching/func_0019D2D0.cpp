@@ -1,4 +1,4 @@
-/* fuzzy: 59.6 */
+/* fuzzy: 63.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct V_0019D2D0 {
@@ -6,6 +6,7 @@ struct V_0019D2D0 {
         struct { float x, y, z, w; };
         qword q;
     };
+    const float& operator[](int i) const { return (&x)[i]; }
     void Set(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
 };
 
@@ -18,7 +19,7 @@ struct Vec_0019D2D0 : V_0019D2D0 {
 
 static inline Vec_0019D2D0 operator+(const V_0019D2D0& a, const V_0019D2D0& b)
 {
-    return Vec_0019D2D0(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_0019D2D0(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 struct Mat_0019D2D0 {

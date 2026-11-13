@@ -1,4 +1,4 @@
-/* fuzzy: 83.4 */
+/* fuzzy: 93.0 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -64,7 +64,7 @@ struct Other_002692B0 {
     Vec_002692B0 m_pos;
 };
 
-extern "C" void func_00209240(Feeler_002692B0* f);
+extern "C" Feeler_002692B0* func_00209240(Feeler_002692B0* f);
 extern "C" void func_00209380(Feeler_002692B0* f, const Vec_002692B0& a, const Vec_002692B0& b);
 extern "C" int func_002093E8(Feeler_002692B0* f, int a, int b);
 
@@ -82,9 +82,6 @@ int Obj_002692B0::Check(Vec_002692B0* dir)
     Vec_002692B0 b = m_other->m_pos;
     Feeler_002692B0 f;
     func_00209240(&f);
-    int r = 0;
-    bool hit1 = false;
-    bool hit2 = true;
     Vec_002692B0 mid = (a + b) * 0.5f;
     mid = a + (mid - a) * 0.5f;
     Vec_002692B0 d = b - a;
@@ -99,6 +96,9 @@ int Obj_002692B0::Check(Vec_002692B0* dir)
     float t = d.x;
     d.x = d.z;
     d.z = -t;
+    int r = 0;
+    bool hit1 = false;
+    bool hit2 = true;
     func_00209380(&f, mid + d, mid - d);
     if (func_002093E8(&f, 1, 0))
         hit1 = true;

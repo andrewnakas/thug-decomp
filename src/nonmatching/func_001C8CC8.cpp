@@ -1,11 +1,13 @@
-/* fuzzy: 79.6 */
+/* fuzzy: 99.0 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001C8CC8 {
     union {
         struct { float x, y, z, w; };
+        float c[4];
         qword q;
     };
+    const float& operator[](int i) const { return c[i]; }
     Vec_001C8CC8() {}
     Vec_001C8CC8(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     void operator+=(const Vec_001C8CC8& b)
@@ -19,12 +21,12 @@ struct Vec_001C8CC8 {
 
 static inline Vec_001C8CC8 operator+(const Vec_001C8CC8& a, const Vec_001C8CC8& b)
 {
-    return Vec_001C8CC8(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001C8CC8(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001C8CC8 operator*(const Vec_001C8CC8& a, float s)
 {
-    return Vec_001C8CC8(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001C8CC8(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 struct Node_001C8CC8 {
@@ -91,7 +93,8 @@ bool Skater_001C8CC8::CheckRail(Coll_001C8CC8* feeler, const Vec_001C8CC8* pos, 
         return false;
     {
         Vec_001C8CC8 neg(-side.x, -side.y, -side.z, -side.w);
-        if (!func_001C90A0(this, feeler, st, &neg))
+        bool miss = !func_001C90A0(this, feeler, st, &neg);
+        if (miss)
             return false;
     }
     st->m_pos.y -= GetF_001C8CC8(0xA8C13E74);
@@ -110,10 +113,11 @@ bool Skater_001C8CC8::CheckRail(Coll_001C8CC8* feeler, const Vec_001C8CC8* pos, 
     target.y += func_001CB6F8(this);
     feeler->start = m30;
     feeler->end = target;
-    if (!func_002093E8(feeler, 1, 0))
+    if (func_002093E8(feeler, 1, 0)) {
+        if (m1C)
+            return false;
+    } else
         return true;
-    if (m1C)
-        return false;
     feeler->end = m30;
     feeler->end.y += GetF_001C8CC8(0xA85EC070);
     if (func_002093E8(feeler, 1, 0))

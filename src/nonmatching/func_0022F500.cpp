@@ -1,4 +1,4 @@
-/* fuzzy: 72.4 */
+/* fuzzy: 79.3 */
 /* sym: _vt$13Node_0022F500 = 0x00373000 */
 /* sym: _vt$14Score_0022F500 = 0x00372FE8 */
 /* sym: _vt$13Head_0022F500 = 0x00372F70 */
@@ -107,6 +107,7 @@ struct Node_0022F500 {
         prev = this;
     }
     virtual void Key();
+    void* Data() { return data; }
     Node_0022F500* Valid() { return (int)data != -1 ? this : 0; }
     void InsertBefore(Node_0022F500* n)
     {
@@ -135,7 +136,8 @@ struct Head_0022F500 : Node_0022F500 {
     void Key();
     void InsertSorted(Score_0022F500* s)
     {
-        for (Node_0022F500* n = next->Valid(); n; n = n->next->Valid()) {
+        Node_0022F500* n = this;
+        while ((n = n->next->Valid()) != 0) {
             if (s->key >= n->key) {
                 n->InsertBefore(s);
                 return;
@@ -156,7 +158,7 @@ struct ListIt_0022F500 {
         cur = cur->next->Valid();
         if (!cur)
             return 0;
-        return (Score_0022F500*)cur->data;
+        return (Score_0022F500*)cur->Data();
     }
     Score_0022F500* First(Node_0022F500* h)
     {
@@ -201,9 +203,7 @@ bool func_0022F500()
             t->m_color = i + 2;
             t->m_score = func_002B0FB8(net, i);
             func_003331D0(buf, D_00372DE8, i + 1);
-            char* a = func_001E54B8(buf, 0);
-            char* b = func_001E54B8(D_00372E08, 0);
-            func_003331D0(t->m_name, D_00372DF8, t->m_color, a, b);
+            func_003331D0(t->m_name, D_00372DF8, t->m_color, func_001E54B8(buf, 0), func_001E54B8(D_00372E08, 0));
             t->key = func_002B0FB8(net, i);
             list.InsertSorted(t);
         }
@@ -230,9 +230,10 @@ bool func_0022F500()
                 func_001F0370(D_00372E40, params, 0, 0);
                 FreeParams_0022F500(params);
                 params = NewParams_0022F500();
-                if (TIMED_0022F500(game))
-                    func_003331D0(buf, D_00372E58, score / 1000 / 60, score / 1000 % 60);
-                else
+                if (TIMED_0022F500(game)) {
+                    unsigned int secs = score / 1000;
+                    func_003331D0(buf, D_00372E58, secs / 60, secs % 60);
+                } else
                     func_003331D0(buf, D_0038FC18, score);
                 func_001E7138(params, D_0038FCE0, buf);
                 func_001E73C8(params, D_0038FD00, func_001F0D78(D_0038FD08));
@@ -249,10 +250,10 @@ bool func_0022F500()
             func_001F0370(D_00372E40, params, 0, 0);
             FreeParams_0022F500(params);
             params = NewParams_0022F500();
-            if (TIMED_0022F500(game))
-                func_003331D0(buf, D_00372EA8, t->m_color, (unsigned int)t->key / 1000 / 60,
-                              (unsigned int)t->key / 1000 % 60);
-            else
+            if (TIMED_0022F500(game)) {
+                unsigned int secs = (unsigned int)t->key / 1000;
+                func_003331D0(buf, D_00372EA8, t->m_color, secs / 60, secs % 60);
+            } else
                 func_003331D0(buf, D_0038FD18, t->m_color, t->key);
             func_001E7138(params, D_0038FCE0, buf);
             func_001E73C8(params, D_0038FD10, line + 0x39447);
@@ -287,9 +288,10 @@ bool func_0022F500()
             func_001F0370(D_00372E40, params, 0, 0);
             FreeParams_0022F500(params);
             params = NewParams_0022F500();
-            if (TIMED_0022F500(game))
-                func_003331D0(buf, D_00372E58, (unsigned int)s->key / 1000 / 60, (unsigned int)s->key / 1000 % 60);
-            else
+            if (TIMED_0022F500(game)) {
+                unsigned int secs = (unsigned int)s->key / 1000;
+                func_003331D0(buf, D_00372E58, secs / 60, secs % 60);
+            } else
                 func_003331D0(buf, D_0038FC18, s->key);
             func_001E7138(params, D_0038FCE0, buf);
             func_001E73C8(params, D_0038FD10, line + 0x39447);

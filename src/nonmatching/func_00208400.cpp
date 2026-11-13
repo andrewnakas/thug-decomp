@@ -1,4 +1,4 @@
-/* fuzzy: 92.6 */
+/* fuzzy: 92.9 */
 /* sym: _vt$13Base_00208400 = 0x0035D5C8 */
 /* sym: _vt$13Head_00208400 = 0x0035D5B0 */
 
@@ -92,7 +92,8 @@ static inline bool Overlap_00208400(Box_00208400* a, Shape_00208400* s)
     if (s->box.min.z > a->max.z) return false;
     if (a->min.z > s->box.max.z) return false;
     if (s->box.min.y > a->max.y) return false;
-    return !(s->box.max.y < a->min.y);
+    if (s->box.max.y < a->min.y) return false;
+    return true;
 }
 
 class Grid_00208400 {

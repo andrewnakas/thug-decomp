@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 78.5 */
+/* fuzzy: 83.5 */
 extern char D_0038EB88[];
 extern char D_003F3400[];
 extern int D_0039412C;

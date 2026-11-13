@@ -1,4 +1,4 @@
-/* fuzzy: 79.2 */
+/* fuzzy: 87.1 */
 /* sym: AddLines__15Goals_0024C590i = 0x0024C590 */
 // Adds `count` message lines to an on-screen goal/trick list. Each line takes a free slot of the
 // 30-entry table at this+0xA4, builds its text from script params (a random entry of a list, or
@@ -93,8 +93,9 @@ struct Slot_0024C590 {
     int m_mode;                 // +0xC4
 };
 
-struct Str4_0024C590 {
+union Str4_0024C590 {
     char c[4];
+    int w;
 };
 
 struct Players_0024C590 {
@@ -118,8 +119,8 @@ public:
 extern Mgr_0024C590* D_00389A30;
 extern unsigned int D_0038C6D4;
 extern void* D_0038FC78;
-extern Str4_0024C590 D_00390350;
-extern Str4_0024C590 D_00390358;
+extern Str4_0024C590 D_00390350[];
+extern Str4_0024C590 D_00390358[];
 extern char D_00390360[];
 extern char D_003743F0[];
 extern char D_00374400[];
@@ -232,10 +233,10 @@ void Goals_0024C590::AddLines(int count)
             func_001E7C80(entry, 0x270F56E1, &name, 1);
             if (func_001E8708(entry, 0x255ED86F)) {
                 char buf[0x80];
-                *(Str4_0024C590*)buf = D_00390350;
+                *(Str4_0024C590*)buf = D_00390350[0];
                 func_00331678(buf, name);
                 m_slots[index].m_name = func_001F0D78(buf);
-                *(Str4_0024C590*)buf = D_00390358;
+                *(Str4_0024C590*)buf = D_00390358[0];
                 func_00331678(buf, name);
                 m_slots[index].m_name2 = func_001F0D78(buf);
             } else {
@@ -339,7 +340,11 @@ void Goals_0024C590::AddLines(int count)
 
         // optional second text
         if (altText || checksum) {
-            void* strings = func_001E5548(m_slots[index].m_mode == 2 ? 0xE7ABFB95 : 0x8856C817, 1);
+            void* strings;
+            if (m_slots[index].m_mode == 2)
+                strings = func_001E5548(0xE7ABFB95, 1);
+            else
+                strings = func_001E5548(0x8856C817, 1);
             if (altText == 0)
                 func_001E7C80(strings, checksum, &altText, 0);
             props = NewParams_0024C590();
@@ -372,9 +377,9 @@ void Goals_0024C590::AddLines(int count)
 
         if (!func_0024E0C0(this) && !func_0024E048(this) && (float)total * 0.75f < (float)m_shown) {
             func_001E7200(m_params, 0xD02AC196, 1);
-            for (Slot_0024C590* p = m_slots; p < m_slots + 30; p++) {
-                if (p->m_free == 0) {
-                    Obj_0024C590* e = func_0012DB48(mgr, p->m_elemId, 1).m_obj;
+            for (int i = 0; i < 30; i++) {
+                if (m_slots[i].m_free == 0) {
+                    Obj_0024C590* e = func_0012DB48(mgr, m_slots[i].m_elemId, 1).m_obj;
                     Script_0024C590* t = func_001F0750(0xEB016D1E, 0, 0, 0, -1, 0, 0, 0, 0, 0);
                     t->m_elem = e;
                     func_001EFDC0(t);

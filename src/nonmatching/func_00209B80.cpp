@@ -1,4 +1,4 @@
-/* fuzzy: 65.1 */
+/* fuzzy: 83.3 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00209B80 {
@@ -8,6 +8,7 @@ struct Vec_00209B80 {
     };
     Vec_00209B80() {}
     Vec_00209B80(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    Vec_00209B80(const Vec_00209B80& o) { q = o.q; }
     Vec_00209B80& operator=(const Vec_00209B80& o)
     {
         q = o.q;
@@ -65,12 +66,12 @@ void Edges_00209B80::Merge()
         dirs[i] = d;
         func_003233B8(&dirs[i], &dirs[i]);
     }
-    i = m1030;
-    while (i--) {
-        if (used[i])
+    int k = m1030;
+    while (k--) {
+        if (used[k])
             continue;
-        Edge_00209B80* a = &m_in[i];
-        int j = i;
+        Edge_00209B80* a = &m_in[k];
+        int j = k;
         while (j--) {
             Edge_00209B80* b = &m_in[j];
             if ((Near_00209B80(a->pts[0].pos, b->pts[0].pos, 0.1f) && Near_00209B80(a->pts[1].pos, b->pts[1].pos, 0.1f)) ||
@@ -81,19 +82,19 @@ void Edges_00209B80::Merge()
         }
     }
     m2040 = 0;
-    i = m1030;
-    while (i--) {
-        Edge_00209B80 cur = m_in[i];
-        if (used[i])
+    int n = m1030;
+    while (n--) {
+        Edge_00209B80 cur = m_in[n];
+        if (used[n])
             continue;
-        int j = i;
+        int j = n;
         while (j--) {
             if (used[j])
                 continue;
             Edge_00209B80* b = &m_in[j];
             if (cur.n.x * b->n.x + cur.n.y * b->n.y + cur.n.z * b->n.z < 0.99f)
                 continue;
-            if (__builtin_fabsf(dirs[i].x * dirs[j].x + dirs[i].y * dirs[j].y + dirs[i].z * dirs[j].z) < 0.99f)
+            if (__builtin_fabsf(dirs[n].x * dirs[j].x + dirs[n].y * dirs[j].y + dirs[n].z * dirs[j].z) < 0.99f)
                 continue;
             if (Near_00209B80(cur.pts[0].pos, b->pts[0].pos, 0.1f)) {
                 cur.pts[0] = b->pts[1];

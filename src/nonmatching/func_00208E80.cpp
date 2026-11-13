@@ -1,4 +1,4 @@
-/* fuzzy: 67.9 */
+/* fuzzy: 85.3 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00208E80 {
@@ -20,6 +20,7 @@ struct Item_00208E80 {
     unsigned short m4;
     char pad6[0xA];
     unsigned char m10;
+    void SetStamp(unsigned char st) { m10 = st; }
 };
 
 struct Cell_00208E80 {
@@ -90,7 +91,8 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
         Cell_00208E80* c = &m_cells[x1][z1];
         Item_00208E80** out = D_003F3F70;
         Item_00208E80** in = c->m_items;
-        for (int k = c->m_count; k > 0; k--) {
+        int cnt = c->m_count;
+        for (int k = 0; k < cnt; k++) {
             Item_00208E80* it = *in++;
             if (!(it->m4 & 6)) {
                 *out++ = it;
@@ -102,13 +104,12 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
     int stamp = func_00207F80();
     for (int i = x0; i <= x1; i++) {
         for (int j = z0; j <= z1; j++) {
-            Cell_00208E80* c = &m_cells[i][j];
-            for (int k = 0; k < c->m_count; k++) {
-                Item_00208E80* it = c->m_items[k];
+            for (int k = 0; k < m_cells[i][j].m_count; k++) {
+                Item_00208E80* it = m_cells[i][j].m_items[k];
                 if (!(it->m4 & 6) && it->m10 != stamp && n < 0x3FF) {
                     D_003F3F70[n] = it;
                     n++;
-                    it->m10 = stamp;
+                    it->SetStamp(stamp);
                 }
             }
         }

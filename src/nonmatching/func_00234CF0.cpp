@@ -1,4 +1,4 @@
-/* fuzzy: 55.0 */
+/* fuzzy: 80.8 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00234CF0 {
     qword q;
@@ -22,7 +22,7 @@ union Vec_00234CF0 {
 
 
 struct Mat_00234CF0 {
-    Vec_00234CF0 row[4];
+    qword row[4];
 };
 
 struct Bits_00234CF0 {
@@ -86,6 +86,7 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
 {
     Bits_00234CF0 bits;
     Vec_00234CF0 posF;
+    Mat_00234CF0 m;
     float rot[3];
     short pos[3];
     Mat_00234CF0 mat;
@@ -98,16 +99,24 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
     unsigned char mask = func_001FAB88(&bits, 8);
     do {
         if ((mask >> i) & 1) {
+            char f7C;
+            char f78;
+            signed char f84;
+            char f7D;
+            char f7E;
+            int f70;
+            int f74;
+            short f88;
             unsigned short time = func_001FAB88(&bits, 16);
-            char f7C = 0;
-            char f78 = 0;
+            f7C = 0;
+            f78 = 0;
             unsigned int flags = func_001FAB88(&bits, 9);
-            signed char f84 = 0;
-            int f70 = f7C;
-            int f74 = f7C;
-            char f7D = 0;
-            char f7E = 0;
-            short f88 = -1;
+            f84 = 0;
+            f70 = f7C;
+            f74 = f7C;
+            f7D = 0;
+            f7E = 0;
+            f88 = -1;
             if (flags & 1)
                 pos[0] = func_001FAC80(&bits, 16);
             if (flags & 2)
@@ -123,7 +132,7 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
             if (flags & 0x40) {
                 unsigned int v = func_001FAB88(&bits, 4);
                 f78 = v & 7;
-                f7C = (unsigned char)v >> 7;
+                f7C = (signed char)v < 0;
                 f84 = (signed char)func_001FAB88(&bits, 6);
                 f7D = (signed char)func_001FAB88(&bits, 1);
                 f7E = (signed char)func_001FAB88(&bits, 1);
@@ -180,7 +189,8 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
                     frames[cur].m_rot[k] = rot[k];
 
                 func_00100200(&mat, rot[0], rot[1], rot[2]);
-                frames[cur].m_mat = mat;
+                m = mat;
+                frames[cur].m_mat = m;
                 frames[cur].m_posF = posF;
                 ang = frames[cur].m_posF - frames[prev].m_posF;
 
@@ -205,9 +215,10 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
                 frames[cur].m_84 = f84;
                 frames[cur].m_7D = f7D;
                 frames[cur].m_7E = f7E;
-                frames[cur].m_wrap = frames[prev].m_wrap;
+                unsigned short wrap = frames[prev].m_wrap;
+                frames[cur].m_wrap = wrap;
                 if (time < frames[prev].m_time)
-                    frames[cur].m_wrap = frames[prev].m_wrap + 1;
+                    frames[cur].m_wrap = wrap + 1;
                 frames[cur].m_time = time;
                 sk->m_history->m_count++;
             }

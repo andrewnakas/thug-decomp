@@ -1,4 +1,4 @@
-/* fuzzy: 92.8 */
+/* fuzzy: 99.6 */
 typedef int qword_0025CD00 __attribute__((mode(TI)));
 
 struct Vec_0025CD00 {
@@ -138,12 +138,13 @@ static inline void* Item_0025CD00(void* obj)
    then links each piece to the one with the previous id and copies tint and colours across. */
 bool Builder_0025CD00::Build(int* data)
 {
-    int* p = data + 1;
+    int* p = data;
+    p++;
     int n = *p++;
     for (int k = 0; k < n; k++) {
         int id = *p++;
         unsigned int type = *p;
-        int index = func_001F0D78(D_00390C00) + *p++;
+        int index = *p++ + func_001F0D78(D_00390C00);
         int colour = *p++;
         int link = *p++;
         int flags = *p++;
@@ -152,20 +153,17 @@ bool Builder_0025CD00::Build(int* data)
         void* params = func_001E6978(func_001190D0(8));
         if (type == 0x5B8AB877 || type == 0x67E6859A)
             special = 1;
-        int hi;
         unsigned int top;
         if (special) {
             func_001E7360(params, 0x153A84DE, 0);
-            hi = flags >> 30;
             top = (unsigned int)flags >> 31;
         } else {
             if (!func_0010F7C0(m4, type, 0xFD8697E1)) {
                 colour = 0;
                 link = 0;
             }
-            hi = flags >> 30;
             top = (unsigned int)flags >> 31;
-            if ((hi & 1) && top) {
+            if (((flags >> 30) & 1) && top) {
                 char* prof = func_0022E3C8(D_0038FC78, 0);
                 void* v = func_001200E0(prof + 4);
                 if (v && func_00123420(v))
@@ -178,7 +176,7 @@ bool Builder_0025CD00::Build(int* data)
             }
             func_001E7360(params, 0x86BD5B8F, index);
         }
-        if ((hi & 1) && top) {
+        if (((flags >> 30) & 1) && top) {
             char* prof = func_0022E3C8(D_0038FC78, 0) + 4;
             void* s = func_0011FE18(prof, 0x650FAB6D);
             if (!s)
@@ -200,7 +198,8 @@ bool Builder_0025CD00::Build(int* data)
         e->m_obj = func_0025CBC8(params);
         Model_0025CD00* c = func_00185578(e->m_obj, 0x286A8D26);
         if (c) {
-            func_0013F010(c->m260, Vec_0025CD00(0.0f, 0.0f, 0.0f, 50000.0f));
+            Mesh_0025CD00* cm = c->m260;
+            func_0013F010(cm, Vec_0025CD00(0.0f, 0.0f, 0.0f, 50000.0f));
             if (c->m288) {
                 Obj_0025CD00* owner = func_00184D70(func_0018DF68(c));
                 Model_0025CD00* oc = func_00185578(owner, 0x286A8D26);
@@ -223,8 +222,8 @@ bool Builder_0025CD00::Build(int* data)
         e->m_id = id;
         func_00183E90(e->m_obj, id);
         e->m_8 = colour;
-        e->m_flags = flags;
         e->m_special = special;
+        e->m_flags = flags;
         e->m_index = -1;
         e->m_10 = 0;
         e->m_prevObj = 0;
@@ -235,8 +234,7 @@ bool Builder_0025CD00::Build(int* data)
             func_001E6AE8(params, 3);
     }
 
-    int i;
-    for (i = 0; i < m_count; i++) {
+    for (int i = 0; i < m_count; i++) {
         Ent_0025CD00* e = &m54[i];
         if (e->m_special)
             func_0025CC88(e->m_obj, Item_0025CD00(e->m_obj));
@@ -245,7 +243,7 @@ bool Builder_0025CD00::Build(int* data)
             func_0025CC88(e->m_obj, Item_0025CD00(prev->m_obj));
     }
 
-    for (i = 0; i < m_count; i++) {
+    for (int i = 0; i < m_count; i++) {
         Ent_0025CD00* e = &m54[i];
         Model_0025CD00* c = func_00185578(e->m_obj, 0x286A8D26);
         if (c) {
@@ -258,7 +256,7 @@ bool Builder_0025CD00::Build(int* data)
         }
     }
 
-    for (i = 0; i < m_count; i++) {
+    for (int i = 0; i < m_count; i++) {
         Ent_0025CD00* e = &m54[i];
         Ent_0025CD00* prev = func_0025CB38(this, e->m_id - 1);
         if (prev) {
@@ -290,7 +288,7 @@ bool Builder_0025CD00::Build(int* data)
             }
         }
         for (int j = 0; j < func_00144D90(m10); j++) {
-            if (func_00144DD0(m10, j) == e->m_id) {
+            if (e->m_id == func_00144DD0(m10, j)) {
                 e->m_index = j;
                 break;
             }

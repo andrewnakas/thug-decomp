@@ -1,4 +1,4 @@
-/* fuzzy: 53.2 */
+/* fuzzy: 72.2 */
 /* sym: _vt$13Node_00208088 = 0x0035D5C8 */
 /* sym: _vt$13Head_00208088 = 0x0035D5B0 */
 struct Vec_00208088 {
@@ -110,24 +110,24 @@ void Grid_00208088::Build(Item_00208088* items, int count)
     Head_00208088 head;
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 20; j++) {
-            Cell_00208088* cell = &m_cells[i][j];
             func_0010A950(D_00388A70, D_00388A70->mD8);
-            for (int k = 0; k < count; k++) {
+            int k;
+            for (k = 0; k < count; k++) {
                 Item_00208088* it = &items[k];
                 Obj_00208088* o = it->m_obj;
-                if (o->m8 > 0 && o->m_box.Intersects(cell->m_box)) {
+                if (o->m8 > 0 && o->m_box.Intersects(m_cells[i][j].m_box)) {
                     head.Append(new Node_00208088(it));
                 }
             }
             func_0010A9B0(D_00388A70);
             if (head.Count()) {
-                cell->m_items = (void**)func_0010BDE0(head.Count() * 4);
-                cell->m_count = head.Count();
-                int k = 0;
+                m_cells[i][j].m_items = (void**)func_0010BDE0(head.Count() * 4);
+                m_cells[i][j].m_count = head.Count();
+                k = 0;
                 Node_00208088* n = head.m_next->Valid();
                 while (n) {
                     Node_00208088* next = n->m_next->Valid();
-                    cell->m_items[k] = n->m_data;
+                    m_cells[i][j].m_items[k] = n->m_data;
                     delete n;
                     n = next;
                     k++;

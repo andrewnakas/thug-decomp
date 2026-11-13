@@ -1,4 +1,4 @@
-/* fuzzy: 78.1 */
+/* fuzzy: 78.4 */
 struct MsgDesc_002006C8 {
     unsigned char m_id;
     unsigned char m1;
@@ -79,6 +79,7 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
     MsgDesc_002006C8 desc;
     bool small = size <= 0x100;
     int chunk = small ? size : 0x100;
+    int len = chunk + 0x30;
     func_001FA800(&desc);
     hdr.m_size = size;
     hdr.m_seq = mgr->m880;
@@ -87,7 +88,7 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
     func_00331A9C(hdr.m_name, name);
     func_00331404(hdr.m_data, data, size > 0x100 ? 0x100 : size);
     desc.m_id = 0xE;
-    desc.m_length = chunk + 0x30;
+    desc.m_length = len;
     desc.m_priority = 2;
     desc.m1 = 1;
     desc.m_data = &hdr;

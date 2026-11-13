@@ -1,4 +1,4 @@
-/* fuzzy: 90.7 */
+/* fuzzy: 92.9 */
 /* sym: __13Coll_001CAFC0 = 0x00209240 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -182,8 +182,8 @@ int Self_001CAFC0::Start(Vec_001CAFC0* pos)
     mC44 = 0;
     mC40 = mC4;
     mC80 = 1;
-    mBD0 = m_vel;
     m970 = m_vel * -(Param_001CAFC0(0x21DFBE77) + 6.0f);
+    mBD0 = m_vel;
     mBE4 = m_pos[1] - mBF4;
     m970[1] = 1.0f;
     func_001BF130(this, 4);

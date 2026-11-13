@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 62.1 */
+/* fuzzy: 72.9 */
 /* nonmatch func_002B9A28 (0x9EC): fresh draft from the asm. Builds restart nodes (and CTF flag/base nodes) for the 18 restart slots. */
 extern char D_00392650[]; /* "angles" */
 extern char D_00392658[]; /* "name" */
@@ -140,15 +140,23 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
                 if (m_restarts[i].type != 4) {
                     char* label = D_0037A208;
                     if (j == 0) {
-                        int t = m_restarts[i].type;
-                        if (t == 1)
+                        switch (m_restarts[i].type) {
+                        case 1:
                             label = D_0037A218;
-                        else if (t == 2)
+                            break;
+                        case 2:
                             label = D_0037A230;
-                        else if (t == 3)
+                            break;
+                        case 3:
                             label = D_0037A248;
-                        else if (t >= 5 && t <= 8)
+                            break;
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
                             label = D_0037A258;
+                            break;
+                        }
                     }
                     func_001E7A30(node, crcRestartName, 3, label);
                     void* types = func_001E8DD0(func_00122CF8(0x10));

@@ -1,4 +1,4 @@
-/* fuzzy: 88.2 */
+/* fuzzy: 98.6 */
 typedef int qword_0020A760 __attribute__((mode(TI)));
 
 struct Vec_0020A760 {
@@ -122,7 +122,9 @@ bool Mover_0020A760::Update(const Vec_0020A760* pt)
         m70 = m0->m70;
         m70.ClearPos();
         func_00323318(&m70, &inv, &m70);
-        m60 += func_00323298(&m70, &local) - v;
+        Vec_0020A760 r;
+        r = func_00323298(&m70, &local);
+        m60 += r - v;
         m10 = m0->m70;
     } else {
         mB0 = 0;

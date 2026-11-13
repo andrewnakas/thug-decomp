@@ -1,4 +1,4 @@
-/* fuzzy: 95.8 */
+/* fuzzy: 96.3 */
 struct Entry_002D41E0;
 struct Node_002D41E0 {
     int m0;
@@ -163,12 +163,11 @@ void Task_002D41E0::Update()
         }
         return;
     }
-    int m = d->m4;
-    if (m == 3 || m == 6) {
+    if (d->m4 == 3 || d->m4 == 6) {
         if (d->m18)
             func_0010A8D8(D_00388A70, d->m18);
-        m = d->m4;
     }
+    int m = d->m4;
     int st = m;
     if (m == 3 || m == 6 || m == 4) {
         func_001048F0(d->m0);

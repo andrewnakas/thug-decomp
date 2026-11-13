@@ -1,4 +1,4 @@
-/* fuzzy: 78.2 */
+/* fuzzy: 83.3 */
 extern char D_00361AA0[];
 
 struct Obj_00187080;
@@ -32,12 +32,6 @@ struct It_00187080 {
     {
         cur = h;
         return Next();
-    }
-    Obj_00187080* Advance(Node_00187080* c)
-    {
-        cur = c->mC->Valid();
-        if (!cur) return 0;
-        return cur->GetData();
     }
 };
 
@@ -82,7 +76,7 @@ void Obj_00187080::Propagate(int on)
         It_00187080* p = &it;
         do {
             o->m20 &= ~bit;
-            o = p->Advance(it.cur);
+            o = p->Next();
         } while (o);
     }
 restart:
@@ -92,7 +86,7 @@ restart:
         It_00187080* q = &it;
         do {
             Obj_00187080* x = d;
-            d = q->Advance(it.cur);
+            d = q->Next();
             if (!(x->m20 & bit)) {
                 x->m20 |= bit;
                 x->SetFlag(on);

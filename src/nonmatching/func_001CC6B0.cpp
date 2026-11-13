@@ -1,4 +1,4 @@
-/* fuzzy: 90.6 */
+/* fuzzy: 99.3 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -6,25 +6,27 @@ extern "C" float sqrtf(float);
 struct Vec_001CC6B0 {
     union {
         struct { float x, y, z, w; };
+        float c[4];
         qword q;
     };
+    const float& operator[](int i) const { return c[i]; }
     Vec_001CC6B0() {}
     Vec_001CC6B0(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
 };
 
 static inline Vec_001CC6B0 operator+(const Vec_001CC6B0& a, const Vec_001CC6B0& b)
 {
-    return Vec_001CC6B0(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001CC6B0(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001CC6B0 operator-(const Vec_001CC6B0& a, const Vec_001CC6B0& b)
 {
-    return Vec_001CC6B0(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_001CC6B0(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_001CC6B0 operator*(const Vec_001CC6B0& a, float s)
 {
-    return Vec_001CC6B0(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001CC6B0(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 struct Node_001CC6B0 {
@@ -77,7 +79,8 @@ static inline float GetF_001CC6B0(unsigned int id)
 
 void Obj_001CC6B0::UpdateRail()
 {
-    float step = GetF_001CC6B0(0x0AB2DB54) * mB0;
+    float step = GetF_001CC6B0(0x0AB2DB54);
+    step *= mB0;
     step *= func_00340F60(mA28->m290);
     m954 = step;
     step *= m98;

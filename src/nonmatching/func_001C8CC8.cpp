@@ -1,4 +1,4 @@
-/* fuzzy: 69.3 */
+/* fuzzy: 79.6 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001C8CC8 {
@@ -8,6 +8,13 @@ struct Vec_001C8CC8 {
     };
     Vec_001C8CC8() {}
     Vec_001C8CC8(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    void operator+=(const Vec_001C8CC8& b)
+    {
+        x += b.x;
+        y += b.y;
+        z += b.z;
+        w += b.w;
+    }
 };
 
 static inline Vec_001C8CC8 operator+(const Vec_001C8CC8& a, const Vec_001C8CC8& b)
@@ -67,6 +74,7 @@ extern "C" float func_001CB6F8(Skater_001C8CC8* self);
 bool Skater_001C8CC8::CheckRail(Coll_001C8CC8* feeler, const Vec_001C8CC8* pos, State_001C8CC8* st)
 {
     st->m_pos = *pos;
+    Vec_001C8CC8* dir = &st->m_dir;
     Vec_001C8CC8 side(-st->m_dir.z, 0.0f, st->m_dir.x, 1.0f);
     Vec_001C8CC8 rail;
     {
@@ -87,15 +95,15 @@ bool Skater_001C8CC8::CheckRail(Coll_001C8CC8* feeler, const Vec_001C8CC8* pos, 
             return false;
     }
     st->m_pos.y -= GetF_001C8CC8(0xA8C13E74);
-    st->m_pos = st->m_pos + st->m_dir * GetF_001C8CC8(0x262A9467);
+    st->m_pos += st->m_dir * GetF_001C8CC8(0x262A9467);
     {
         Vec_001C8CC8 d = rail;
-        if (func_001C9C38(this, &st->m_dir, &st->m_pos, 1, &side, st->m20, &d, st->m_node, st->m_node->m50))
+        if (func_001C9C38(this, dir, &st->m_pos, 1, &side, st->m20, &d, st->m_node, st->m_node->m50))
             return false;
     }
     {
         Vec_001C8CC8 d = rail;
-        if (func_001C9C38(this, &st->m_dir, &st->m_pos, 0, &side, st->m20, &d, st->m_node, st->m_node->m50))
+        if (func_001C9C38(this, dir, &st->m_pos, 0, &side, st->m20, &d, st->m_node, st->m_node->m50))
             return false;
     }
     Vec_001C8CC8 target = st->m_pos + st->m_dir * GetF_001C8CC8(0xC3263E6E);

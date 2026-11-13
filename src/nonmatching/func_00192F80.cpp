@@ -1,4 +1,4 @@
-/* fuzzy: 85.2 */
+/* fuzzy: 90.4 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -400,32 +400,34 @@ void Car_00192F80::Init(void* params)
     }
 
     // Orientation from the owner's matrix.
-    const Mat_00192F80& m = mC->m70;
-    Quat_00192F80 r;
-    float tr = m[0][0] + m[1][1] + m[2][2];
-    float sq;
-    if (tr > 0.0f) {
-        sq = sqrtf(tr + 1.0f);
-        float hw = sq * 0.5f;
-        sq = 0.5f / sq;
-        func_00119228(&r, hw);
-        func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
-    } else {
-        int i = 0;
-        if (m[0][0] < m[1][1])
-            i = 1;
-        if (m[i][i] < m[2][2])
-            i = 2;
-        int j = (i + 1) % 3;
-        int k = (j + 1) % 3;
-        sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
-        r[i] = sq * 0.5f;
-        sq = 0.5f / sq;
-        r[j] = (m[j][i] + m[i][j]) * sq;
-        r[k] = (m[k][i] + m[i][k]) * sq;
-        r[3] = (m[k][j] - m[j][k]) * sq;
+    {
+        const Mat_00192F80& m = mC->m70;
+        Quat_00192F80 r;
+        float tr = m[0][0] + m[1][1] + m[2][2];
+        float sq;
+        if (tr > 0.0f) {
+            sq = sqrtf(tr + 1.0f);
+            float hw = sq * 0.5f;
+            sq = 0.5f / sq;
+            func_00119228(&r, hw);
+            func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
+        } else {
+            int i = 0;
+            if (m[0][0] < m[1][1])
+                i = 1;
+            if (m[i][i] < m[2][2])
+                i = 2;
+            int j = (i + 1) % 3;
+            int k = (j + 1) % 3;
+            sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
+            r[i] = sq * 0.5f;
+            sq = 0.5f / sq;
+            r[j] = (m[j][i] + m[i][j]) * sq;
+            r[k] = (m[k][i] + m[i][k]) * sq;
+            r[3] = (m[k][j] - m[j][k]) * sq;
+        }
+        m40 = r;
     }
-    m40 = r;
     m40.Normalize();
     if (func_001E8618(params, 0xAA99C521)) {
         Vec_00192F80 v(0.0f, 0.0f, 0.0f, 1.0f);

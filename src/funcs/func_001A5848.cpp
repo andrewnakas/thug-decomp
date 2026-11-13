@@ -1,4 +1,3 @@
-/* fuzzy: 47.4 */
 /* Ped/vehicle AI (path-follow) component script member functions. Returns 0/1 for handled
    commands and queries, 2 when the name is not one of this component's. */
 extern "C" float sqrtf(float);
@@ -10,6 +9,15 @@ struct Vec_001A5848 {
         qword q;
         struct { float x, y, z, w; };
     };
+    Vec_001A5848() {}
+    Vec_001A5848(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    void Set(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
     float Length() const { return sqrtf(x * x + y * y + z * z); }
 };
 
@@ -58,8 +66,8 @@ struct AIComponent_001A5848 {
     char pad0[0xC];
     Model_001A5848* model;      /* 0x0C */
     char pad10[0xC];
-    unsigned int state;         /* 0x1C */
-    unsigned int flags;         /* 0x20 */
+    int state;                  /* 0x1C */
+    int flags;                  /* 0x20 */
     float fixedSpeed;           /* 0x24 */
     char block28[4];            /* 0x28 */
     char block2C[4];            /* 0x2C */
@@ -150,188 +158,84 @@ static inline bool IsOff(void* params) { return func_001E8708(params, 0xD443A2BC
 int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Script_001A5848* script)
 {
     switch (name) {
-    case 0x8D95F1E1:
-        func_001EE5D8(script, 7, this);
-        return 1;
-    case 0x1E094B84:
-        func_001EE5D8(script, 6, this);
-        return 1;
-    case 0xBDC4C878:
-        func_001EE5D8(script, 8, this);
-        return 1;
-    case 0xDBFDD02F:
-        func_001EE5D8(script, 4, this);
-        return 1;
-
-    case 0x434EA1FB:
-        if (IsOff(params))
-            flags &= ~0x200;
-        else
-            flags |= 0x200;
-        return 1;
-
+    case 0x21ACCF0D:
+        return func_001A5620(this) != 0;
+    case 0x7BC461AE:
+        return func_001A5630(this) != 0;
+    case 0x8E52ABEA:
+        target = model->pos;
+        break;
+    case 0xC8CC6820:
+        targetNode = func_001A67A8(this)->link;
+        break;
+    case 0x68E1F022:
+        state &= ~0x18;
+        break;
+    case 0xDFBE3DB3:
+        state &= ~0x67;
+        break;
+    case 0xFB603EA9:
+        func_001A5640(params, block30);
+        break;
+    case 0x2CA63CDF:
+        func_001A5640(params, &accel);
+        break;
+    case 0xD6697AD0:
+        func_001A56D0(params, block28);
+        break;
+    case 0xA67FC783:
+        func_001A56D0(params, block2C);
+        break;
+    case 0x5CF1B7D4:
+        func_001A6FB0(this, params);
+        break;
+    case 0x0B231A9D:
+        func_001A71F0(this, params, script, 0);
+        break;
+    case 0x7C242A0B:
+        func_001A71F0(this, params, script, 1);
+        break;
+    case 0xE52D7BB1:
+        func_001A71F0(this, params, script, 2);
+        break;
     case 0xD8F4BC32:
         if (IsOff(params))
             flags |= 0x10;
         else
             flags &= ~0x10;
-        return 1;
-
+        break;
     case 0xAA3CB476:
         if (IsOff(params)) {
             flags &= ~0x100;
-            return 1;
+            break;
         }
         flags |= 0x100;
         func_001E7EB0(params, 0, &model->pos.y, 0);
-        return 1;
-
-    case 0xC5ECA638:
-        func_001E7EB0(params, 0xA8A5A3C7, &turnX, 0);
-        func_001E7EB0(params, 0x182D87A7, &turnY, 0);
-        if (IsOff(params)) {
-            flags &= ~4;
-            return 1;
+        break;
+    case 0xB75589CE: {
+        float radius = 100.0f;
+        func_001E7EB0(params, 0x6C78A5B6, &radius, 0);
+        radius *= 12.0f;
+        func_001E6B90(script->params, 0xFFFF9A1C);
+        Node_001A5848* node = func_001A9480(this, radius);
+        if (node)
+            func_001E7360(script->params, 0xFFFF9A1C, node->index);
+        break;
+    }
+    case 0x6866312F: {
+        int n = func_00229EB0(links);
+        if (n) {
+            void* out = script->params;
+            func_001E7200(out, 0xC953660E, func_00100030(n) + 1);
         }
-        flags |= 4;
-        if (turnX == 0.0f && turnY == 0.0f)
-            return 0;
-        func_001A8BE0(this);
-        return 1;
-
-    case 0x21ACCF0D:
-        return func_001A5620(this) != 0;
-    case 0x7BC461AE:
-        return func_001A5630(this) != 0;
-
-    case 0x103BD253:
-        func_001A75F8(this, params, script);
-        return 1;
-    case 0x6419CEFF:
-        func_001A7548(this, params, script);
-        return 1;
-    case 0x3BCAAC3F:
-        func_001A7FB0(this, params, script);
-        return 1;
-    case 0x8819DD8B:
-        func_001A7DF0(this, params, script);
-        return 1;
-    case 0x0B231A9D:
-        func_001A71F0(this, params, script, 0);
-        return 1;
-    case 0x7C242A0B:
-        func_001A71F0(this, params, script, 1);
-        return 1;
-    case 0xE52D7BB1:
-        func_001A71F0(this, params, script, 2);
-        return 1;
-    case 0x84EC6600:
-        func_001A7EB0(this, params, script, 1);
-        return 1;
-    case 0xEA81A32B:
-        func_001A7EB0(this, params, script, 0);
-        return 1;
-    case 0x33DF698F:
-        func_001A7670(this, params, 0);
-        return 1;
-    case 0x74C30242:
-        func_001A7670(this, params, 1);
-        return 1;
-    case 0x5CF1B7D4:
-        func_001A6FB0(this, params);
-        return 1;
-    case 0x2FAD370D:
-        func_001A9718(this, params);
-        return 1;
-    case 0xCC19C48A:
-        func_001A7A38(this, params);
-        return 1;
-
-    case 0x0DA2D86D:
-        flags &= ~8;
-        func_001A7970(this, params, script);
-        return 1;
-    case 0xBFB0031D:
-        flags &= ~8;
-        func_001A6B38(this, params);
-        return 1;
-    case 0xBD6C6807:
-        flags &= ~8;
-        return 1;
-
-    case 0x68E1F022:
-        state &= ~0x18;
-        return 1;
-    case 0xDFBE3DB3:
-        state &= ~0x67;
-        return 1;
-
-    case 0xFB603EA9:
-        func_001A5640(params, block30);
-        return 1;
-    case 0x2CA63CDF:
-        func_001A5640(params, &accel);
-        return 1;
-    case 0xD6697AD0:
-        func_001A56D0(params, block28);
-        return 1;
-    case 0xA67FC783:
-        func_001A56D0(params, block2C);
-        return 1;
-
-    case 0x8E52ABEA:
-        target = model->pos;
-        return 1;
-    case 0xC8CC6820:
-        targetNode = func_001A67A8(this)->link;
-        return 1;
-    case 0xE8D121CB:
-        func_001A6CA0(this, params, &target);
-        return 1;
-    case 0xA5A2D218: {
-        Vec_001A5848 p;
-        func_0022A090(targetNode, &p);
-        func_001A6CA0(this, params, &p);
-        return 1;
+        break;
     }
-    case 0x8B669799: {
-        Vec_001A5848 p = target;
-        func_001A7BA0(this, params, script, &p, -1);
-        return 1;
-    }
-    case 0x5CE058FD:
-    case 0xF389285D: {
-        /* move to a point straight ahead / to the side */
-        float d = 0.0f;
-        func_001E7EB0(params, 0x7E832F08, &d, 0);
-        Model_001A5848* m = model;
-        const Vec_001A5848& dir = (name == 0xF389285D) ? m->at : m->right;
-        Vec_001A5848 off;
-        off.x = dir.x * d;
-        off.y = dir.y * d;
-        off.z = dir.z * d;
-        off.w = dir.w * d;
-        Vec_001A5848 p;
-        p.x = m->pos.x + off.x;
-        p.y = m->pos.y + off.y;
-        p.z = m->pos.z + off.z;
-        p.w = m->pos.w + off.w;
-        func_001A7BA0(this, params, script, &p, -1);
-        return 1;
-    }
-
-    case 0x3407AD3D: {
-        unsigned int id = 0;
-        func_001E8398(params, 0, &id, 0);
-        void* obj = func_00229DF0(func_00229668(id, 1));
-        Vec_001A5848 p;
-        func_00229FF8(obj, &p);
-        model->pos = p;
-        func_001A8210(this, obj);
-        func_00185578(model, 0x286A8D26)->Refresh();
-        return 1;
-    }
-
+    case 0x434EA1FB:
+        if (IsOff(params))
+            flags &= ~0x200;
+        else
+            flags |= 0x200;
+        break;
     case 0x76003D82: {
         float speed;
         if (func_001E7EB0(params, 0, &speed, 0)) {
@@ -340,9 +244,33 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
             func_001A6758(this, model);
             func_001A67A8(this)->speed = speed;
         }
-        return 1;
+        break;
     }
-
+    case 0xBFB0031D:
+        flags &= ~8;
+        func_001A6B38(this, params);
+        break;
+    case 0x103BD253:
+        func_001A75F8(this, params, script);
+        break;
+    case 0x6419CEFF:
+        func_001A7548(this, params, script);
+        break;
+    case 0xA5A2D218: {
+        Vec_001A5848 p;
+        func_0022A090(targetNode, &p);
+        func_001A6CA0(this, params, &p);
+        break;
+    }
+    case 0x74C30242:
+        func_001A7670(this, params, 1);
+        break;
+    case 0xE8D121CB:
+        func_001A6CA0(this, params, &target);
+        break;
+    case 0x33DF698F:
+        func_001A7670(this, params, 0);
+        break;
     case 0xFE71453F:
         targetSpeed = 0.0f;
         accelTime = 0;
@@ -356,31 +284,94 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
         if (targetSpeed == 0.0f)
             savedSpeed = 0.0f;
         flags |= 8;
-        return 1;
-
-    case 0x6866312F: {
-        int n = func_00229EB0(links);
-        if (n)
-            func_001E7200(script->params, 0xC953660E, func_00100030(n) + 1);
-        return 1;
+        break;
+    case 0xBD6C6807:
+        flags &= ~8;
+        break;
+    case 0x0DA2D86D:
+        flags &= ~8;
+        func_001A7970(this, params, script);
+        break;
+    case 0xCC19C48A:
+        func_001A7A38(this, params);
+        break;
+    case 0x8B669799: {
+        Vec_001A5848 p = target;
+        func_001A7BA0(this, params, script, &p, -1);
+        break;
     }
-
-    case 0xB75589CE: {
-        float radius = 100.0f;
-        func_001E7EB0(params, 0x6C78A5B6, &radius, 0);
-        radius *= 12.0f;
-        func_001E6B90(script->params, 0xFFFF9A1C);
-        Node_001A5848* node = func_001A9480(this, radius);
-        if (node)
-            func_001E7360(script->params, 0xFFFF9A1C, node->index);
-        return 1;
+    case 0xF389285D: {
+        float d = 0.0f;
+        func_001E7EB0(params, 0x7E832F08, &d, 0);
+        Model_001A5848* m = model;
+        Vec_001A5848 p;
+        Vec_001A5848 off(m->at.x * d, m->at.y * d, m->at.z * d, m->at.w * d);
+        p.Set(m->pos.x + off.x, m->pos.y + off.y, m->pos.z + off.z, m->pos.w + off.w);
+        func_001A7BA0(this, params, script, &p, -1);
+        break;
     }
-
+    case 0x5CE058FD: {
+        float d = 0.0f;
+        func_001E7EB0(params, 0x7E832F08, &d, 0);
+        Model_001A5848* m = model;
+        Vec_001A5848 p;
+        Vec_001A5848 off(m->right.x * d, m->right.y * d, m->right.z * d, m->right.w * d);
+        p.Set(m->pos.x + off.x, m->pos.y + off.y, m->pos.z + off.z, m->pos.w + off.w);
+        func_001A7BA0(this, params, script, &p, -1);
+        break;
+    }
+    case 0x8819DD8B:
+        func_001A7DF0(this, params, script);
+        break;
+    case 0x84EC6600:
+        func_001A7EB0(this, params, script, 1);
+        break;
+    case 0xEA81A32B:
+        func_001A7EB0(this, params, script, 0);
+        break;
+    case 0x3BCAAC3F:
+        func_001A7FB0(this, params, script);
+        break;
+    case 0xC5ECA638:
+        func_001E7EB0(params, 0xA8A5A3C7, &turnX, 0);
+        func_001E7EB0(params, 0x182D87A7, &turnY, 0);
+        if (IsOff(params)) {
+            flags &= ~4;
+            break;
+        }
+        flags |= 4;
+        if (turnX == 0.0f && turnY == 0.0f)
+            return 0;
+        func_001A8BE0(this);
+        break;
+    case 0x1E094B84:
+        func_001EE5D8(script, 6, this);
+        break;
+    case 0xBDC4C878:
+        func_001EE5D8(script, 8, this);
+        break;
+    case 0xDBFDD02F:
+        func_001EE5D8(script, 4, this);
+        break;
+    case 0x8D95F1E1:
+        func_001EE5D8(script, 7, this);
+        break;
+    case 0x3407AD3D: {
+        unsigned int id = 0;
+        func_001E8398(params, 0, &id, 0);
+        void* obj = func_00229DF0(func_00229668(id, 1));
+        Vec_001A5848 p;
+        func_00229FF8(obj, &p);
+        model->pos = p;
+        func_001A8210(this, obj);
+        func_00185578(model, 0x286A8D26)->Refresh();
+        break;
+    }
     case 0xE606EBA2:
         if (IsOff(params)) {
             func_001A5760(this);
             state &= ~0x80;
-            return 1;
+            break;
         }
         waitCount = 0;
         func_001E7EB0(params, 0xC9FDE32C, &waitTime, 0);
@@ -394,10 +385,9 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
             if (waitInterval <= 0)
                 waitInterval = 1;
         }
-        state |= 0x80;
         waitHeight = model->pos.y;
-        return 1;
-
+        state |= 0x80;
+        break;
     case 0xE76D73D2: {
         /* report the current speed (mph by default, feet/s or raw on request) */
         float speed = 0.0f;
@@ -406,11 +396,8 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
         } else if (func_00185578(model, 0x5CB5CB7E) &&
                    ((Suspend_001A5848*)func_00185578(model, 0x5CB5CB7E))->active) {
             Model_001A5848* m = model;
-            Vec_001A5848 d;
-            d.x = m->pos.x - m->oldPos.x;
-            d.y = m->pos.y - m->oldPos.y;
-            d.z = m->pos.z - m->oldPos.z;
-            d.w = m->pos.w - m->oldPos.w;
+            Vec_001A5848 d(m->pos.x - m->oldPos.x, m->pos.y - m->oldPos.y, m->pos.z - m->oldPos.z,
+                           m->pos.w - m->oldPos.w);
             float t = func_0010FAB8();
             if (t != speed)
                 speed = d.Length() / t;
@@ -424,9 +411,8 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
                 speed *= 0.056818180f;
         }
         func_001E7318(script->params, D_0038CE40, speed);
-        return 1;
+        break;
     }
-
     case 0x1AE46261:
         /* jump setup */
         jumpSpeed = 150.0f;
@@ -434,8 +420,8 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
         jumpInitSpeed = jumpSpeed;
         jumpGravity = -360.0f;
         func_001E7EB0(params, 0xA5E2DA58, &jumpGravity, 0);
-        jumpRise = 6.0f;
         jumpStart = model->pos;
+        jumpRise = 6.0f;
         func_001E7EB0(params, 0xECC2C699, &jumpRise, 0);
         jumpLand = 6.0f;
         func_001E7EB0(params, 0x5C4AE2F9, &jumpLand, 0);
@@ -444,8 +430,8 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
             jumpSpeed *= jumpDir.y;
             jumpDir.y = 0.0f;
         } else if (func_001E8708(params, 0xFECFFE49)) {
-            jumpHasDir = 1;
             jumpDir = model->facing;
+            jumpHasDir = 1;
             jumpSpeed *= jumpDir.y;
             jumpDir.y = 0.0f;
         } else {
@@ -455,10 +441,14 @@ int AIComponent_001A5848::CallMemberFunction(unsigned int name, void* params, Sc
         if (func_001E7EB0(params, 0xA1810C27, &jumpHeight, 0))
             jumpHasHeight = 1;
         state |= 0x100;
-        return 1;
-
+        break;
+    case 0x2FAD370D:
+        func_001A9718(this, params);
+        break;
     case 0xBF9FFFE5:
-        return 1;
+        break;
+    default:
+        return 2;
     }
-    return 2;
+    return 1;
 }

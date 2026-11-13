@@ -1,4 +1,3 @@
-/* fuzzy: 98.6 */
 struct Conn_001FC238;
 
 struct Bytes2_001FC238 {
@@ -38,6 +37,7 @@ extern "C" void* func_00200F80(int id);
 extern "C" int func_001FA678(void* p, unsigned char id);
 extern "C" void func_001F9638(void* p, unsigned char id, int len);
 extern "C" void func_00331404(void* dst, void* src, int len);
+static inline void Copy_00331404(void* dst, void* src, int len) { func_00331404(dst, src, len); }
 extern "C" int func_00202758(Conn_001FC238* c);
 
 struct Net_001FC238 {
@@ -72,7 +72,7 @@ int Net_001FC238::Process(Conn_001FC238* conn, int flags)
         }
         if (big) {
             if (msg.m_len) {
-                func_00331404(msg.m_data, p, msg.m_len);
+                Copy_00331404(msg.m_data, p, msg.m_len);
             }
         } else {
             *(Block_001FC238*)msg.m_data = *(Block_001FC238*)p;

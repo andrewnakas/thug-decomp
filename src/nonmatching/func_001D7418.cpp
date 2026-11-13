@@ -1,4 +1,4 @@
-/* fuzzy: 60.5 */
+/* fuzzy: 88.8 */
 typedef int qword_001D7418 __attribute__((mode(TI)));
 
 struct Vec_001D7418 {
@@ -28,8 +28,9 @@ struct Obj_001D7418 {
 
 void Obj_001D7418::SetRotation(const Mat_001D7418* m)
 {
-    for (int i = 0; i < 3; i++)
-        m_mat.row[i] = m->row[i];
+    m_mat.row[0] = m->row[0];
+    m_mat.row[1] = m->row[1];
+    m_mat.row[2] = m->row[2];
     Mat_001D7418* t = &m_inv;
     t->row[0].x = m_mat.row[0].x; t->row[0].y = m_mat.row[1].x; t->row[0].z = m_mat.row[2].x; t->row[0].w = m_mat.row[3].x;
     t->row[1].x = m_mat.row[0].y; t->row[1].y = m_mat.row[1].y; t->row[1].z = m_mat.row[2].y; t->row[1].w = m_mat.row[3].y;

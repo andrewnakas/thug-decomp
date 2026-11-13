@@ -1,4 +1,3 @@
-/* fuzzy: 90.7 */
 typedef int qword __attribute__((mode(TI)));
 
 extern void* D_00388A70;
@@ -43,6 +42,12 @@ struct Self_0020F590 {
     void Noise(float amount);
 };
 
+static inline void Clamp_0020F590(float& v)
+{
+    if (v < 0.0f) v = 0.0f;
+    if (v > 255.0f) v = 255.0f;
+}
+
 void Self_0020F590::Noise(float amount)
 {
     void* list = m_list;
@@ -63,7 +68,7 @@ void Self_0020F590::Noise(float amount)
         func_0013C8A8(mesh, buf);
         Color_0020F590* p = buf;
         Vec_0020F590* v = pos;
-        for (int i = n; i > 0; i--) {
+        for (int i = 0; i < n; i++) {
             Color_0020F590 c;
             Vec_0020F590 f;
             Vec_0020F590* pf = &f;
@@ -76,15 +81,12 @@ void Self_0020F590::Noise(float amount)
             f.z = b;
             pf->w = 1.0f;
             int h = ((int)(v->x * 16.0f) * (int)(v->y * 16.0f) ^ (int)(v->z * 16.0f)) & 0x7FFF;
-            float s = h * (1.0f / 32768.0f);
-            s = (s + s) * amount + 1.0f - amount;
+            float t = h * (1.0f / 32768.0f);
+            float s = (t + t) * amount + 1.0f - amount;
             f *= s;
-            if (f.x < 0.0f) f.x = 0.0f;
-            if (f.x > 255.0f) f.x = 255.0f;
-            if (f.y < 0.0f) f.y = 0.0f;
-            if (f.y > 255.0f) f.y = 255.0f;
-            if (f.z < 0.0f) f.z = 0.0f;
-            if (f.z > 255.0f) f.z = 255.0f;
+            Clamp_0020F590(f.x);
+            Clamp_0020F590(f.y);
+            Clamp_0020F590(f.z);
             c.r = (int)f.x;
             c.g = (int)f.y;
             c.b = (int)f.z;

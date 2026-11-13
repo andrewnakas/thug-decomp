@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 96.2 */
+/* fuzzy: 97.7 */
 struct Addr_001FB480 {
     unsigned short m0;
     unsigned short port;
@@ -58,8 +58,7 @@ void Net_001FB480::Receive()
     if (func_00201288(this)) return;
     char* buf = m1D68;
     int n;
-again:
-    {
+    do {
         n = func_00325A60(m1820, buf, 0x514, 0, &f.a, &f.len);
         if (n < 0) {
             func_003264C8(m1820);
@@ -76,7 +75,7 @@ again:
                     if (!func_001FE258(this, buf, c->m60, n)) {
                         func_0031BCC0(m42A0);
                         if (m2280) m2280((void*)c->m60, n, &f.a);
-                        goto next;
+                        continue;
                     }
                     c->m60 += len;
                     func_001F9598(c->m20EC, n + 0x1C, m0);
@@ -91,14 +90,12 @@ again:
                     func_0031BCC0(m42A0);
                     if (m2280) m2280(buf, n, &f.a);
                     func_00201A68(c, 3);
-                    goto next;
+                    continue;
                 }
                 c->m60 = c->m5C + len;
                 func_00202710(c);
             }
         }
         func_0031BCC0(m42A0);
-    }
-next:
-    if (n > 0) goto again;
+    } while (n > 0);
 }

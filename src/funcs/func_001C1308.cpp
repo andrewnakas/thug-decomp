@@ -1,11 +1,12 @@
-/* fuzzy: 81.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001C1308 {
     union {
         struct { float x, y, z, w; };
+        float c[4];
         qword q;
     };
+    const float& operator[](int i) const { return c[i]; }
     Vec_001C1308() {}
     Vec_001C1308(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     float LengthSqr() const { return x * x + y * y + z * z; }
@@ -14,17 +15,17 @@ struct Vec_001C1308 {
 
 static inline Vec_001C1308 operator-(const Vec_001C1308& a, const Vec_001C1308& b)
 {
-    return Vec_001C1308(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_001C1308(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_001C1308 operator+(const Vec_001C1308& a, const Vec_001C1308& b)
 {
-    return Vec_001C1308(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001C1308(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001C1308 operator*(const Vec_001C1308& a, float s)
 {
-    return Vec_001C1308(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001C1308(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 extern "C" void func_00183CB8(void* p, void* pp);
@@ -100,20 +101,21 @@ void Obj_001C1308::Update()
     c.start.y += 0.5f;
     c.end = m30 + d * GetF_001C1308(0x11EDCC52);
     c.end.y += 0.5f;
-    if (!func_002093E8(&c, 1, 0)) return;
-    float frac = c.m90;
-    c.start = c.end = c.point + d * 0.5f;
-    c.start.y = m30.y + GetF_001C1308(0xCEE3A3E1);
-    if (!func_002093E8(&c, 1, 0)) return;
-    float t = (1.0f - frac) * (c.point.y - m30.y);
-    if (fabsf(m960) < 0.01f && mB0 == 0.0f) {
-        float l = m40.LengthSqr();
-        float th = GetF_001C1308(0x227D72EE);
-        if (l < th * th) {
+    if (func_002093E8(&c, 1, 0)) {
+        float frac = c.m90;
+        c.start = c.end = c.point + d * 0.5f;
+        c.start.y = m30.y + GetF_001C1308(0xCEE3A3E1);
+        if (func_002093E8(&c, 1, 0)) {
+            float t = (1.0f - frac) * (c.point.y - m30.y);
+            if (fabsf(m960) < 0.01f && mB0 == 0.0f) {
+                float l = m40.LengthSqr();
+                float th = GetF_001C1308(0x227D72EE);
+                if (l < th * th)
+                    goto done;
+            }
+            m960 = m960 + (t - m960) * (GetF_001C1308(0x856A80D3) * m98);
+        done:
             m964 = 1;
-            return;
         }
     }
-    m960 = m960 + (t - m960) * (GetF_001C1308(0x856A80D3) * m98);
-    m964 = 1;
 }

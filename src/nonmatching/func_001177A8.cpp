@@ -1,4 +1,4 @@
-/* fuzzy: 71.6 */
+/* fuzzy: 86.8 */
 /* sym: GetX__13Anim_001177A8Pvi = 0x00115C68 */
 /* sym: GetY__13Anim_001177A8Pvi = 0x00115C98 */
 /* sym: Test__13Anim_001177A8 = 0x00115CC8 */
@@ -93,20 +93,27 @@ static inline void GetRot_001177A8(Quat_001177A8* q, RKey_001177A8* k, int flt)
         q->w = -w;
 }
 
-static inline void GetPos_001177A8(Vec_001177A8* v, TKey_001177A8* k, int flt, float div)
+static inline float PosScale_001177A8()
+{
+    return 32.0f;
+}
+
+static inline void GetPos_001177A8(Vec_001177A8* v, TKey_001177A8* k, int flt)
 {
     if (flt) {
         FKey_001177A8* f = (FKey_001177A8*)k;
         v->x = f->x;
         v->y = f->y;
         v->z = f->z;
+        v->w = 1.0f;
     } else {
-        v->x = k->x / div;
-        v->y = k->y / div;
-        v->z = k->z / div;
+        v->x = k->x / PosScale_001177A8();
+        v->y = k->y / PosScale_001177A8();
+        v->z = k->z / PosScale_001177A8();
+        v->w = 1.0f;
     }
-    v->w = 1.0f;
 }
+
 
 static inline Quat_001177A8 Nlerp_001177A8(const Quat_001177A8& a, Quat_001177A8& b, float t)
 {
@@ -124,12 +131,12 @@ static inline Quat_001177A8 Nlerp_001177A8(const Quat_001177A8& a, Quat_001177A8
     return b;
 }
 
-static inline void InterpPos_001177A8(Vec_001177A8* out, TKey_001177A8* k0, TKey_001177A8* k1, float t, int flt, float scale)
+static inline void InterpPos_001177A8(Vec_001177A8* out, TKey_001177A8* k0, TKey_001177A8* k1, float t, int flt)
 {
     Vec_001177A8 a;
     Vec_001177A8 b;
-    GetPos_001177A8(&a, k0, flt, scale);
-    GetPos_001177A8(&b, k1, flt, scale);
+    GetPos_001177A8(&a, k0, flt);
+    GetPos_001177A8(&b, k1, flt);
     *out = a + (b - a) * t;
 }
 
@@ -168,14 +175,14 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
         int nt = GetY(counts, i);
         for (int j = 0; j < nr; j++) {
             if (j == nr - 1) {
-                r0 = r1 = &rbase[j];
+                r1 = r0 = &rbase[j];
                 rt = 0.0f;
                 break;
             }
             RKey_001177A8* k = &rbase[j];
-            RKey_001177A8* n = k + 1;
             float a = k->time;
             if (a <= ft) {
+                RKey_001177A8* n = k + 1;
                 float b = n->time;
                 if (ft <= b) {
                     r0 = k;
@@ -197,17 +204,16 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
             GetRot_001177A8(&q1, r1, flt);
             *rot = Nlerp_001177A8(q0, q1, rt);
         }
-        float scale = 32.0f;
         for (int j = 0; j < nt; j++) {
             if (j == nt - 1) {
-                t0 = t1 = &tbase[j];
+                t1 = t0 = &tbase[j];
                 tt = 0.0f;
                 break;
             }
             TKey_001177A8* k = &tbase[j];
-            TKey_001177A8* n = k + 1;
             float a = k->time;
             if (a <= ft) {
+                TKey_001177A8* n = k + 1;
                 float b = n->time;
                 if (ft <= b) {
                     t0 = k;
@@ -219,11 +225,11 @@ int Anim_001177A8::Sample(Quat_001177A8* rot, Vec_001177A8* pos, float time)
         }
         flt = Test();
         if (tt == 0.0f) {
-            GetPos_001177A8(pos, t0, flt, scale);
+            GetPos_001177A8(pos, t0, flt);
         } else if (tt == 1.0f) {
-            GetPos_001177A8(pos, t1, flt, scale);
+            GetPos_001177A8(pos, t1, flt);
         } else {
-            InterpPos_001177A8(pos, t0, t1, tt, flt, scale);
+            InterpPos_001177A8(pos, t0, t1, tt, flt);
         }
         rot++;
         pos++;

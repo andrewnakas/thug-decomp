@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 48.0 */
+/* fuzzy: 91.9 */
 /* Vehicle component script member functions (assert path: gel/components/vehiclecomponent.cpp).
    Returns 0/1 for handled queries and commands, 2 for "not mine". */
 extern "C" float sqrtf(float);
@@ -11,70 +10,114 @@ struct Vec_001948C0 {
         qword q;
         struct { float x, y, z, w; };
     };
+    Vec_001948C0() {}
+    Vec_001948C0(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
+    void Set(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
     float& operator[](int i) { return (&x)[i]; }
     const float& operator[](int i) const { return (&x)[i]; }
+    void Normalize();
 };
 
 struct Mat_001948C0 {
     Vec_001948C0 r[4];
+    Vec_001948C0& operator[](int i) { return r[i]; }
+    Mat_001948C0& operator=(const Mat_001948C0& m)
+    {
+        r[0] = m.r[0];
+        r[1] = m.r[1];
+        r[2] = m.r[2];
+        r[3] = m.r[3];
+        return *this;
+    }
     /* row vector times the 3x3 part, w passed through */
     Vec_001948C0 Rotate(const Vec_001948C0& p) const
     {
         Vec_001948C0 o;
-        o.x = p.x * r[0].x + p.y * r[1].x + p.z * r[2].x;
-        o.y = p.x * r[0].y + p.y * r[1].y + p.z * r[2].y;
-        o.z = p.x * r[0].z + p.y * r[1].z + p.z * r[2].z;
-        o.w = p.w;
+        o.x = p[0] * r[0].x + p[1] * r[1].x + p[2] * r[2].x;
+        o.y = p[0] * r[0].y + p[1] * r[1].y + p[2] * r[2].y;
+        o.z = p[0] * r[0].z + p[1] * r[1].z + p[2] * r[2].z;
+        o.w = p[3];
         return o;
     }
 };
 
 static inline Vec_001948C0 Scale(const Vec_001948C0& v, float s)
 {
-    Vec_001948C0 o;
-    o.x = v.x * s;
-    o.y = v.y * s;
-    o.z = v.z * s;
-    o.w = v.w * s;
-    return o;
+    return Vec_001948C0(v[0] * s, v[1] * s, v[2] * s, v[3] * s);
 }
 
 static inline Vec_001948C0 Neg(const Vec_001948C0& v)
 {
-    Vec_001948C0 o;
-    o.x = -v.x;
-    o.y = -v.y;
-    o.z = -v.z;
-    o.w = -v.w;
-    return o;
+    return Vec_001948C0(-v[0], -v[1], -v[2], -v[3]);
 }
 
 static inline void Add(Vec_001948C0& d, const Vec_001948C0& v)
 {
-    d.x += v.x;
-    d.y += v.y;
-    d.z += v.z;
-    d.w += v.w;
+    d.x += v[0];
+    d.y += v[1];
+    d.z += v[2];
+    d.w += v[3];
 }
 
 static inline void Sub(Vec_001948C0& d, const Vec_001948C0& v)
 {
-    d.x -= v.x;
-    d.y -= v.y;
-    d.z -= v.z;
-    d.w -= v.w;
+    d.x -= v[0];
+    d.y -= v[1];
+    d.z -= v[2];
+    d.w -= v[3];
 }
 
 static inline float FeetToInches(float f) { return f * 12.0f; }
 
 static inline Vec_001948C0 FeetToInches(const Vec_001948C0& v)
 {
-    Vec_001948C0 o;
-    o.x = FeetToInches(v.x);
-    o.y = FeetToInches(v.y);
-    o.z = FeetToInches(v.z);
-    o.w = FeetToInches(v.w);
-    return o;
+    return Vec_001948C0(FeetToInches(v[0]), FeetToInches(v[1]), FeetToInches(v[2]), FeetToInches(v[3]));
+}
+
+extern "C" float func_0011D4C0(Vec_001948C0* q);
+
+inline void Vec_001948C0::Normalize()
+{
+    float len = sqrtf(func_0011D4C0(this));
+    if (len > 0.0f) {
+        float inv = 1.0f / len;
+        x *= inv;
+        y *= inv;
+        z *= inv;
+        w *= inv;
+    }
+}
+
+/* unit quaternion -> rotation matrix */
+static inline void QuatToMatrix_001948C0(Mat_001948C0& m, const Vec_001948C0& q)
+{
+    float n = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+    float s = (n > 0.0f) ? 2.0f / n : 0.0f;
+    float xs = q.x * s, ys = q.y * s, zs = q.z * s;
+    float wx = q.w * xs, wy = q.w * ys, wz = q.w * zs;
+    float xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
+    float yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
+    m.r[0].x = 1.0f - (yy + zz);
+    m.r[1].x = xy + wz;
+    m.r[2].x = xz - wy;
+    m.r[0].y = xy - wz;
+    m.r[1].y = 1.0f - (xx + zz);
+    m.r[2].y = yz + wx;
+    m.r[0].z = xz + wy;
+    m.r[1].z = yz - wx;
+    m.r[2].z = 1.0f - (xx + yy);
 }
 
 struct Model_001948C0 {
@@ -140,7 +183,6 @@ extern "C" Vec_001948C0* func_00114E18(void* obj);
 extern "C" Mat_001948C0* func_00114E48(void* obj);
 extern "C" void func_00119228(Vec_001948C0* q, float w);
 extern "C" void func_00119230(Vec_001948C0* q, float x, float y, float z);
-extern "C" float func_0011D4C0(Vec_001948C0* q);
 extern "C" void* func_0013B0E8(int i);
 extern "C" void func_001953A8(VehicleComponent_001948C0* self, void* src);
 extern "C" void func_00195A68(VehicleComponent_001948C0* self, Vec_001948C0* v);
@@ -159,42 +201,6 @@ extern "C" bool func_002584E0(void* obj);
 int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* params, Script_001948C0* script)
 {
     switch (name) {
-    case 0x81FAAC21:
-        return onGround != 0;
-
-    case 0x279602ED:
-        return state == targetState;
-
-    case 0x5008B253:
-        return gravityOverride != 0;
-
-    case 0x4C73526B: {
-        Vec_001948C0 v;
-        func_001E7FA8(params, 0xA6F5352F, &v, 1);
-        func_00195A68(this, &v);
-        return 1;
-    }
-
-    case 0x4B0B27DD: {
-        unsigned int id;
-        if (func_001E8398(params, 0, &id, 0)) {
-            func_001953A8(this, func_00229DF0(func_00229668(id, 1)));
-            return 1;
-        }
-        void* group = script->object;
-        int n = func_00229EB0(group);
-        for (int i = 0; i < n; i++) {
-            void* obj = func_00229F48(group, i);
-            if (func_002584E0(obj)) {
-                func_001953A8(this, func_00229DF0(obj));
-                return 1;
-            }
-        }
-        if (D_00392808->mode != 0xD443A2BC)
-            func_001953A8(this, func_00229DF0(func_0022CBF8(D_0038FC78, 0)));
-        return 1;
-    }
-
     case 0x93B713A6: {
         locked = 0;
         controlled = 1;
@@ -217,77 +223,73 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
         controlled = 1;
         return 1;
 
+    case 0x4B0B27DD: {
+        unsigned int id;
+        if (func_001E8398(params, 0, &id, 0)) {
+            func_001953A8(this, func_00229DF0(func_00229668(id, 1)));
+            return 1;
+        }
+        void* group = script->object;
+        int n = func_00229EB0(group);
+        for (int i = 0; i < n; i++) {
+            void* obj = func_00229F48(group, i);
+            if (func_002584E0(obj)) {
+                func_001953A8(this, func_00229DF0(obj));
+                return 1;
+            }
+        }
+        if (D_00392808->mode != 0xD443A2BC)
+            func_001953A8(this, func_00229DF0(func_0022CBF8(D_0038FC78, 0)));
+        return 1;
+    }
+
     case 0xC33608E4: {
         void* obj = func_0013B0E8(0);
-        if (!obj)
-            return 1;
-        Vec_001948C0* p = func_00114E18(obj);
-        Mat_001948C0* m = func_00114E48(obj);
-        pos = *p;
-        Add(pos, FeetToInches(FeetToInches(m->r[1])));
-        Sub(pos, FeetToInches(FeetToInches(m->r[2])));
-        model->pos = pos;
-        matrix.r[0] = Neg(m->r[0]);
-        matrix.r[1] = m->r[1];
-        matrix.r[2] = Neg(m->r[2]);
+        if (obj) {
+            Vec_001948C0* p = func_00114E18(obj);
+            Mat_001948C0* m = func_00114E48(obj);
+            pos = *p;
+            Add(pos, FeetToInches(FeetToInches(m->r[1])));
+            Sub(pos, FeetToInches(FeetToInches(m->r[2])));
+            model->pos = pos;
+            matrix[0] = Neg(m->r[0]);
+            matrix[1] = m->r[1];
+            matrix[2] = Neg(m->r[2]);
 
-        /* matrix -> quaternion */
-        Vec_001948C0 q;
-        float trace = matrix.r[0].x + matrix.r[1].y + matrix.r[2].z;
-        if (trace > 0.0f) {
-            float s = sqrtf(trace + 1.0f);
-            func_00119228(&q, s * 0.5f);
-            s = 0.5f / s;
-            func_00119230(&q, (matrix.r[2].y - matrix.r[1].z) * s, (matrix.r[0].z - matrix.r[2].x) * s,
-                          (matrix.r[1].x - matrix.r[0].y) * s);
-        } else {
-            int i = 0;
-            if (matrix.r[0].x < matrix.r[1].y)
-                i = 1;
-            if (matrix.r[i][i] < matrix.r[2].z)
-                i = 2;
-            int j = (i + 1) % 3;
-            int k = (j + 1) % 3;
-            float s = sqrtf(matrix.r[i][i] - (matrix.r[j][j] + matrix.r[k][k]) + 1.0f);
-            q[i] = s * 0.5f;
-            s = 0.5f / s;
-            q[j] = (matrix.r[j][i] + matrix.r[i][j]) * s;
-            q[k] = (matrix.r[k][i] + matrix.r[i][k]) * s;
-            q.w = (matrix.r[k][j] - matrix.r[j][k]) * s;
+            /* matrix -> quaternion */
+            Vec_001948C0 q;
+            float trace = matrix.r[0].x + matrix.r[1].y + matrix.r[2].z;
+            float s;
+            if (trace > 0.0f) {
+                s = sqrtf(trace + 1.0f);
+                float w = s * 0.5f;
+                s = 0.5f / s;
+                func_00119228(&q, w);
+                func_00119230(&q, (matrix.r[2].y - matrix.r[1].z) * s, (matrix.r[0].z - matrix.r[2].x) * s,
+                              (matrix.r[1].x - matrix.r[0].y) * s);
+            } else {
+                int i = 0;
+                if (matrix.r[0].x < matrix.r[1].y)
+                    i = 1;
+                if (matrix[i][i] < matrix.r[2].z)
+                    i = 2;
+                int j = (i + 1) % 3;
+                int k = (j + 1) % 3;
+                s = sqrtf(matrix[i][i] - (matrix[j][j] + matrix[k][k]) + 1.0f);
+                q[i] = s * 0.5f;
+                s = 0.5f / s;
+                q[j] = (matrix[j][i] + matrix[i][j]) * s;
+                q[k] = (matrix[k][i] + matrix[i][k]) * s;
+                q.w = (matrix[k][j] - matrix[j][k]) * s;
+            }
+            orient = q;
+
+            orient.Normalize();
+            QuatToMatrix_001948C0(matrix, orient);
+            matrix.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
+            model->matrix = matrix;
+            func_00196BE0(this);
         }
-        orient = q;
-
-        float len = sqrtf(func_0011D4C0(&orient));
-        if (len > 0.0f) {
-            float inv = 1.0f / len;
-            orient.x *= inv;
-            orient.y *= inv;
-            orient.z *= inv;
-            orient.w *= inv;
-        }
-
-        /* quaternion -> matrix */
-        float n = orient.x * orient.x + orient.y * orient.y + orient.z * orient.z + orient.w * orient.w;
-        float s = (n > 0.0f) ? 2.0f / n : 0.0f;
-        float xs = orient.x * s, ys = orient.y * s, zs = orient.z * s;
-        float wx = orient.w * xs, wy = orient.w * ys, wz = orient.w * zs;
-        float xx = orient.x * xs, xy = orient.x * ys, xz = orient.x * zs;
-        float yy = orient.y * ys, yz = orient.y * zs, zz = orient.z * zs;
-        matrix.r[0].x = 1.0f - (yy + zz);
-        matrix.r[0].y = xy - wz;
-        matrix.r[0].z = xz + wy;
-        matrix.r[1].x = xy + wz;
-        matrix.r[1].y = 1.0f - (xx + zz);
-        matrix.r[1].z = yz - wx;
-        matrix.r[2].x = xz - wy;
-        matrix.r[2].y = yz + wx;
-        matrix.r[2].z = 1.0f - (xx + yy);
-        matrix.r[3].x = 0.0f;
-        matrix.r[3].y = 0.0f;
-        matrix.r[3].z = 0.0f;
-        matrix.r[3].w = 1.0f;
-        model->matrix = matrix;
-        func_00196BE0(this);
         return 1;
     }
 
@@ -297,6 +299,22 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
         func_001E7EB0(params, 0x79A07F3F, &gravityTime, 1);
         func_00103F28(D_00362060, D_0036207F, 0x375, D_003620C8);
         return 1;
+
+    case 0x5008B253:
+        return gravityOverride != 0;
+
+    case 0x279602ED:
+        return state == targetState;
+
+    case 0x4C73526B: {
+        Vec_001948C0 v;
+        func_001E7FA8(params, 0xA6F5352F, &v, 1);
+        func_00195A68(this, &v);
+        return 1;
+    }
+
+    case 0x81FAAC21:
+        return onGround != 0;
     }
     return 2;
 }

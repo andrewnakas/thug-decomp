@@ -1,4 +1,4 @@
-/* fuzzy: 78.9 */
+/* fuzzy: 79.5 */
 typedef int qword __attribute__((mode(TI)));
 
 struct V_001C2500 {
@@ -16,27 +16,11 @@ union Vec_001C2500 {
         v.z = z;
         v.w = w;
     }
-    Vec_001C2500& operator-=(const Vec_001C2500& b)
-    {
-        v.x -= b.v.x;
-        v.y -= b.v.y;
-        v.z -= b.v.z;
-        v.w -= b.v.w;
-        return *this;
-    }
     float Dot(const Vec_001C2500& b) const { return v.x * b.v.x + v.y * b.v.y + v.z * b.v.z; }
     Vec_001C2500 operator*(float s) const { return Vec_001C2500(v.x * s, v.y * s, v.z * s, v.w * s); }
     Vec_001C2500 operator+(const Vec_001C2500& b) const
     {
         return Vec_001C2500(v.x + b.v.x, v.y + b.v.y, v.z + b.v.z, v.w + b.v.w);
-    }
-    Vec_001C2500& operator+=(const Vec_001C2500& b)
-    {
-        v.x += b.v.x;
-        v.y += b.v.y;
-        v.z += b.v.z;
-        v.w += b.v.w;
-        return *this;
     }
 };
 
@@ -75,7 +59,11 @@ void Obj_001C2500::Update()
         m_B90 = t;
         return;
     }
-    m_40 -= m_B80;
+    Vec_001C2500& vel = m_40;
+    vel.v.x -= m_B80.v.x;
+    vel.v.y -= m_B80.v.y;
+    vel.v.z -= m_B80.v.z;
+    vel.v.w -= m_B80.v.w;
     Vec_001C2500 side(-m_B70.v.z, 0.0f, m_B70.v.x, 1.0f);
     float scale = m_B0;
     float sideTarget = Param_001C2500(0x896C8888) * scale * (m_A0.v.x * side.v.x + m_A0.v.y * side.v.y + m_A0.v.z * side.v.z);
@@ -90,5 +78,8 @@ void Obj_001C2500::Update()
         fwdSpeed += (fwdTarget - fwdSpeed) * (Param_001C2500(0xF085443B) * m_98);
     }
     m_40 = m_B70 * fwdSpeed + side * sideSpeed;
-    m_40 += m_B80;
+    vel.v.x += m_B80.v.x;
+    vel.v.y += m_B80.v.y;
+    vel.v.z += m_B80.v.z;
+    vel.v.w += m_B80.v.w;
 }

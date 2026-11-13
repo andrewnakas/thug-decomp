@@ -1,4 +1,4 @@
-/* fuzzy: 62.2 */
+/* fuzzy: 67.8 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00167F00 {
@@ -81,6 +81,7 @@ void Obj_00167F00::Init()
     r1->Scale(s.y);
     r2->Scale(s.z);
     Mat_00167F00 r(tmp);
-    r = r.Mul(D_003E1240);
-    m70 = r.Mul(D_003E1500);
+    Mat_00167F00* pr = &r;
+    *pr = pr->Mul(D_003E1240);
+    m70 = pr->Mul(D_003E1500);
 }

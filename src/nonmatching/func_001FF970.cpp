@@ -1,4 +1,4 @@
-/* fuzzy: 57.3 */
+/* fuzzy: 72.1 */
 /* sym: _vt$11It_001FF970 = 0x00366B58 */
 
 struct LNode_001FF970 {
@@ -118,6 +118,7 @@ struct CNode_001FF970 {
     Conn_001FF970* m4;
     int m8;
     CNode_001FF970* mC;
+    Conn_001FF970* Data() { return m4; }
     CNode_001FF970* Valid(unsigned k = 0) { return k < ~(unsigned)m4 ? this : 0; }
     CNode_001FF970* GetNext()
     {
@@ -125,6 +126,9 @@ struct CNode_001FF970 {
         if (~(int)n->m4 == 0) return 0;
         return n;
     }
+    CNode_001FF970* Self() { return this; }
+    CNode_001FF970* Live() { if (~(int)m4 == 0) return 0; return Self(); }
+    CNode_001FF970* Nx() { return mC->Live(); }
     CNode_001FF970* GetNextK(unsigned k = 0) { return mC->Valid(k); }
 };
 
@@ -134,7 +138,30 @@ struct It_001FF970 {
     It_001FF970() { m_cur = 0; }
     virtual void Reset();
     virtual ~It_001FF970() {}
-    Conn_001FF970* Next() { CNode_001FF970* n = m_cur->GetNext(); m_cur = n; if (!n) return 0; return n->m4; } Conn_001FF970* First(CNode_001FF970* h) { m_cur = h; m_cur = m_cur->GetNextK(); if (!m_cur) return 0; return m_cur->m4; }
+    Conn_001FF970* Next()
+    {
+        m_cur = m_cur->Nx();
+        if (!m_cur) return 0;
+        return m_cur->m4;
+    }
+    Conn_001FF970* Step()
+    {
+        CNode_001FF970* n = m_cur->GetNext();
+        m_cur = n;
+        if (!n) return 0;
+        return n->m4;
+    }
+    Conn_001FF970* Advance(CNode_001FF970* c)
+    {
+        m_cur = c->GetNextK();
+        if (!m_cur) return 0;
+        return m_cur->Data();
+    }
+    Conn_001FF970* First(CNode_001FF970* h)
+    {
+        m_cur = h;
+        return Advance(m_cur);
+    }
 };
 
 struct Heap_001FF970 {
@@ -175,6 +202,7 @@ public:
 void Net_001FF970::Send(int to, Desc_001FF970* d)
 {
     It_001FF970 it;
+    Conn_001FF970* c;
 
     func_0031BCE0(m429C);
     func_0010A950(D_00388A70, D_00388A70->mF4);
@@ -182,7 +210,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
     case 0: {
         Msg_001FF970* msg = func_001FA838(func_0010A638(D_00388A70, 0x10, 1, 0), d->m0, d->m2, d->m4);
         if (to == 0xFF) {
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Next()) {
                 if (c->m68 == 1) {
                     if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                     msg->ref.AddRef();
@@ -194,7 +222,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
             }
         } else if (to & 0x80) {
             int id = to & ~0x80;
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Next()) {
                 if (c->m48 != id && c->m68 == 1) {
                     if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                     msg->ref.AddRef();
@@ -205,7 +233,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                 }
             }
         } else {
-            Conn_001FF970* c = func_001FEA20(this, to);
+            c = func_001FEA20(this, to);
             if (c->m68 == 1 || d->m0 == 9) {
                 if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                 msg->ref.AddRef();
@@ -221,7 +249,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
     case 1: {
         Msg_001FF970* msg = func_001FA838(func_0010A638(D_00388A70, 0x10, 1, 0), d->m0, d->m2, d->m4);
         if (to == 0xFF) {
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Next()) {
                 if (!c->Test(8)) {
                     if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                     msg->ref.AddRef();
@@ -234,7 +262,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
             }
         } else if (to & 0x80) {
             int id = to & ~0x80;
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Next()) {
                 if (c->m48 != id && !c->Test(8)) {
                     if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                     msg->ref.AddRef();
@@ -246,7 +274,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                 }
             }
         } else {
-            Conn_001FF970* c = func_001FEA20(this, to);
+            c = func_001FEA20(this, to);
             if (!c->Test(8)) {
                 if (d->m14) func_001FF670(this, c, d->mC, d->m0);
                 msg->ref.AddRef();
@@ -263,7 +291,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
     case 2: {
         Msg2_001FF970* msg = func_001FEBC8(this, d->m0, d->m2, d->m4, d->m10);
         if (to == 0xFF) {
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Step()) {
                 if (!c->Test(8)) {
                     msg->ref.AddRef();
                     ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);
@@ -282,7 +310,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
             }
         } else if (to & 0x80) {
             int id = to & ~0x80;
-            for (Conn_001FF970* c = it.First(&m42D8); c; c = it.Next()) {
+            for (c = it.First(&m42D8); c; c = it.Step()) {
                 if (c->m48 != id && !c->Test(8)) {
                     msg->ref.AddRef();
                     ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);
@@ -300,7 +328,7 @@ void Net_001FF970::Send(int to, Desc_001FF970* d)
                 }
             }
         } else {
-            Conn_001FF970* c = func_001FEA20(this, to);
+            c = func_001FEA20(this, to);
             if (!c->Test(8)) {
                 msg->ref.AddRef();
                 ItemC_001FF970* item = func_001FA720(func_001046B0(0x30), msg);

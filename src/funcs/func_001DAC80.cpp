@@ -1,4 +1,3 @@
-/* fuzzy: 48.4 */
 struct Ent_001DAC80 {
     int id;
     int val;
@@ -20,7 +19,7 @@ void Obj_001DAC80::Remove(int id)
             m_count--;
             *e = m_ents[m_count];
             m_FC8--;
-            return;
+            break;
         }
     }
 }

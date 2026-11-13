@@ -1,4 +1,4 @@
-/* fuzzy: 40.8 */
+/* fuzzy: 61.8 */
 /* Rigid-body contact solver for the points in D_003E4540 (0x30 each: position, normal, cached effective mass,
    accumulated normal impulse, rolling factor, in-contact and mass-cached flags). Up to 20 passes of normal
    impulses (restitution m24) until no contact point approaches; on failure it fires the m90 event or zeroes
@@ -32,6 +32,13 @@ struct Vec_00191250 {
         z *= s;
         w *= s;
         return *this;
+    }
+    void Set(float ax, float ay, float az)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = 1.0f;
     }
     float Length() const { return sqrtf(x * x + y * y + z * z); }
 };
@@ -153,10 +160,7 @@ void Body_00191250::Solve()
             if (!p->m_contact)
                 continue;
             Vec_00191250 v = m_vel;
-            Vec_00191250 c = Cross_00191250(m_angVel, p->pos);
-            v.x += c.x;
-            v.y += c.y;
-            v.z += c.z;
+            v += Cross_00191250(m_angVel, p->pos);
             float dot = Dot_00191250(p->normal, v);
             if (dot > 0.0f)
                 continue;
@@ -170,7 +174,8 @@ void Body_00191250::Solve()
             }
             float j = (target - dot) * p->m_effMass;
             p->m_impulse += j;
-            Vec_00191250 imp = p->normal * j;
+            Vec_00191250 imp = p->normal;
+            imp *= j;
             m_vel += imp;
             m_angVel += Cross_00191250(p->pos, imp) * m_invInertia;
         }
@@ -179,14 +184,8 @@ void Body_00191250::Solve()
                 func_001EFDC0(func_00184B30(m0C, m90, m94, 0, 0));
                 return;
             }
-            m_vel.x = 0.0f;
-            m_vel.w = 1.0f;
-            m_vel.y = 0.0f;
-            m_vel.z = 0.0f;
-            m_angVel.x = 0.0f;
-            m_angVel.w = 1.0f;
-            m_angVel.y = 0.0f;
-            m_angVel.z = 0.0f;
+            m_vel.Set(0.0f, 0.0f, 0.0f);
+            m_angVel.Set(0.0f, 0.0f, 0.0f);
             return;
         }
         if (m_numPts == 1 || done)
@@ -199,37 +198,38 @@ void Body_00191250::Solve()
         if (!p->m_contact)
             continue;
         Vec_00191250 v = vel;
-        Vec_00191250 c = Cross_00191250(angVel, p->pos);
-        v.x += c.x;
-        v.y += c.y;
-        v.z += c.z;
+        v.x += angVel.y * p->pos.z - angVel.z * p->pos.y;
+        v.y += angVel.z * p->pos.x - angVel.x * p->pos.z;
+        v.z += angVel.x * p->pos.y - angVel.y * p->pos.x;
         Vec_00191250 t = v + p->normal * -Dot_00191250(p->normal, v);
+        Vec_00191250* dir = &t;
         if (con->m_hasAxis) {
             Vec_00191250 axis = con->m_axis * m_orient;
             axis = axis - p->normal * Dot_00191250(p->normal, axis);
             float len = axis.Length();
             if (len > 0.001f) {
                 axis *= 1.0f / len;
-                func_00101890(&t, &axis);
+                func_00101890(dir, &axis);
             }
         }
         float speed = t.Length();
         if (speed < 0.001f)
             continue;
         t *= 1.0f / speed;
-        float j = speed * func_00191170(this, &t, &p->pos);
+        float j = speed * func_00191170(this, dir, &p->pos);
         float limit = m_friction * p->m_impulse;
         if (limit < j)
             j = limit;
-        Vec_00191250 imp = t * -j;
+        Vec_00191250 imp = t;
+        imp *= -j;
         if (D_0038C9AC) {
-            Vec_00191250 a = p->pos + m_pos;
-            if (con->m_hasAxis)
-                func_001235E8(a + Vec_00191250(0.0f, 1.0f, 0.0f), a + imp * 6.0f + Vec_00191250(0.0f, 1.0f, 0.0f),
-                              0xFF00FFFF, 0xFF00FFFF, 1);
-            else
-                func_001235E8(a + Vec_00191250(0.0f, 1.0f, 0.0f), a + imp * 6.0f + Vec_00191250(0.0f, 1.0f, 0.0f),
-                              0xFFFF00FF, 0xFFFF00FF, 1);
+            if (con->m_hasAxis) {
+                func_001235E8(p->pos + m_pos + Vec_00191250(0.0f, 1.0f, 0.0f),
+                              p->pos + m_pos + imp * 6.0f + Vec_00191250(0.0f, 1.0f, 0.0f), 0xFF00FFFF, 0xFF00FFFF, 1);
+            } else {
+                func_001235E8(p->pos + m_pos + Vec_00191250(0.0f, 1.0f, 0.0f),
+                              p->pos + m_pos + imp * 6.0f + Vec_00191250(0.0f, 1.0f, 0.0f), 0xFFFF00FF, 0xFFFF00FF, 1);
+            }
         }
         Vec_00191250 ang = Cross_00191250(p->pos, imp) * m_invInertia;
         m_vel += imp;

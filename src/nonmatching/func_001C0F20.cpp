@@ -1,11 +1,11 @@
-/* fuzzy: 95.2 */
+/* fuzzy: 98.8 */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C0F20 {
     qword q;
     float c[4];
     float& operator[](int i) { return c[i]; }
-    float operator[](int i) const { return c[i]; }
+    const float& operator[](int i) const { return c[i]; }
     Vec_001C0F20() {}
     Vec_001C0F20(float x, float y, float z, float w)
     {
@@ -24,7 +24,7 @@ union Vec_001C0F20 {
     bool operator==(const Vec_001C0F20& o) const
     {
         bool r = false;
-        if (o[0] == c[0] && o[1] == c[1] && o[2] == c[2] && c[3] == o[3]) r = true;
+        if (c[0] == o[0] && c[1] == o[1] && c[2] == o[2] && c[3] == o[3]) r = true;
         return r;
     }
     float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }
@@ -204,7 +204,8 @@ void Obj_001C0F20::Ground()
         float dy = c.hit[1] - m30[1];
         float ady = fabsf(dy);
         if (Param_001C0F20(0xD3193D8E) < ady) {
-            func_001848F0(mC, 0.0f < dy ? 0x93FCF3ED : 0x56E21153, 0);
+            void* obj = mC;
+            func_001848F0(obj, 0.0f < dy ? 0x93FCF3ED : 0x56E21153, 0);
         }
         m30[1] = c.hit[1];
         if (0.0f < dy || dy < -3.0f) {
@@ -215,13 +216,13 @@ void Obj_001C0F20::Ground()
         Surf_001C0F20* surf = &mA70;
         if (surf->m70 != c.m70) {
             if (mB50) {
-                func_001BB080(mA34, 4, surf);
+                func_001BB080(mA34, 4, &mA70);
                 if (mA38->m2C) return;
             }
             func_001BB080(mA34, 5, &c);
             if (mA38->m2C) return;
         }
-        func_0019C9D8(surf, &c);
+        func_0019C9D8(&mA70, &c);
         mB50 = 1;
         mA50 = c.normal;
         func_001CE768(mA3C, &c);

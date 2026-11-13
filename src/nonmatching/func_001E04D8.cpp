@@ -1,5 +1,4 @@
-/* cflags: -fno-strength-reduce */
-/* fuzzy: 94.4 */
+/* fuzzy: 99.1 */
 typedef unsigned long u64_001E04D8;
 
 extern int D_0038E130;
@@ -93,13 +92,14 @@ void func_001E04D8()
             if (a != b)
                 Swap_001E04D8(a, b);
         }
-        D_0038E15C = 0;
-        if (D_003F2230[D_0038E15C] == last) {
+        int cur = 0;
+        if (D_003F2230[cur] == last) {
             int j = D_0038E158 < 2 ? 0 : func_00100030(D_0038E158 - 1) + 1;
-            Swap_001E04D8(D_0038E15C, j);
+            Swap_001E04D8(cur, j);
         }
-        p->mC98 = 0;
+        D_0038E15C = cur;
         D_0038E154 = 0;
+        p->mC98 = 0;
         p->mCA0 = 0;
     } else {
         D_0038E15C++;

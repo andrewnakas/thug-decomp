@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 92.6 */
+/* fuzzy: 93.7 */
 struct Heap_0025D5F0 {
     char pad[0xD8];
     int mD8;
@@ -47,9 +47,10 @@ bool Obj_0025D5F0::Fn(const char* name, int a)
     int async = 0;
     func_0010EC50();
     char* base = func_0025D560(name);
-    int v = 0;
     char buf[0x100];
-    func_001E7DE8(func_0022E3C8(D_0038FC78, 0)->m5C, 0x3F813177, &v, 1);
+    Sk_0025D5F0* sk = func_0022E3C8(D_0038FC78, 0);
+    int v = 0;
+    func_001E7DE8(sk->m5C, 0x3F813177, &v, 1);
     if (v) func_003331D0(buf, D_00390C10, base);
     else func_003331D0(buf, D_003757B8, base);
     if (!func_001DF9B0(func_00105520(buf))) mB60 = 1;

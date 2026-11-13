@@ -1,4 +1,4 @@
-/* fuzzy: 88.3 */
+/* fuzzy: 91.6 */
 extern "C" int func_0031BCE0(int);
 extern "C" void func_0031BCC0(int);
 
@@ -39,16 +39,20 @@ int func_001F6868(Ctx_001F6868* c, Entry_001F6868* e)
     e->m8 = -1;
     unsigned int pos = (addr + (bits >> 3) + size - c->m0) % size;
     int count = c->m58;
+    int start = c->m5C - count;
     for (int j = 0; j < count && !found; j++) {
-        int idx = (c->m5C - count + c->m54 + j) % c->m54;
+        int idx = (start + c->m54 + j) % c->m54;
         if ((int)(pos + size - c->m50[idx].m10) % size < c->m50[idx].m14) {
             found = 1;
             e->m0 = c->m50[idx].m0;
             e->m8 = c->m50[idx].m8;
             c->m50[idx].m0 = -1;
             c->m50[idx].m8 = -1;
-            int k = c->m58;
-            c->m58 = k - (k >= 2 ? 1 : k);
+            int dec = c->m58;
+            int k = dec;
+            if (dec > 1)
+                dec = 1;
+            c->m58 = k - dec;
         }
     }
     func_0031BCC0(c->m40);

@@ -1,5 +1,4 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 73.3 */
+/* fuzzy: 72.6 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);

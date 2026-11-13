@@ -1,4 +1,4 @@
-/* fuzzy: 74.0 */
+/* fuzzy: 75.6 */
 extern "C" void* func_00331404(void* dst, const void* src, int n);
 struct C_00181C00;
 extern "C" int func_00181BC0(C_00181C00* self);
@@ -52,9 +52,9 @@ static inline bool ConvertClut_001472C0(void* dclut, unsigned char dbits, Src_00
     if (dbits == 0x20 && sbits == 0x10) {
         Col_001472C0 c;
         c.a = 0x80;
-        unsigned int n = src->m_clutSize >> 1;
+        int n = src->m_clutSize >> 1;
         unsigned int* d = (unsigned int*)dclut;
-        for (; n != 0; n--) {
+        for (int i = 0; i < n; i++) {
             c.r = *sclut << 3;
             c.g = (*sclut >> 2) & 0xF8;
             c.b = (*sclut >> 7) & 0xF8;
@@ -64,10 +64,10 @@ static inline bool ConvertClut_001472C0(void* dclut, unsigned char dbits, Src_00
         return true;
     }
     if (dbits == 0x10 && sbits == 0x20) {
-        unsigned int n = src->m_clutSize >> 2;
+        int n = src->m_clutSize >> 2;
         unsigned short* d = (unsigned short*)dclut;
         unsigned char* p = (unsigned char*)sclut;
-        for (; n != 0; n--) {
+        for (int i = 0; i < n; i++) {
             unsigned char* q = p;
             p += 4;
             *d++ = (q[0] >> 3) | 0x8000 | ((q[1] >> 3) << 5) | ((q[2] >> 3) << 10);

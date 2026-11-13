@@ -1,4 +1,4 @@
-/* fuzzy: 84.4 */
+/* fuzzy: 89.6 */
 /* near miss: size 0x25c vs 0x254; inner-loop shape right (if (p && check) form gives the game's rotated loop); ours gets loop-align nops and hoists &bits out of the outer loop (game: no nops, &bits recomputed, only &msg hoisted); regs n/i/start differ */
 extern char D_00371C78[];
 extern void* D_00392068;
@@ -42,6 +42,7 @@ extern "C" void* func_002A39D8(void* net);
 extern "C" Node_00231188* func_002A53F8(void* net, Iter_00231188* it, int a);
 extern "C" Node_00231188* func_002A5490(void* net, Iter_00231188* it, int a);
 extern "C" void func_001FAA08(Bits_00231188* b);
+static inline void Wrap_001FAA08(Bits_00231188* b) { func_001FAA08(b); }
 extern "C" int func_00202778(Conn_00231188* c);
 extern "C" void func_001FAA40(Bits_00231188* b, char* buf, int size);
 extern "C" int func_002B30B0(Node_00231188* n);
@@ -75,7 +76,7 @@ void Srv_00231188::Send()
     char buf[0x1000];
     for (Node_00231188* n = func_002A53F8(net, &it, 1); n; n = func_002A5490(net, &it, 1)) {
         Bits_00231188 bits;
-        func_001FAA08(&bits);
+        Wrap_001FAA08(&bits);
         if (!func_00202778(n->m_1C)) {
             continue;
         }

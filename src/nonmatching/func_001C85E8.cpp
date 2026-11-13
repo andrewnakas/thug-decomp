@@ -1,4 +1,4 @@
-/* fuzzy: 97.7 */
+/* fuzzy: 98.4 */
 /* sym: __13Coll_001C85E8 = 0x00209240 */
 /* sym: __12Box_001C85E8RC12Vec_001C85E8T1 = 0x00102340 */
 typedef int qword __attribute__((mode(TI)));
@@ -68,6 +68,7 @@ extern "C" void* func_001DAD40();
 extern "C" void func_001DA948(void* s, Box_001C85E8* b);
 extern "C" void func_001DADB0(void* s);
 extern "C" void func_003233B8(Vec_001C85E8* out, Vec_001C85E8* in);
+static inline void Wrap_003233B8(Vec_001C85E8* out, Vec_001C85E8* in) { func_003233B8(out, in); }
 extern "C" float func_00341068(float);
 
 static inline void Add_001C85E8(Vec_001C85E8& r, const Vec_001C85E8& a, const Vec_001C85E8& b)
@@ -148,7 +149,7 @@ int Obj_001C85E8::Find(Vec_001C85E8* a, Vec_001C85E8* b, Vec_001C85E8* pos, Vec_
     Vec_001C85E8 d;
     Sub_001C85E8(d, *b, *a);
     Vec_001C85E8 n = d;
-    func_003233B8(&n, &n);
+    Wrap_003233B8(&n, &n);
     float ay = fabsf(n[1]);
     if (func_00341068(Param_001C85E8(0x98724EBC) * 0.017453294f) < ay)
         return 0;
@@ -157,7 +158,7 @@ int Obj_001C85E8::Find(Vec_001C85E8* a, Vec_001C85E8* b, Vec_001C85E8* pos, Vec_
     side->c[1] = 0.0f;
     side->c[2] = d[0];
     side->c[3] = 1.0f;
-    func_003233B8(side, side);
+    Wrap_003233B8(side, side);
     if (!back) {
         if (Dot_001C85E8(out->m10, m60) < 0.0f) {
             out->m10.c[0] = -out->m10[0];

@@ -1,4 +1,4 @@
-/* fuzzy: 92.9 */
+/* fuzzy: 93.6 */
 /* sym: __12Img_0014BBA8i = 0x00146C90 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
@@ -81,18 +81,18 @@ extern "C" void func_0014BBA8(const char* name, int skip, int other)
         func_003312D8(0, 0);
         int h = (D_00388814 == 4) ? 0x265 : (D_0038882C == 0 ? 0x200 : 0x280);
         int y;
+        int x = 0;
         if (D_00388814 != 4) {
             if (D_0038882C == 0) y = h * 8;
             else y = h * 7;
         } else {
             y = h * 0x740 / 256;
         }
-        int off = 0;
-        int x = 0;
         unsigned short half = func_00138948(D_00393F18) >> 1;
         int step = func_00138920(D_00393F18) * half * 2;
         int dx = half << 16;
         short sy = y;
+        int off = 0;
         for (int i = 1; i >= 0; i--) {
             int a = (D_00388814 == 4) ? 9 : (D_0038882C == 0 ? 8 : 10);
             int cx = x >> 16;

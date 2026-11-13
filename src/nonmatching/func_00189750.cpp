@@ -1,4 +1,4 @@
-/* fuzzy: 74.6 */
+/* fuzzy: 76.2 */
 /* sym: __11Ev_00189750 = 0x00187C78 */
 /* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;
@@ -161,8 +161,8 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
                 N_00189750* m = head->NextA();
                 if (m) {
                     do {
-                        *o = m->m_data;
                         *r = &m->m_data->mE8;
+                        *o = m->m_data;
                         m = m->NextA();
                         r++;
                         o++;

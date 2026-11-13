@@ -1,4 +1,4 @@
-/* fuzzy: 72.4 */
+/* fuzzy: 74.9 */
 /* sym: _vt$13Node_0022F500 = 0x00373000 */
 /* sym: _vt$14Score_0022F500 = 0x00372FE8 */
 /* sym: _vt$13Head_0022F500 = 0x00372F70 */
@@ -44,6 +44,7 @@ extern "C" char* func_001E54B8(char* key, int a);
 extern "C" void* func_001E6978(void* p);
 extern "C" void func_001E6AE8(void* p, int v);
 extern "C" void func_001E7138(void* params, char* name, char* value);
+static inline void Wrap_001E7138(void* params, char* name, char* value) { func_001E7138(params, name, value); }
 extern "C" void func_001E7360(void* params, int name, unsigned int value);
 extern "C" void func_001E73C8(void* params, char* name, unsigned int value);
 extern "C" unsigned int func_001F0D78(char* s);
@@ -225,7 +226,7 @@ bool func_0022F500()
                 else
                     func_003331D0(name, D_0038FCD8, t->m_color, p->m_name);
                 void* params = NewParams_0022F500();
-                func_001E7138(params, D_0038FCE0, name);
+                Wrap_001E7138(params, D_0038FCE0, name);
                 func_001E73C8(params, D_0038FCE8, func_001F0D78(D_00372E28));
                 func_001F0370(D_00372E40, params, 0, 0);
                 FreeParams_0022F500(params);
@@ -234,7 +235,7 @@ bool func_0022F500()
                     func_003331D0(buf, D_00372E58, score / 1000 / 60, score / 1000 % 60);
                 else
                     func_003331D0(buf, D_0038FC18, score);
-                func_001E7138(params, D_0038FCE0, buf);
+                Wrap_001E7138(params, D_0038FCE0, buf);
                 func_001E73C8(params, D_0038FD00, func_001F0D78(D_0038FD08));
                 func_001E73C8(params, D_0038FD10, line + 0x39447);
                 func_001E73C8(params, D_0038FCE8, func_001F0D78(D_00372E68));
@@ -243,7 +244,7 @@ bool func_0022F500()
                 line++;
             }
             void* params = NewParams_0022F500();
-            func_001E7138(params, D_0038FCE0, teamName);
+            Wrap_001E7138(params, D_0038FCE0, teamName);
             func_001E7360(params, 0, func_001F0D78(D_00372E98));
             func_001E73C8(params, D_0038FCE8, func_001F0D78(D_00372E28));
             func_001F0370(D_00372E40, params, 0, 0);
@@ -254,7 +255,7 @@ bool func_0022F500()
                               (unsigned int)t->key / 1000 % 60);
             else
                 func_003331D0(buf, D_0038FD18, t->m_color, t->key);
-            func_001E7138(params, D_0038FCE0, buf);
+            Wrap_001E7138(params, D_0038FCE0, buf);
             func_001E73C8(params, D_0038FD10, line + 0x39447);
             func_001E73C8(params, D_0038FD00, func_001F0D78(D_0038FD08));
             func_001E7360(params, 0, func_001F0D78(D_00372E98));
@@ -282,7 +283,7 @@ bool func_0022F500()
         while (s) {
             Score_0022F500* next = lit.Next();
             void* params = NewParams_0022F500();
-            func_001E7138(params, D_0038FCE0, s->m_name);
+            Wrap_001E7138(params, D_0038FCE0, s->m_name);
             func_001E73C8(params, D_0038FCE8, func_001F0D78(D_00372E28));
             func_001F0370(D_00372E40, params, 0, 0);
             FreeParams_0022F500(params);
@@ -291,7 +292,7 @@ bool func_0022F500()
                 func_003331D0(buf, D_00372E58, (unsigned int)s->key / 1000 / 60, (unsigned int)s->key / 1000 % 60);
             else
                 func_003331D0(buf, D_0038FC18, s->key);
-            func_001E7138(params, D_0038FCE0, buf);
+            Wrap_001E7138(params, D_0038FCE0, buf);
             func_001E73C8(params, D_0038FD10, line + 0x39447);
             func_001E73C8(params, D_0038FD00, func_001F0D78(D_0038FD08));
             func_001E73C8(params, D_0038FCE8, func_001F0D78(D_00372E68));

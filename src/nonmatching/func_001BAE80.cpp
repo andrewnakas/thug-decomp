@@ -1,4 +1,4 @@
-/* fuzzy: 88.0 */
+/* fuzzy: 89.4 */
 /* sym: __15Feeler_001BAE80 = 0x00209240 */
 typedef int qword_001BAE80 __attribute__((mode(TI)));
 
@@ -61,7 +61,7 @@ struct Obj_001BAE80 {
 void Obj_001BAE80::Method()
 {
     Model_001BAE80* m = mC;
-    if (m20 == m->m50)
+    if (m->m50 == m20)
         return;
     if (mC->m104 & 8) {
         m20 = mC->m50;

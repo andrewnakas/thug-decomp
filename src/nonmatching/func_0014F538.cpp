@@ -165,6 +165,8 @@ extern "C" unsigned int func_00142F08(int* keys);
 extern "C" void func_00142F88(Queue_0014F538* q);
 extern "C" void func_00142F98(Queue_0014F538* q, Vert_0014F538* v);
 extern "C" int* func_0014EAF8(void* tex);
+/* Equivalence (asm): the game passes a third argument, 0: `jal func_0014EC50` at 0x15061C with
+   `daddu $a1,$zero,$zero` in its delay slot ($f12 = thr, $a0 = &out). */
 extern "C" int func_0014EC50(float thr, Vert_0014F538** out, void* unused);
 extern "C" bool func_0014F270(Vec_0014F538* p, Vec_0014F538* a, Vec_0014F538* b, Vec_0014F538* c);
 extern "C" void func_0014F4B8(int* keys, unsigned int slot);

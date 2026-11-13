@@ -197,6 +197,8 @@ void func_0015C4C0(Field_0015C4C0* o)
     o->m_rows = D_003CBDE0;
     o->m_cells = (unsigned char*)(D_003CBDE0 + o->m_rowCount);
     unsigned short total = 0;
+    /* Equivalence (asm): rowCount+1 rows are packed. Entry test `bltz $v0` at 0x15C9B4 (skip only if rowCount < 0),
+       loop test `slt $v0,$v0,$a2; beql $v0,$zero` at 0x15CAEC (continue while !(rowCount < z+1)). */
     for (z = 0; z <= o->m_rowCount; z++) {
         unsigned short first = 0;
         unsigned short last = o->m_cols - 1;

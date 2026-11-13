@@ -1,4 +1,4 @@
-/* fuzzy: 86.8 */
+/* fuzzy: 87.1 */
 /* sym: GetX__13Anim_001177A8Pvi = 0x00115C68 */
 /* sym: GetY__13Anim_001177A8Pvi = 0x00115C98 */
 /* sym: Test__13Anim_001177A8 = 0x00115CC8 */
@@ -135,8 +135,30 @@ static inline void InterpPos_001177A8(Vec_001177A8* out, TKey_001177A8* k0, TKey
 {
     Vec_001177A8 a;
     Vec_001177A8 b;
-    GetPos_001177A8(&a, k0, flt);
-    GetPos_001177A8(&b, k1, flt);
+    if (flt) {
+        FKey_001177A8* f = (FKey_001177A8*)k0;
+        a.x = f->x;
+        a.y = f->y;
+        a.z = f->z;
+        a.w = 1.0f;
+    } else {
+        a.x = k0->x / PosScale_001177A8();
+        a.y = k0->y / PosScale_001177A8();
+        a.z = k0->z / PosScale_001177A8();
+        a.w = 1.0f;
+    }
+    if (flt) {
+        FKey_001177A8* f = (FKey_001177A8*)k1;
+        b.x = f->x;
+        b.y = f->y;
+        b.z = f->z;
+        b.w = 1.0f;
+    } else {
+        b.x = k1->x / PosScale_001177A8();
+        b.y = k1->y / PosScale_001177A8();
+        b.z = k1->z / PosScale_001177A8();
+        b.w = 1.0f;
+    }
     *out = a + (b - a) * t;
 }
 

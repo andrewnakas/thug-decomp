@@ -1,4 +1,4 @@
-/* fuzzy: 86.1 */
+/* fuzzy: 87.0 */
 typedef int qword_00116A48 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 
@@ -180,48 +180,6 @@ static inline Quat_00116A48 Slerp(const Quat_00116A48& a, Quat_00116A48& b, floa
     return b;
 }
 
-static inline void InterpQ(Quat_00116A48* q, const QKey_00116A48& k0, const QKey_00116A48& k1, float f)
-{
-    if (f == 0.0f) {
-        q->Decode(k0);
-    } else if (f == 1.0f) {
-        q->Decode(k1);
-    } else {
-        Quat_00116A48 a;
-        Quat_00116A48 b;
-        a.Decode(k0);
-        b.Decode(k1);
-        *q = Slerp(a, b, f);
-    }
-}
-
-static inline void InterpT(Vec_00116A48* t, const TKey_00116A48& j0, const TKey_00116A48& j1, float g, float scale)
-{
-    if (g == 0.0f) {
-        t->x = j0.x / scale;
-        t->y = j0.y / scale;
-        t->z = j0.z / scale;
-        t->w = 1.0f;
-    } else if (g == 1.0f) {
-        t->x = j1.x / scale;
-        t->y = j1.y / scale;
-        t->z = j1.z / scale;
-        t->w = 1.0f;
-    } else {
-        Vec_00116A48 a;
-        Vec_00116A48 b;
-        a.x = j0.x / scale;
-        a.y = j0.y / scale;
-        a.z = j0.z / scale;
-        a.w = 1.0f;
-        b.x = j1.x / scale;
-        b.y = j1.y / scale;
-        b.z = j1.z / scale;
-        b.w = 1.0f;
-        *t = a + (b - a) * g;
-    }
-}
-
 struct Anim_00116A48 {
     int m_0;
     unsigned m_flags;
@@ -299,7 +257,17 @@ bool Anim_00116A48::GetFrame(Quat_00116A48* q, Vec_00116A48* t, Ctx_00116A48* ct
             } while (1);
             f = (time - pk0->time) / ((float)pk1->time - (float)pk0->time);
         done_f:
-            InterpQ(q, *pk0, *pk1, f);
+            if (f == 0.0f) {
+                q->Decode(*pk0);
+            } else if (f == 1.0f) {
+                q->Decode(*pk1);
+            } else {
+                Quat_00116A48 a;
+                Quat_00116A48 b;
+                a.Decode(*pk0);
+                b.Decode(*pk1);
+                *q = Slerp(a, b, f);
+            }
 
             float g;
             do {
@@ -320,7 +288,30 @@ bool Anim_00116A48::GetFrame(Quat_00116A48* q, Vec_00116A48* t, Ctx_00116A48* ct
             } while (1);
             g = (time - pj0->time) / ((float)pj1->time - (float)pj0->time);
         done_g:
-            InterpT(t, *pj0, *pj1, g, 32.0f);
+            float scale = 32.0f;
+            if (g == 0.0f) {
+                t->x = pj0->x / scale;
+                t->y = pj0->y / scale;
+                t->z = pj0->z / scale;
+                t->w = 1.0f;
+            } else if (g == 1.0f) {
+                t->x = pj1->x / scale;
+                t->y = pj1->y / scale;
+                t->z = pj1->z / scale;
+                t->w = 1.0f;
+            } else {
+                Vec_00116A48 a;
+                Vec_00116A48 b;
+                a.x = pj0->x / scale;
+                a.y = pj0->y / scale;
+                a.z = pj0->z / scale;
+                a.w = 1.0f;
+                b.x = pj1->x / scale;
+                b.y = pj1->y / scale;
+                b.z = pj1->z / scale;
+                b.w = 1.0f;
+                *t = a + (b - a) * g;
+            }
         }
         qdata += *qsizes;
         tdata += *tsizes;

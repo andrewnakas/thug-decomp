@@ -1,4 +1,4 @@
-/* fuzzy: 81.7 */
+/* fuzzy: 94.5 */
 /* Builds the per-frame render DMA chain: one GIF/VIF setup packet per active viewport, then the main
    camera packet, the GS environment registers and the closing tag. */
 struct Material_0017A400 {
@@ -20,6 +20,13 @@ struct Viewport_0017A400 {
 
 struct Matrix_0017A400 {
     float m[4][4];
+    void Ident()
+    {
+        m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
+        m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+    }
 };
 
 struct Camera_0017A400 {
@@ -126,8 +133,7 @@ void func_0017A400(int skipList)
             continue;
         Select(vp);
         if (vp->flags & 4) {
-            D_003E2718[D_0039409C] = D_00394274;
-            D_0039409C++;
+            D_003E2718[D_0039409C++] = D_00394274;
         }
         Tag(0x10000000, 0xFE000000);
         Put((unsigned short)D_00394280 | 0x03000000);
@@ -161,15 +167,15 @@ void func_0017A400(int skipList)
         vp->camera = 0;
     }
 
-    void* view = D_00394274;
     if (D_0039427C)
         func_001617A0(0);
+    /* Equivalence (asm): read after the call - `lw $s3,%gp_rel(D_00394274)` at 0x17A6EC follows `jal func_001617A0`
+       at 0x17A6E4. */
+    void* view = D_00394274;
     D_00394274 = (unsigned int*)((char*)view + 0xC0);
     func_00166FA8(view);
     Matrix_0017A400 ident;
-    for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            ident.m[i][j] = (i == j) ? 1.0f : 0.0f;
+    ident.Ident();
     func_001671A8(view, &ident);
 
     Viewport_0017A400* main = D_003942FC;
@@ -206,17 +212,21 @@ void func_0017A400(int skipList)
     func_00164EB8(0);
     func_001645F8(0, 0, 0);
 
-    bool pal = D_0038882C == 1;
     Reg(0, 0x3F);                                   /* TEXFLUSH */
     Reg(0, 0x4B);                                   /* FBA_2 */
     Reg(0xE20213E00L, 7);                           /* TEX0_2 */
     Reg(1, 0x15);                                   /* TEX1_2 */
     Reg(5, 9);                                      /* CLAMP_2 */
+    /* Equivalence (asm): D_0038882C is loaded at each use, after the register stores through p:
+       `lw $v0,%gp_rel(D_0038882C)` at 0x17A9DC, 0x17AA04 and 0x17AA30. */
+    int pal = D_0038882C == 1;
     Reg((0xFF000000UL << 32) | (pal ? 0xA0000 : 0x80000), 0x4D);   /* FRAME_2: FBMSK 0xFF000000 (alpha) */
+    pal = D_0038882C == 1;
     unsigned int height = pal ? 0x280 : 0x200;
     unsigned int width = pal ? 0x280 : 0x200;
-    width = pal ? (width * 0x700) >> 13 : width >> 2;
-    Reg(((width + (pal ? (height * 0x380) >> 13 : height >> 3)) & 0x1FF) | (0x8080L << 17), 0x4F);
+    unsigned int x = pal ? (width * 0x700) >> 13 : width >> 2;
+    pal = D_0038882C == 1;
+    Reg(((x + (pal ? (height * 0x380) >> 13 : height >> 3)) & 0x1FF) | (0x8080L << 17), 0x4F);
     Reg(D_00394048, 0x19);
     Reg(D_00394050, 0x41);
     Reg(((long)D_0038C030 << 32) | 0x66, 0x43);

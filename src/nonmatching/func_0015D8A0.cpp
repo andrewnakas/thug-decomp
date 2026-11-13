@@ -24,6 +24,9 @@ struct Field_0015D8A0 {
     float m_originX;
     float m_originZ;
     char pad46C[0x490 - 0x46C];
+    /* Equivalence (asm): three flat 0x400-byte tables indexed by the running idx: bases formed at 0x15DB20
+       (`addiu $a0,$s0,0x490`), 0x15DBD8 (`addiu $s5,$s0,0x890`), 0x15DBE0 (`addiu $s4,$s0,0xC90`); element
+       `addu $v1,$s6,$a1` at 0x15DBF8 and the next k step only `addiu $t9,$a1,0x100` at 0x15DC0C (no k*0x100 term). */
     unsigned char m_blade[0x400];
     unsigned char m_bladeX[0x400];
     unsigned char m_bladeZ[0x400];

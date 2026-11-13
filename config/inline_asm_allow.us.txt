@@ -1,0 +1,29 @@
+# Units that may use small inline-asm helpers (tools/scan.py; policy in RULES.md and docs/ASM_ONLY.md).
+# The original functions use instructions no C++ expression produces: VU0 macro mode, or the interrupt /
+# system-call instructions of an interrupt handler. Every other unit stays plain C++ with no asm at all.
+# Even here an asm statement must sit alone in a `static inline` helper and hold at most 3 instructions,
+# with no data directives, labels, branches or jumps; all the logic is ordinary C++ around the helpers.
+# <name>  <reason>
+func_0010F8B8  interrupt handler (sync.l; ei)
+func_00112048  interrupt handler (sync.l; ei)
+func_001154D0  VU0 macro mode
+func_0011E278  VU0 macro mode
+func_0011E4A8  VU0 macro mode
+func_00121200  VU0 macro mode
+func_0012A138  VU0 macro mode
+func_00164920  interrupt handler (sync.l; ei)
+func_00164AC8  interrupt handler (sync.l; ei)
+func_0016B8B8  interrupt handler (sync.l; ei)
+func_0016C940  VU0 macro mode
+func_0016F050  VU0 macro mode
+func_0016FBD0  VU0 macro mode
+func_0016FCF8  VU0 macro mode
+func_0017CD90  VU0 macro mode
+func_001E26E8  interrupt handler (sync.l; ei)
+func_001E2840  interrupt handler (sync.l; ei)
+func_001E2880  interrupt handler (sync.l; ei)
+func_001F77B0  interrupt handler (sync.l; ei)
+func_001F7970  interrupt handler (sync.l; ei)
+func_00267538  VU0 macro mode
+func_002CE628  interrupt control (di/ei) and syscall
+func_002CE778  exit syscall

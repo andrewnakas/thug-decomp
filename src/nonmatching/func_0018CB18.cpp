@@ -1,4 +1,4 @@
-/* fuzzy: 97.2 */
+/* fuzzy: 99.7 */
 /* Script member-function dispatcher of the component whose scene object lives at 0x260: one case per command
    checksum; returns 2 for an unknown command, otherwise the command's result as 0/1. */
 /* sym: __12Msg_0018CB18 = 0x001FA800 */
@@ -22,6 +22,7 @@ struct Vec_0018CB18 {
 
 struct Mat_0018CB18 {
     Vec_0018CB18 r[4];
+    void operator*=(Mat_0018CB18& o);
     void Ident()
     {
         r[0].x = 1.0f; r[0].y = 0.0f; r[0].z = 0.0f; r[0].w = 0.0f;
@@ -33,7 +34,8 @@ struct Mat_0018CB18 {
 
 struct Color_0018CB18 {
     unsigned char r, g, b, a;
-    Color_0018CB18(int r_, int g_, int b_, int a_)
+    /* game reads r with lbu (0x0018D210, 0x0018D3FC) but g/b with lw: r_ is a byte parameter */
+    Color_0018CB18(unsigned char r_, int g_, int b_, int a_)
     {
         r = r_;
         g = g_;
@@ -129,6 +131,7 @@ extern "C" void func_0011FAB8(Struct_0018CB18* s, void* params, int a);
 extern "C" void func_0011F8C8(Struct_0018CB18* s, int flags);
 extern "C" Mat_0018CB18* func_001009C0(Mat_0018CB18* out, float angle);
 extern "C" void func_00323318(Mat_0018CB18* d, Mat_0018CB18* a, Mat_0018CB18* b);
+inline void Mat_0018CB18::operator*=(Mat_0018CB18& o) { func_00323318(this, &o, this); }
 extern "C" float func_00341068(float a);
 extern "C" float func_00340F60(float a);
 extern "C" unsigned int func_0010FC30();
@@ -138,7 +141,7 @@ extern "C" int func_002B30A0(void* player);
 extern "C" void* func_002A39E0(void* net, int conn);
 extern "C" void func_00200C00(void* conn, Msg_0018CB18* msg);
 extern "C" void func_0018DCB0(Track_0018CB18* t);
-extern "C" void func_0018DD00(Track_0018CB18* t, unsigned int now, int type, int flag, float time, float start, float range);
+extern "C" void func_0018DD00(Track_0018CB18* t, unsigned int now, float time, float start, float range, int type, int flag);
 
 static inline void RotateX_0018CB18(Vec_0018CB18& v, float ang)
 {
@@ -350,7 +353,6 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         func_001E7DE8(params, 0x318F2BDB, &flag, 0);
         Mat_0018CB18 m;
         m.Ident();
-        Mat_0018CB18* pm = &m;
         float sx = 1.0f;
         float sy = 1.0f;
         int gotX = func_001E7EB0(params, 0x3FB610B7, &sx, 0);
@@ -362,7 +364,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         float angle;
         if (func_001E7EB0(params, 0xE2C6589E, &angle, 0)) {
             Mat_0018CB18 rot;
-            func_00323318(&m, func_001009C0(&rot, angle * 0.017453294f), &m);
+            m *= *func_001009C0(&rot, angle * 0.017453294f);
         }
         float u = 0.0f;
         float v = 0.0f;
@@ -372,7 +374,7 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             m.r[3].x = u;
             m.r[3].y = v;
         }
-        func_0013E108(m_scene, name, flag, pm);
+        func_0013E108(m_scene, name, flag, &m);
         break;
     }
     case 0x721184C7:
@@ -456,15 +458,15 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
         unsigned int now = func_0010FC30();
         if (func_001E8708(params, 0x7323E97C)) {
             mask = 1;
-            func_0018DD00(&m_tracks[0], now, type, flag, time, start, end - start);
+            func_0018DD00(&m_tracks[0], now, time, start, end - start, type, flag);
         }
         if (func_001E8708(params, 0x0424D9EA)) {
             mask |= 2;
-            func_0018DD00(&m_tracks[1], now, type, flag, time, start, end - start);
+            func_0018DD00(&m_tracks[1], now, time, start, end - start, type, flag);
         }
         if (func_001E8708(params, 0x9D2D8850)) {
             mask |= 4;
-            func_0018DD00(&m_tracks[2], now, type, flag, time, start, end - start);
+            func_0018DD00(&m_tracks[2], now, time, start, end - start, type, flag);
         }
         void* net = D_00392068;
         void* player = func_002A52F0(net, (unsigned short)m_owner->m_id);
@@ -472,9 +474,9 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             FadeData_0018CB18 data;
             Msg_0018CB18 msg;
             void* conn = func_002A39E0(net, func_002B30A0(player));
+            data.m_start = (int)start;
             data.m_time = (int)time;
             data.m_type = type;
-            data.m_start = (int)start;
             data.m_range = (int)(end - start);
             data.m_id = m_owner->GetId();
             data.m_flag = flag;
@@ -496,8 +498,8 @@ int Comp_0018CB18::CallMemberFunction(unsigned int id, void* params, Script_0018
             Msg_0018CB18 msg;
             StopData_0018CB18 data;
             void* conn = func_002A39E0(net, func_002B30A0(player));
-            msg.m_data = &data;
             data.m_id = m_owner->GetId();
+            msg.m_data = &data;
             msg.m_type = 0x8C;
             msg.m_size = 1;
             func_00200C00(conn, &msg);

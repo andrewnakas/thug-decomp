@@ -1,4 +1,4 @@
-/* fuzzy: 91.9 */
+/* fuzzy: 92.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001B1CB8 {
@@ -10,6 +10,7 @@ struct Vec_001B1CB8 {
     Vec_001B1CB8(const Vec_001B1CB8& v) { q = v.q; }
     Vec_001B1CB8(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     float Length2() const { return x * x + y * y + z * z; }
+    Vec_001B1CB8& Normalize();
 };
 
 static inline Vec_001B1CB8 operator-(const Vec_001B1CB8& a, const Vec_001B1CB8& b)
@@ -73,6 +74,11 @@ extern "C" void func_001B2630(C_001B1CB8* self);
 extern "C" void func_001B2C78(C_001B1CB8* self);
 extern "C" void func_001B47F8(C_001B1CB8* self);
 extern "C" void func_003233B8(Vec_001B1CB8* d, Vec_001B1CB8* s);
+inline Vec_001B1CB8& Vec_001B1CB8::Normalize()
+{
+    func_003233B8(this, this);
+    return *this;
+}
 extern "C" void func_001B4650(C_001B1CB8* self, Vec_001B1CB8 pos);
 extern "C" void func_001B4A08(C_001B1CB8* self);
 extern "C" void func_001B4228(C_001B1CB8* self);
@@ -170,10 +176,8 @@ void C_001B1CB8::Update()
             if (b)
                 func_001B47F8(this);
         } else {
-            Vec_001B1CB8 dir = ToTarget();
             moved = 1;
-            func_003233B8(&dir, &dir);
-            Vec_001B1CB8 np = saved + dir * speed;
+            Vec_001B1CB8 np = saved + ToTarget().Normalize() * speed;
             func_001B2630(this);
             func_001B2C78(this);
             mC->m_pos = np;

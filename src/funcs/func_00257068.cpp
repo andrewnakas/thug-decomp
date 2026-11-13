@@ -1,15 +1,16 @@
-/* fuzzy: 92.7 */
 typedef int qword_00257068 __attribute__((mode(TI)));
 union Vec_00257068 {
     qword_00257068 q;
     float c[4];
     float& operator[](int i) { return c[i]; }
-    Vec_00257068& operator=(const Vec_00257068& o)
-    {
-        q = o.q;
-        return *this;
-    }
     float operator[](int i) const { return c[i]; }
+    void Set(float x, float y, float z, float w)
+    {
+        c[0] = x;
+        c[1] = y;
+        c[2] = z;
+        c[3] = w;
+    }
     void operator*=(float k)
     {
         c[0] *= k;
@@ -24,36 +25,20 @@ union Vec_00257068 {
         c[2] += o[2];
         c[3] += o[3];
     }
-    Vec_00257068 operator-() const
-    {
-        Vec_00257068 r;
-        r.c[0] = -c[0];
-        r.c[1] = -c[1];
-        r.c[2] = -c[2];
-        r.c[3] = -c[3];
-        return r;
-    }
-    void operator-=(const Vec_00257068& o)
-    {
-        c[0] -= o[0];
-        c[1] -= o[1];
-        c[2] -= o[2];
-        c[3] -= o[3];
-    }
 };
 
 struct Mat_00257068 {
     Vec_00257068 r[4];
-    Mat_00257068& operator=(const Mat_00257068& o)
-    {
-        r[0] = o.r[0];
-        r[1] = o.r[1];
-        r[2] = o.r[2];
-        r[3] = o.r[3];
-        return *this;
-    }
     Vec_00257068& operator[](int i) { return r[i]; }
     const Vec_00257068& operator[](int i) const { return r[i]; }
+    Mat_00257068() {}
+    Mat_00257068(const Mat_00257068& o)
+    {
+        r[0] = o[0];
+        r[1] = o[1];
+        r[2] = o[2];
+        r[3] = o[3];
+    }
     float Det() const;
     void Adjoint(const Mat_00257068& m);
     void Invert();
@@ -152,11 +137,13 @@ void func_00257068(Src_00257068* src, View_00257068* v)
     if (v->m_roll != 0.0f)
         v->m = *func_00100928((Mat_00257068*)0x70003FC0, v->m_roll) * v->m;
     v->m.Invert();
-    v->m_scale[0] = v->m48 * 0.5f;
-    v->m_scale[1] = v->m40 * 0.5f;
-    v->m_scale[2] = v->m44;
-    v->m_scale[3] = 1.0f;
-    v->m_offset = -v->m_scale;
+    v->m_scale.Set(v->m48 * 0.5f, v->m40 * 0.5f, v->m44, 1.0f);
+    Vec_00257068 neg;
+    neg.c[0] = -v->m_scale.c[0];
+    neg.c[1] = -v->m_scale.c[1];
+    neg.c[2] = -v->m_scale.c[2];
+    neg.c[3] = -v->m_scale.c[3];
+    v->m_offset = neg;
     v->m_offset[2] = 0.0f;
     v->m_scale += v->m_center;
     v->m_offset += v->m_center;

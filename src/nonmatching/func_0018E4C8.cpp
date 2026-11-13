@@ -1,4 +1,4 @@
-/* fuzzy: 90.3 */
+/* fuzzy: 97.1 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -13,18 +13,18 @@ struct Row_0018E4C8 {
     const float& operator[](int i) const { return (&x)[i]; }
     Row_0018E4C8& operator+=(const Row_0018E4C8& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        x += o[0];
+        y += o[1];
+        z += o[2];
+        w += o[3];
         return *this;
     }
     Row_0018E4C8& operator-=(const Row_0018E4C8& o)
     {
-        x -= o.x;
-        y -= o.y;
-        z -= o.z;
-        w -= o.w;
+        x -= o[0];
+        y -= o[1];
+        z -= o[2];
+        w -= o[3];
         return *this;
     }
     Row_0018E4C8& operator*=(float s)
@@ -45,7 +45,7 @@ struct Vec_0018E4C8 : Row_0018E4C8 {
 
 static inline Vec_0018E4C8 operator-(const Row_0018E4C8& v)
 {
-    return Vec_0018E4C8(-v.x, -v.y, -v.z, -v.w);
+    return Vec_0018E4C8(-v[0], -v[1], -v[2], -v[3]);
 }
 
 struct Quat_0018E4C8;
@@ -59,6 +59,7 @@ struct Quat_0018E4C8 {
         qword q;
     };
     float& operator[](int i) { return (&x)[i]; }
+    const float& operator[](int i) const { return (&x)[i]; }
     float Length() { return sqrtf(func_0011D4C0(this)); }
     Quat_0018E4C8& operator*=(float s)
     {
@@ -103,7 +104,7 @@ struct Mat_0018E4C8 {
     Mat_0018E4C8& operator*=(const Mat_0018E4C8& o);
     void FromQuat(const Quat_0018E4C8& q)
     {
-        float n = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+        float n = q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3];
         float s = (n > 0.0f) ? 2.0f / n : 0.0f;
         float xs = q.x * s;
         float ys = q.y * s;
@@ -130,10 +131,10 @@ struct Mat_0018E4C8 {
     Vec_0018E4C8 Rotate(const Row_0018E4C8& p) const
     {
         Vec_0018E4C8 o;
-        o.x = p.x * r[0].x + p.y * r[1].x + p.z * r[2].x;
-        o.y = p.x * r[0].y + p.y * r[1].y + p.z * r[2].y;
-        o.z = p.x * r[0].z + p.y * r[1].z + p.z * r[2].z;
-        o.w = p.w;
+        o.x = p[0] * r[0].x + p[1] * r[1].x + p[2] * r[2].x;
+        o.y = p[0] * r[0].y + p[1] * r[1].y + p[2] * r[2].y;
+        o.z = p[0] * r[0].z + p[1] * r[1].z + p[2] * r[2].z;
+        o.w = p[3];
         return o;
     }
 };
@@ -239,7 +240,7 @@ struct Body_0018E4C8 {
     unsigned int m90;
     void* m94;
     char pad98[0xB4 - 0x98];
-    unsigned int mB4;
+    int mB4;
     char padB8[0xD4 - 0xB8];
     int mD4;
     char padD8[0xE0 - 0xD8];
@@ -450,8 +451,7 @@ void Body_0018E4C8::Init(void* params)
         float mx = 0.0f;
         for (int i = m54; --i != -1;) {
             float d = sqrtf(m50[i].pos.Length2());
-            if (d > mx)
-                mx = d;
+            mx = d > mx ? d : mx;
         }
         if (mx > 30.0f) {
             float k = mx * 0.03333333507f;

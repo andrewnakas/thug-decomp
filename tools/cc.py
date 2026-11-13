@@ -38,9 +38,25 @@ class StageError(Exception):
 
 
 def run(stage, argv, data=b"", cwd=ROOT):
+    # Each call gets a private temp directory (gcc's driver writes its cc*.ii/cc*.s there): parallel
+    # compiles from several agents no longer collide in the shared /tmp, and a killed compile leaves
+    # nothing behind outside build/.
+    import shutil
+    import tempfile
+    tmpbase = ROOT / "build" / "tmp"
+    tmpbase.mkdir(parents=True, exist_ok=True)
+    tmpdir = tempfile.mkdtemp(prefix="cc", dir=tmpbase)
+    env = dict(os.environ, TMPDIR=tmpdir, TMP=tmpdir, TEMP=tmpdir)
+    try:
+        return _run(stage, argv, data, cwd, env)
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def _run(stage, argv, data, cwd, env):
     for attempt in range(ATTEMPTS):
         try:
-            p = subprocess.run(argv, input=data, capture_output=True, cwd=cwd, timeout=TIMEOUT)
+            p = subprocess.run(argv, input=data, capture_output=True, cwd=cwd, timeout=TIMEOUT, env=env)
             break
         except FileNotFoundError:
             raise StageError(f"{stage}: tool not found: {argv[0]} (run python3 toolchain/setup.py)")

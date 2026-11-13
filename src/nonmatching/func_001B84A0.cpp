@@ -1,4 +1,4 @@
-/* fuzzy: 70.4 */
+/* fuzzy: 89.5 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -9,45 +9,46 @@ struct Row_001B84A0 {
         qword q;
     };
     Row_001B84A0() {}
+    const float& operator[](int i) const { return (&x)[i]; }
     Row_001B84A0(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     void Set(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
-    float Dot(const Row_001B84A0& o) const { return x * o.x + y * o.y + z * o.z; }
+    float Dot(const Row_001B84A0& o) const { return x * o[0] + y * o[1] + z * o[2]; }
     Row_001B84A0& operator+=(const Row_001B84A0& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        x += o[0];
+        y += o[1];
+        z += o[2];
+        w += o[3];
         return *this;
     }
     Row_001B84A0& operator-=(const Row_001B84A0& o)
     {
-        x -= o.x;
-        y -= o.y;
-        z -= o.z;
-        w -= o.w;
+        x -= o[0];
+        y -= o[1];
+        z -= o[2];
+        w -= o[3];
         return *this;
     }
 };
 
 static inline Row_001B84A0 operator*(const Row_001B84A0& v, float s)
 {
-    return Row_001B84A0(v.x * s, v.y * s, v.z * s, v.w * s);
+    return Row_001B84A0(v[0] * s, v[1] * s, v[2] * s, v[3] * s);
 }
 
 static inline Row_001B84A0 operator+(const Row_001B84A0& a, const Row_001B84A0& b)
 {
-    return Row_001B84A0(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Row_001B84A0(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Row_001B84A0 operator-(const Row_001B84A0& a, const Row_001B84A0& b)
 {
-    return Row_001B84A0(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Row_001B84A0(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Row_001B84A0 Cross_001B84A0(const Row_001B84A0& b, const Row_001B84A0& c)
 {
-    return Row_001B84A0(b.y * c.z - b.z * c.y, b.z * c.x - b.x * c.z, b.x * c.y - b.y * c.x, 0.0f);
+    return Row_001B84A0(b[1] * c[2] - b[2] * c[1], b[2] * c[0] - b[0] * c[2], b[0] * c[1] - b[1] * c[0], 0.0f);
 }
 
 struct Mat_001B84A0;
@@ -59,12 +60,22 @@ struct Mat_001B84A0 {
     Row_001B84A0 at;
     Row_001B84A0 trans;
     Mat_001B84A0() {}
+    Row_001B84A0& operator[](int i) { return (&right)[i]; }
+    const Row_001B84A0& operator[](int i) const { return (&right)[i]; }
     Mat_001B84A0(const Mat_001B84A0& o)
     {
-        right = o.right;
-        up = o.up;
-        at = o.at;
-        trans = o.trans;
+        right = o[0];
+        up = o[1];
+        at = o[2];
+        trans = o[3];
+    }
+    Mat_001B84A0& operator=(const Mat_001B84A0& o)
+    {
+        right = o[0];
+        up = o[1];
+        at = o[2];
+        trans = o[3];
+        return *this;
     }
 };
 
@@ -95,6 +106,19 @@ static inline void RotateY_001B84A0(Mat_001B84A0& m, float angle)
 {
     Mat_001B84A0 tmp;
     func_00323318(&m, func_00100928(&tmp, angle), &m);
+}
+
+// v = v rotated by angle about axis (via a quaternion).
+extern "C" void func_001BA4F0(Row_001B84A0* q, const Row_001B84A0* axis, float angle);
+extern "C" void func_001BA5D0(Row_001B84A0* out, Row_001B84A0* q, Row_001B84A0* v);
+
+static inline void RotateAbout_001B84A0(Row_001B84A0& v, const Row_001B84A0& axis, float angle)
+{
+    Row_001B84A0 q;
+    Row_001B84A0 r;
+    func_001BA4F0(&q, &axis, angle);
+    func_001BA5D0(&r, &q, &v);
+    v = r;
 }
 
 struct Feeler_001B84A0 {
@@ -218,8 +242,6 @@ extern "C" void func_001BA3B8(Cam_001B84A0* self);
 extern "C" void func_001B8148(Mat_001B84A0* m, float angle);
 extern "C" void func_001BA000(Row_001B84A0* pos, Cam_001B84A0* self, int instant);
 extern "C" void func_001BA1F8(Cam_001B84A0* self, float* up, float* back);
-extern "C" void func_001BA4F0(Row_001B84A0* q, Row_001B84A0* axis, float angle);
-extern "C" void func_001BA5D0(Row_001B84A0* out, Row_001B84A0* q, Row_001B84A0* v);
 extern "C" void func_001B9E98(Cam_001B84A0* self, Row_001B84A0* pos, Mat_001B84A0* m);
 
 struct Cam_001B84A0 {
@@ -310,7 +332,7 @@ void Cam_001B84A0::Update()
         }
         m120 = tilt;
     }
-    Row_001B84A0 up = basis.up;
+    Row_001B84A0 up = basis[1];
     if (mode == 0) {
         up = m16C->m160;
     }
@@ -327,14 +349,14 @@ void Cam_001B84A0::Update()
                     m160->m2C = 0.0f;
                 }
             } else {
-                basis.at = m168->mB0;
+                basis[2] = m168->mB0;
                 Cfg_001B84A0* c = m16C;
                 if (c->mAC) {
                     basis.at.x = 0.0f;
                     basis.at.z = 0.0f;
-                    basis.at += c->m140;
+                    basis[2] += c->m140;
                 }
-                Normalize_001B84A0(basis.at);
+                Normalize_001B84A0(basis[2]);
                 Row_001B84A0 n;
                 float k;
                 if (mode == 1) {
@@ -354,11 +376,11 @@ void Cam_001B84A0::Update()
                     k = basis.at.Dot(n) * D_00387A14;
                 }
                 // Remove the component along n.
-                basis.at -= n * k;
-                Normalize_001B84A0(basis.at);
+                basis[2] -= n * k;
+                Normalize_001B84A0(basis[2]);
             }
-            CrossN_001B84A0(basis.right, basis.up, basis.at);
-            CrossN_001B84A0(basis.up, basis.at, basis.right);
+            CrossN_001B84A0(basis[0], basis[1], basis[2]);
+            CrossN_001B84A0(basis[1], basis[2], basis[0]);
         }
     }
     if (m168->m31C && m16C->mF4) {
@@ -401,25 +423,27 @@ void Cam_001B84A0::Update()
             Row_001B84A0 dir;
             dir.Set(basis.at.x, 0.0f, basis.at.z, 1.0f);
             Normalize_001B84A0(dir);
-            Row_001B84A0 start = m168->m50 - basis.at * 3.0f;
+            Row_001B84A0 start = m168->m50 - basis[2] * 3.0f;
             Row_001B84A0 end = start - dir * 72.0f;
             func_00209350(&f, 0x90, 0);
-            int side = 1;
+            int side;
             if (func_002099C0(&f, &start, &end, 1)) {
                 float d1 = f.m90;
                 RotateY_001B84A0(basis, 2.0f * -D_0038D3C0);
                 dir.Set(basis.at.x, 0.0f, basis.at.z, 1.0f);
                 Normalize_001B84A0(dir);
-                start = m168->m50 - basis.at * 3.0f;
+                start = m168->m50 - basis[2] * 3.0f;
                 end = start - dir * 72.0f;
                 if (!func_002099C0(&f, &start, &end, 1)) {
                     side = 2;
                 } else if (f.m90 < d1) {
                     side = 2;
                 } else {
-                    side = 1;
                     RotateY_001B84A0(basis, 2.0f * D_0038D3C0);
+                    side = 1;
                 }
+            } else {
+                side = 1;
             }
             m11C = side;
             if (f.mC0) {
@@ -448,7 +472,10 @@ void Cam_001B84A0::Update()
     t.up.Set(basis.up.x, basis.up.y, basis.up.z, 0.0f);
     t.at.Set(-basis.at.x, -basis.at.y, -basis.at.z, 0.0f);
     t.trans.Set(0.0f, 0.0f, 0.0f, 1.0f);
-    cm->trans.Set(0.0f, 0.0f, 0.0f, 1.0f);
+    cm->trans.x = 0.0f;
+    cm->trans.y = 0.0f;
+    cm->trans.z = 0.0f;
+    cm->trans.w = 1.0f;
     if (instant) {
         *cm = t;
     }
@@ -502,25 +529,28 @@ void Cam_001B84A0::Update()
     pos += up * h;
     Row_001B84A0 target = m168->m50 + up * h;
     basis.at.Set(target.x - pos.x, target.y - pos.y, target.z - pos.z, 1.0f);
-    Normalize_001B84A0(basis.at);
+    Normalize_001B84A0(basis[2]);
     basis.up.x = cm->up.x;
     basis.up.y = cm->up.y;
     basis.up.z = cm->up.z;
-    CrossN_001B84A0(basis.right, basis.up, basis.at);
-    CrossN_001B84A0(basis.up, basis.at, basis.right);
+    CrossN_001B84A0(basis[0], basis[1], basis[2]);
+    CrossN_001B84A0(basis[1], basis[2], basis[0]);
     if (m120 != 0.0f) {
-        Row_001B84A0 q;
-        Row_001B84A0 r;
-        func_001BA4F0(&q, &basis.at, m120);
-        func_001BA5D0(&r, &q, &basis.up);
-        basis.up = r;
-        func_001BA4F0(&q, &basis.at, m120);
-        func_001BA5D0(&r, &q, &basis.right);
-        basis.right = r;
+        RotateAbout_001B84A0(basis[1], basis[2], m120);
+        RotateAbout_001B84A0(basis[0], basis[2], m120);
     }
-    cm->right.Set(-basis.right.x, -basis.right.y, -basis.right.z, 0.0f);
-    cm->up.Set(basis.up.x, basis.up.y, basis.up.z, 0.0f);
-    cm->at.Set(-basis.at.x, -basis.at.y, -basis.at.z, 0.0f);
+    cm->right.x = -basis.right.x;
+    cm->right.y = -basis.right.y;
+    cm->right.z = -basis.right.z;
+    cm->right.w = 0.0f;
+    cm->up.x = basis.up.x;
+    cm->up.y = basis.up.y;
+    cm->up.z = basis.up.z;
+    cm->up.w = 0.0f;
+    cm->at.x = -basis.at.x;
+    cm->at.y = -basis.at.y;
+    cm->at.z = -basis.at.z;
+    cm->at.w = 0.0f;
     if (m148 > 0.0f) {
         func_001B9E98(this, &pos, cm);
     }

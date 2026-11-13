@@ -1,4 +1,4 @@
-/* fuzzy: 88.0 */
+/* fuzzy: 94.0 */
 extern "C" long func_0010FA98();
 extern "C" float func_00341068(float x);   /* sinf */
 

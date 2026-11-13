@@ -1,4 +1,4 @@
-/* fuzzy: 60.8 */
+/* fuzzy: 76.2 */
 struct Entry_002C6CE0 {
     char pad0[0x8];
     int m8;

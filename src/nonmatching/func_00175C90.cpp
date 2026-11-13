@@ -1,5 +1,5 @@
 /* cflags: -fno-schedule-insns */
-/* fuzzy: 50.0 */
+/* fuzzy: 51.4 */
 extern unsigned int* D_00394274;
 extern unsigned short D_00394280;
 extern unsigned int D_00394290;

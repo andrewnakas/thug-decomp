@@ -1,4 +1,4 @@
-/* fuzzy: 98.7 */
+/* fuzzy: 99.2 */
 /* nonmatch func_00290A80: best earlier draft (thug-claude-lane3/work/w53/p6/func_00290A80.fail), 7 of 375 words differ. */
 struct Sub_00290A80 {
     char pad[0x34];

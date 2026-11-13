@@ -1,4 +1,4 @@
-/* fuzzy: 94.3 */
+/* fuzzy: 97.1 */
 /* nonmatch func_002C0BE0 (8 of 140 words differ): improved from 29 (w53/p1 draft). Compare written as tmp.x == t->m0[i].GetX() && ... GetY()/GetZ() (inline accessors give the game's three copies of the entry pointer). Left: func_002BB700 arg setup order (a1/a2), ~0x1000 mask in $t1 vs $a2, two post-loop reload regs. Note: the empty for (k < 2) loop reproduces a 2-pass empty count-down loop in the game prologue (likely an array/debug loop); reviewer may question it. 002BC630/002BC640 are List ctor/dtor (called explicitly, as in merged func_002C0640). */
 struct Box_002C0BE0 {
     unsigned char x;

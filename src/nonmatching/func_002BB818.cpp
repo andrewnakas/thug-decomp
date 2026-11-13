@@ -1,4 +1,4 @@
-/* fuzzy: 85.4 */
+/* fuzzy: 87.5 */
 struct Vec_002BB818 {
     float x, y, z, w;
     Vec_002BB818() {}

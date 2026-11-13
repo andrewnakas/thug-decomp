@@ -1,4 +1,4 @@
-/* fuzzy: 81.2 */
+/* fuzzy: 81.6 */
 extern "C" int func_0031A838(int, int, int, int);
 extern "C" int func_0031A970(int, int, int, int);
 extern "C" int func_0031AC78(int, int);

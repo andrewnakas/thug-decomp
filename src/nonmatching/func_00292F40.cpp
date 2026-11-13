@@ -1,4 +1,4 @@
-/* fuzzy: 93.8 */
+/* fuzzy: 94.2 */
 struct V_00292F40 { float x, y, z, w; };
 struct S_00292F40 { V_00292F40 pos; float h; float ang; char pad2[8]; };
 struct Entry_00292F40 {

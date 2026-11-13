@@ -1,4 +1,4 @@
-/* fuzzy: 46.5 */
+/* fuzzy: 67.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Heap_001D84E0 {

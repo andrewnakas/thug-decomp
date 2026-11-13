@@ -1,4 +1,4 @@
-/* fuzzy: 98.1 */
+/* fuzzy: 99.0 */
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
 

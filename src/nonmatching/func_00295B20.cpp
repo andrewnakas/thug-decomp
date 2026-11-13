@@ -1,4 +1,4 @@
-/* fuzzy: 64.6 */
+/* fuzzy: 62.9 */
 struct Sk_00295B20 {
     char pad[0x3B0];
     unsigned int m3B0;

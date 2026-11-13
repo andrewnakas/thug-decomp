@@ -1,4 +1,4 @@
-/* fuzzy: 95.3 */
+/* fuzzy: 96.1 */
 typedef int qword __attribute__((mode(TI)));
 union Row_00287160 {
     qword q;

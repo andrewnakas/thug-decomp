@@ -1,4 +1,4 @@
-/* fuzzy: 70.7 */
+/* fuzzy: 84.9 */
 struct Part_0013F940 {
     float x, y, z;
     float vx, vy, vz;

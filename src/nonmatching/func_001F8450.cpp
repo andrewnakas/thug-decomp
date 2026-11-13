@@ -1,4 +1,4 @@
-/* fuzzy: 86.5 */
+/* fuzzy: 83.8 */
 /* NM 10/37: ThreadParam stores - game loads 0x800 into $a0 first and stores stackSize first; all 120 store orders tried (work/perm5.py) */
 extern "C" void func_001F83C8();
 extern char D_001F8430[];

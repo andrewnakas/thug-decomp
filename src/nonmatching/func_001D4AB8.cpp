@@ -1,4 +1,4 @@
-/* fuzzy: 82.7 */
+/* fuzzy: 89.4 */
 // nm: 9 words: s1/s2 swap between result and the || temporary (lane 2 draft)
 struct Item_001D4AB8 {
     char m_pad0[0xC];

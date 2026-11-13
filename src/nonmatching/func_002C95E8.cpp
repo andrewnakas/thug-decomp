@@ -1,4 +1,4 @@
-/* fuzzy: 93.9 */
+/* fuzzy: 93.6 */
 struct Box_002C95E8 {
     unsigned char x;
     signed char y;

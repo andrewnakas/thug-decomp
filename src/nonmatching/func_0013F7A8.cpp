@@ -1,4 +1,4 @@
-/* fuzzy: 60.0 */
+/* fuzzy: 75.6 */
 struct Cam_0013F7A8 {
     char pad0[0x50];
     float m50;

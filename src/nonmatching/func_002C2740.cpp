@@ -1,4 +1,4 @@
-/* fuzzy: 85.9 */
+/* fuzzy: 88.0 */
 struct Obj_002C2740 {
     unsigned char x;
     unsigned char m1;

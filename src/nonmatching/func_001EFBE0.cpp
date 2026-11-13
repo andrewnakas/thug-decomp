@@ -1,4 +1,4 @@
-/* fuzzy: 80.4 */
+/* fuzzy: 79.0 */
 extern "C" unsigned char* func_001EB070(unsigned char* p);
 extern "C" void func_001E6B30(void* p);
 extern "C" unsigned char* func_001ED6B8(void* p, unsigned char* q, int a);

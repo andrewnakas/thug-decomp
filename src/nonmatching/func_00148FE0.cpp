@@ -1,4 +1,4 @@
-/* fuzzy: 76.3 */
+/* fuzzy: 88.0 */
 struct Heap_00148FE0 {
     char pad[0xD8];
     int mD8;

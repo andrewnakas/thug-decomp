@@ -1,4 +1,4 @@
-/* fuzzy: 98.5 */
+/* fuzzy: 99.0 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_001DDB00 {
     qword q;

@@ -1,4 +1,4 @@
-/* fuzzy: 76.8 */
+/* fuzzy: 86.0 */
 struct Vec {
     float x, y, z, w;
 };

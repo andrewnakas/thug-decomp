@@ -1,4 +1,4 @@
-/* fuzzy: 36.1 */
+/* fuzzy: 48.4 */
 struct Ent_001DAC80 {
     int id;
     int val;

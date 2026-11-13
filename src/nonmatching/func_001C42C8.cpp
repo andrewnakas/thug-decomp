@@ -1,4 +1,4 @@
-/* fuzzy: 85.0 */
+/* fuzzy: 92.5 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float func_00341068(float a);

@@ -1,4 +1,4 @@
-/* fuzzy: 47.4 */
+/* fuzzy: 68.0 */
 struct Array_001EA3B0 {
     char m_pad[0x8];
     int m_type;

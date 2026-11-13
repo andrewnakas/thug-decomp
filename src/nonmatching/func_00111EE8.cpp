@@ -1,4 +1,4 @@
-/* fuzzy: 85.7 */
+/* fuzzy: 84.4 */
 struct Slot_00111EE8 {
     unsigned int m_size;
     int m_used;

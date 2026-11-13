@@ -1,4 +1,4 @@
-/* fuzzy: 97.9 */
+/* fuzzy: 97.1 */
 struct Msg_002AC6D8 {
     unsigned char m0;
     char pad1;

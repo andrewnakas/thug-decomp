@@ -1,4 +1,4 @@
-/* fuzzy: 93.8 */
+/* fuzzy: 95.4 */
 struct Color_00126748 {
     unsigned char r, g, b, a;
     Color_00126748(const Color_00126748& o) { *this = o; }

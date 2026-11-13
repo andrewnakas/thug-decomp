@@ -1,4 +1,4 @@
-/* fuzzy: 89.8 */
+/* fuzzy: 90.8 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);
 extern void* D_00388A70;

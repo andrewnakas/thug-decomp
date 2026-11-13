@@ -1,4 +1,4 @@
-/* fuzzy: 45.9 */
+/* fuzzy: 59.8 */
 extern "C" int func_001DED20(int a, int b);
 extern "C" int func_00331BB8(const char* s);
 

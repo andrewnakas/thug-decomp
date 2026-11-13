@@ -1,4 +1,4 @@
-/* fuzzy: 86.0 */
+/* fuzzy: 86.6 */
 struct Obj_0012F420;
 struct Handle_0012F420;
 

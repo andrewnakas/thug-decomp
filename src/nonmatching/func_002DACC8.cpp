@@ -1,4 +1,4 @@
-/* fuzzy: 78.1 */
+/* fuzzy: 81.2 */
 /* nonmatch func_002DACC8: best earlier draft (thug-claude-lane3/work/nm68/wt2/func_002DACC8.nm.cpp), 300 of 377 words differ (size 0x5cc, want 0x5e4). */
 /* NEAR MISS func_002DACC8 (300/377 words differ, size 0x5cc want 0x5e4): structure right; game places the sorted-insert "found" block (InsertBefore(p)) after the first half of the following pi.Next() (between Valid ternary arms, so that ternary is not if-converted to movn) and reads list.mC via $s3 not 0x2C($sp); also s4/s5 reg swap for solo/&li. */
 /* sym: _vt$13Link_002DACC8 = 0x0037CA60 */

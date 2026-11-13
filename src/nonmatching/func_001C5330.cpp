@@ -1,4 +1,4 @@
-/* fuzzy: 77.0 */
+/* fuzzy: 76.1 */
 struct Vec_001C5330 {
     float x, y, z, w;
     Vec_001C5330() {}

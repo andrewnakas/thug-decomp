@@ -1,4 +1,4 @@
-/* fuzzy: 93.5 */
+/* fuzzy: 92.6 */
 extern volatile int D_00388C90;
 extern "C" int func_001092D0();
 extern "C" void* func_00109328(const char* name, char* mode, int a);

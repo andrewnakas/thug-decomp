@@ -1,4 +1,4 @@
-/* fuzzy: 70.8 */
+/* fuzzy: 75.0 */
 extern "C" void* func_00180388(const char* name, int a, int b, int c, int d, void* out);
 extern "C" void* func_00180430(int a, int b, int c, int d, int e);
 extern "C" void func_00149BD0(void* self);

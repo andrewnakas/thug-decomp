@@ -1,4 +1,4 @@
-/* fuzzy: 96.4 */
+/* fuzzy: 97.7 */
 struct Comp_001EB180 {
     char m_0;
     unsigned char m_type;

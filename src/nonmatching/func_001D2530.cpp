@@ -1,4 +1,4 @@
-/* fuzzy: 92.9 */
+/* fuzzy: 95.1 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float fabsf(float);

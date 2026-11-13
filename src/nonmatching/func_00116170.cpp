@@ -1,4 +1,4 @@
-/* fuzzy: 58.4 */
+/* fuzzy: 69.7 */
 extern "C" float sqrtf(float);
 
 typedef int qword_00116170 __attribute__((mode(TI)));

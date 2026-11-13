@@ -1,4 +1,4 @@
-/* fuzzy: 71.4 */
+/* fuzzy: 85.7 */
 // nm: 4 words: addu operand/reg order idx vs base in both arms (lane 2 best)
 struct E8_001D56A0 {
     unsigned short m0;

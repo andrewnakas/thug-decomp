@@ -1,4 +1,4 @@
-/* fuzzy: 96.7 */
+/* fuzzy: 97.8 */
 extern "C" void func_00105260(void* list, void* p);
 struct Heap_002AB0C0 {
     char pad0[0xF4];

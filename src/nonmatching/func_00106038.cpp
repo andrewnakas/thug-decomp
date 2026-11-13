@@ -1,4 +1,4 @@
-/* fuzzy: 69.6 */
+/* fuzzy: 78.3 */
 struct ThreadParam_00106038 {
     int status;
     void* entry;

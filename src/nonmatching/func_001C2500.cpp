@@ -1,4 +1,4 @@
-/* fuzzy: 76.4 */
+/* fuzzy: 78.9 */
 typedef int qword __attribute__((mode(TI)));
 
 struct V_001C2500 {

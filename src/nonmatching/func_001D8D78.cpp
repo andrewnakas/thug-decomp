@@ -1,4 +1,4 @@
-/* fuzzy: 93.5 */
+/* fuzzy: 95.1 */
 extern "C" float fabsf(float x);
 typedef unsigned int u128_001D8D78 __attribute__((mode(TI)));
 

@@ -1,4 +1,4 @@
-/* fuzzy: 71.4 */
+/* fuzzy: 81.0 */
 // nm: 6 words: f0/f1 swap for 1e7 vs 1.0f in first vector (lane 2 draft); store-order permutations and Set() do not change it
 typedef int qword_001DA8F0 __attribute__((mode(TI)));
 union Vec_001DA8F0 {

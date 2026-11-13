@@ -1,4 +1,4 @@
-/* fuzzy: 97.0 */
+/* fuzzy: 98.5 */
 struct Skater_001C6218 {
     char pad0[0xB0];
     float mB0;

@@ -1,4 +1,4 @@
-/* fuzzy: 96.3 */
+/* fuzzy: 97.6 */
 extern "C" float fabsf(float);
 extern "C" float func_0010FAB8();
 extern "C" unsigned int func_0010FC30();

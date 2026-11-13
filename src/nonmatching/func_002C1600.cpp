@@ -1,4 +1,4 @@
-/* fuzzy: 82.6 */
+/* fuzzy: 88.0 */
 /* nonmatch func_002C1600: best earlier draft (thug-claude-lane3/work/w53/p5/func_002C1600.fail), 114 of 242 words differ. */
 struct Box_002C1600 {
     unsigned char x;

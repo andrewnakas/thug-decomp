@@ -1,4 +1,4 @@
-/* fuzzy: 98.0 */
+/* fuzzy: 99.0 */
 struct Anim_0011B148 {
     char pad0[0x18];
     float m_start;

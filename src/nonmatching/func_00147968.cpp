@@ -1,4 +1,4 @@
-/* fuzzy: 49.2 */
+/* fuzzy: 66.9 */
 extern "C" void* func_00331404(void* dst, const void* src, unsigned int n);
 
 extern "C" void func_00147968(unsigned char* img, unsigned short x, unsigned short y, unsigned short imgW,

@@ -1,4 +1,4 @@
-/* fuzzy: 33.9 */
+/* fuzzy: 58.0 */
 struct C_00128078 {
     int GetWord(char* word, const char** p);
 };

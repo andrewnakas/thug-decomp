@@ -1,4 +1,4 @@
-/* fuzzy: 80.2 */
+/* fuzzy: 88.6 */
 #include "game/vector.h"
 
 struct Vec_00128BF0 {

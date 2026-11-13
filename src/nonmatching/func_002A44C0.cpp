@@ -1,4 +1,4 @@
-/* fuzzy: 94.2 */
+/* fuzzy: 95.5 */
 /* nonmatch func_002A44C0: best earlier draft (thug-claude-lane3/work/w53/p2/func_002A44C0.fail), 13 of 190 words differ. */
 extern char D_003714C0[];
 extern char D_00378C80[];

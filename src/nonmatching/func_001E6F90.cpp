@@ -1,4 +1,4 @@
-/* fuzzy: 80.3 */
+/* fuzzy: 90.1 */
 struct Comp_001E6F90 {
     unsigned char m0;
     unsigned char m1;

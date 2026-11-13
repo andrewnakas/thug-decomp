@@ -398,3 +398,20 @@ The game seems to have been built with gcse on almost everywhere: func_001AC030 
 only after dropping `-fno-gcse` and reworking the source under default flags. A unit's source tuned around a wrong
 flag scores worse when the flag is simply removed (all 15 remaining flagged units did), so the test is the
 neighbour test: if the matched same-file neighbours break with the flag, rework the unit under defaults.
+
+## If/else turned into "default, then overwrite" (lane 2, 2026-11-13)
+
+Where the game keeps a two-arm branch (`if (p) v = load; else v = dflt;`) but ours becomes `v = dflt; if (p) v = load`
+(or a movz/movn), jump.c's if/else simplification plus its conditional-move step fired (in jump1, after cse2 when
+cse2 changed a jump, or in jump2). Any of these keeps the branch: an arm longer than one insn; an else-arm with side
+effects or a possibly trapping load; an else insn with a non-REG_EQUAL note; the arms setting the variable in
+different modes (HI vs SI); a block between the arms; the variable used in the test. Shapes that do it:
+- **A:** a `short` return with the extension at the join: `short BoardId() { if (m_board) return m_board->Id(); return -1; }`.
+- **B:** the else-arm re-reads the member: `FirstItem() { if (m_next->IsEnd()) return 0; return m_next; }`
+  (matched func_0022DD38).
+
+## Case values proven by elimination (ruling 2026-11-13)
+
+An empty `case` is allowed when the binary pins its value exactly, even if its table entry equals the default: e.g.
+a table spanning 1..6 exists only with 6 labels, and if 1, 2, 3, 5, 6 are accounted for, the sixth is 4
+(func_002284B0). If more than one value would fit, it is invented and stays banned.

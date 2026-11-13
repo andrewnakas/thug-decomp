@@ -7,6 +7,8 @@
     python tools/diffmap.py func_001780F0 --callsite         # charge inlined code to the calling statement
     python tools/diffmap.py func_001780F0 --regions 20 --asm # more regions, with the game's asm for each
     python tools/diffmap.py func_001780F0 --json out.json    # machine-readable (shapedb.py query reads it)
+    python tools/diffmap.py func_001780F0 --knob             # DIAGNOSTIC: which pass-isolating flag
+                                                             # (-fno-gcse, -fforce-addr, ...) removes which region
 
 1. The unit is compiled as match.py does (match.compare: our object and the game's), and once more with -g
    (tools/srcmap.py): the stabs line notes map every word of ours to the C++ line that produced it. The two
@@ -500,6 +502,100 @@ def write_html(path, name, src, res, lm, ops, pos):
     Path(path).write_text("\n".join(out))
 
 
+# --knob: pass-isolating flags. Each one switches off (or shifts) one pass's decision; when a flag removes a
+# region, that pass owns the mismatch. A DIAGNOSTIC only: most of these flags are not allowed per file, and
+# an allowed one still needs neighbour evidence (MATCHING_GUIDE "Per-file flags need neighbour evidence").
+KNOBS = [
+    ("-fno-gcse", "gcse (global cse / PRE: expressions moved across blocks)"),
+    ("-fno-cse-follow-jumps", "cse following jumps (values carried along branch paths)"),
+    ("-fno-expensive-optimizations", "the 'expensive' parts of cse/regmove/combine"),
+    ("-fforce-addr", "address forming (memory addresses copied into registers before use)"),
+    ("-fno-schedule-insns", "sched1 (scheduling before register allocation)"),
+    ("-fno-schedule-insns2", "sched2 (scheduling after reload)"),
+    ("-fno-rerun-loop-opt", "loop.c's second pass"),
+    ("-fno-strength-reduce", "loop.c strength reduction (givs)"),
+    ("-mvu0-use-vf0-vf2", "loop.c hoisting / giv thresholds (tools/loopknob.py sweeps N)"),
+]
+SHORT = ["no-gcse", "no-cse-fj", "no-expens", "force-addr", "no-sched1", "no-sched2", "no-rerun", "no-sreduce",
+         "vu0-vf2"]
+
+
+def game_badness(ops, g0, g1):
+    """Weight of the non-ok ops that fall in game words g0..g1 (extras charged to the game word before)."""
+    w, last = 0.0, -1
+    for kind, i, j in ops:
+        if j is not None:
+            last = j
+        if g0 <= last <= g1 and kind != "ok" and (j is None or g0 <= j <= g1):
+            w += WEIGHT[kind]
+    return w
+
+
+def _knob_run(name, src, k):
+    from common import ROOT, compiler_config
+    pinned = list(compiler_config()["compiler"]["cflags"])
+    r = match.compare(name, str(src), None, pinned + [KNOBS[k][0]],
+                      str(ROOT / "work" / "diffmap_knob" / name / f"k{k}"))
+    if r.error:
+        return k, None, None
+    return k, r, align(r)
+
+
+def knob_report(name, src, res, ops, pos, sites, nreg=8, j=2):
+    # processes, not threads: match.compare keeps module-level state and is not thread-safe
+    from concurrent.futures import ProcessPoolExecutor
+    addr = match.func_row(name)["addr"]
+    n = len(KNOBS)
+    with ProcessPoolExecutor(max(1, j)) as ex:
+        results = list(ex.map(_knob_run, [name] * n, [str(src)] * n, range(n)))
+    regs = [r for r in regions(ops, pos, sites) if r["game"]][:nreg]
+    print("\n--knob: which pass owns each region? (DIAGNOSTIC ONLY: these flags name the pass that decides "
+          "differently;\n  they are not fixes. Most are not allowed per file; -mvu0-use-vf0-vf2 is, with "
+          "neighbour evidence.)")
+    print(f"  {'flag':30} {'words':>6} {'fuzzy':>6}   pass")
+    print(f"  {'(pinned flags)':30} {len(res.diffs):6d} {match.fuzzy(res):6.1f}")
+    for k, r, _ in results:
+        flag, what = KNOBS[k]
+        if r is None:
+            print(f"  {flag:30} {'ERR':>6}")
+            continue
+        tag = "MATCH" if r.ok else f"{len(r.diffs)}"
+        print(f"  {flag:30} {tag:>6} {match.fuzzy(r):6.1f}   {what}")
+    if not regs:
+        return
+    print("\n  worst regions (weight with pinned flags -> with each flag; '-' = no change, clean = region removed):")
+    hdr = "  " + f"{'region':28}" + "".join(f"{SHORT[k]:>11}" for k in range(len(KNOBS)))
+    print(hdr)
+    for rg in regs:
+        g0, g1 = rg["game"]
+        b = game_badness(ops, g0, g1)
+        st = [l for f, l in rg["stmts"]] if rg["stmts"] and isinstance(rg["stmts"][0], tuple) else []
+        lab = f"{addr + g0 * 4:08X}-{addr + g1 * 4 + 3:08X} {b:g}"
+        cells, owners = [], []
+        for k, r, kops in results:
+            if r is None:
+                cells.append("ERR")
+                continue
+            w = game_badness(kops, g0, g1)
+            if w == b:
+                cells.append("-")
+            else:
+                cells.append("clean" if w == 0 else f"{w:g}")
+                if w < b:
+                    owners.append((w, k))
+        print("  " + f"{lab:28}" + "".join(f"{c:>11}" for c in cells))
+        lines = compress(st) if st else ""
+        if owners:
+            owners.sort()
+            best_w = owners[0][0]
+            names = [KNOBS[k][1].split(" (")[0] for w, k in owners if w == best_w]
+            verdict = "removed" if best_w == 0 else f"reduced to {best_w:g}"
+            print(f"      lines {lines}: {verdict} by {', '.join(KNOBS[k][0] for w, k in owners if w == best_w)}"
+                  f" -> the residue lives in {' / '.join(names)}")
+        else:
+            print(f"      lines {lines}: no flag improves it (allocation or source shape; try regalloc_explain)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("name")
@@ -510,11 +606,16 @@ def main():
     ap.add_argument("--asm", action="store_true", help="print the aligned asm of each listed region")
     ap.add_argument("--callsite", action="store_true", help="charge inlined code to the calling statement")
     ap.add_argument("--all-lines", action="store_true", help="also print lines without code outside the body")
+    ap.add_argument("--knob", action="store_true",
+                    help="diagnostic: recompile with pass-isolating flags and say which flag removes which region")
+    ap.add_argument("-j", type=int, default=2, help="parallel compiles for --knob (default 2)")
     a = ap.parse_args()
     src, res, lm, ops, pos, sites, note = analyse(a.name, a.src, a.callsite)
     if res.ok:
         print(f"{a.name}: MATCH")
     report(a.name, src, res, lm, ops, pos, sites, note, a.regions, a.asm, a.all_lines)
+    if a.knob and not res.ok:
+        knob_report(a.name, src, res, ops, pos, sites, min(a.regions, 8), a.j)
     if a.html:
         write_html(a.html, a.name, src, res, lm, ops, pos)
         print(f"\nwrote {a.html}")

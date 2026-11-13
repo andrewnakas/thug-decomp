@@ -417,4 +417,7 @@ different modes (HI vs SI); a block between the arms; the variable used in the t
 
 An empty `case` is allowed when the binary pins its value exactly, even if its table entry equals the default: e.g.
 a table spanning 1..6 exists only with 6 labels, and if 1, 2, 3, 5, 6 are accounted for, the sixth is 4
-(func_002284B0). If more than one value would fit, it is invented and stays banned.
+(func_002284B0). The value set may also be pinned by a whole-binary writer analysis: every store to the switched
+field/array (including struct copies and bulk copies) writes only known constants, leaving exactly one candidate
+(func_001D5EE0, func_001CD048; cite the writer addresses). If more than one value would fit, it is invented and
+stays banned (e.g. switches on 32-bit script checksums).

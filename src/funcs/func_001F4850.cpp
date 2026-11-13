@@ -1,4 +1,3 @@
-/* fuzzy: 51.9 */
 struct Obj_001F4850;
 struct Entry_001F4850 {
     unsigned int m0;
@@ -30,30 +29,30 @@ void Obj_001F4850::Run(unsigned int name, float t)
     if (!m9F8) return;
     bool any = false;
     for (int i = 0; i < 70; i++) {
-        Entry_001F4850* e = &m20[i];
-        if (e->m10) continue;
-        if (e->mC) continue;
-        int v = e->m8;
-        unsigned int want;
+        if (m20[i].m10) continue;
+        if (m20[i].mC) continue;
+        int v = m20[i].m8;
         switch (name) {
-        case 0x8D10119D:
-        case 0x255ED86F:
-            want = 0xC1336019;
-            break;
         case 0x0AC90769:
         case 0xEF24413B:
-            want = 0xD9FFC141;
+            if (m20[i].m0 == 0xD9FFC141 && (float)v <= t) {
+                func_001F4EA8(this, i);
+                any = true;
+            }
+            break;
+        case 0x8D10119D:
+        case 0x255ED86F:
+            if (m20[i].m0 == 0xC1336019 && (float)v <= t) {
+                func_001F4EA8(this, i);
+                any = true;
+            }
             break;
         case 0xA549B57B:
-            want = 0xB67CFF14;
+            if (m20[i].m0 == 0xB67CFF14 && (float)v <= t) {
+                func_001F4EA8(this, i);
+                any = true;
+            }
             break;
-        default:
-            continue;
-        }
-        if (e->m0 != want) continue;
-        if ((float)v <= t) {
-            func_001F4EA8(this, i);
-            any = true;
         }
     }
     if (any) {

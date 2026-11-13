@@ -396,3 +396,19 @@ build, but every one checked scored lower by fuzzy (func_00103000 95.6 -> 84.6, 
 func_001D6800 98.9 -> 97.7 on 2.95.3-107): alignment artefacts. The game was built with SN 2.95.3 v1.36
 throughout; the remaining differences are source shape and per-file flags, not the compiler build.
 Script: work/csweep/one.sh (git-ignored).
+
+## Measured residues (lane 1, 2026-11-13): diagnoses, no source lever yet
+
+**Delay slot filled from the branch target instead of the fall-through** (func_00145DC0, func_00125418). The slot of
+a predicted-not-taken equal-to-zero branch (REG_BR_PRED 0x11 in the `-dd` .dbr dump) is filled by reorg's
+fill_eager_delay_slots: it tries the fall-through first unless a CODE_LABEL sits between the branch and the first
+fall-through insn; then it copies the target's first insn into the slot and branches to target+4, as the game does.
+Liveness at the target cannot block this when the target's first insn sets the register. An unused label is
+deleted (no effect); a used label reproduces the target+4 branch but keeps the fall-through copy that the game
+removed (likely redundant_insn), so the game's missing fall-through insn has to be matched too.
+
+**gcse PRE merging a reload the game keeps** (func_00168F58). The `-dG` log line "PRE/HOIST: end of bb N ...
+copying expression" names the hoist: `n+1`, used after an inlined padding while-loop, is hoisted into that loop's
+preheader. Statement placement, `noreturn` and int/unsigned did not change it. Store aliasing (stores through
+`qword*`/pointers the compiler cannot prove disjoint) is the general lever for keeping such reloads; it matched
+func_0015EC60 and func_00148D60.

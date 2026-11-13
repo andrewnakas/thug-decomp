@@ -1,4 +1,4 @@
-/* fuzzy: 93.7 */
+/* force: {"kind": "ga", "before": [127, 128]} */
 /* near miss: 17 words, only $s4/$s5 swapped between 'printed' flag and loop index */
 struct Ent_0024D350 {
     unsigned int m0;

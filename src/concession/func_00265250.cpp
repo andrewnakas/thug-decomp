@@ -1,4 +1,4 @@
-/* fuzzy: 93.2 */
+/* force: {"kind": "ga", "before": [120, 158]} */
 /* near miss: 8 words: n/i callee-saved regs swapped (game n=$s0, i+1=$s1). */
 struct Node_00265250 {
     int m_pad0;

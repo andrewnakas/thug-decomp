@@ -1,4 +1,4 @@
-/* fuzzy: 99.1 */
+/* force: {"kind": "ga", "before": [154, 143]} */
 typedef unsigned long u64_001E04D8;
 
 extern int D_0038E130;

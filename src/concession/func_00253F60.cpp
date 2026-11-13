@@ -1,4 +1,4 @@
-/* fuzzy: 89.8 */
+/* force: {"kind": "ga", "before": [121, 117]} */
 /* near miss: only $s1/$s2 swapped between 'on' and the node count (16 words); tried decl order, types, loop forms */
 struct Node_00253F60 {
     int m0;

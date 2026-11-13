@@ -1,4 +1,4 @@
-/* fuzzy: 68.0 */
+/* force: {"kind": "ga", "before": [117, 140]} */
 /* blocked: global-alloc priority difference (size 29/138 vs loop counter 9/11; forced = MATCH) (oracle) */
 struct Array_001EA3B0 {
     char m_pad[0x8];

@@ -1,4 +1,6 @@
-/* fuzzy: 99.2 */
+/* force: {"kind": "ga", "before": [155, 156]} */
+/* force: {"kind": "sched", "pass": 2, "block": 15, "clock": 4, "first": 78} */
+/* force: {"kind": "sched", "pass": 2, "block": 15, "clock": 4, "first": 1110} */
 /* nonmatch func_00290A80: best earlier draft (thug-claude-lane3/work/w53/p6/func_00290A80.fail), 7 of 375 words differ. */
 struct Sub_00290A80 {
     char pad[0x34];

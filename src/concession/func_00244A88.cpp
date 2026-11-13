@@ -1,4 +1,4 @@
-/* fuzzy: 97.9 */
+/* force: {"kind": "ga", "before": [119, 122]} */
 /* near miss: 9 words, only $s2/$s3 swapped between 'record' (game s2) and 'net' (game s3); tried decl orders/types */
 struct Link_00244A88 {
     int m_id;

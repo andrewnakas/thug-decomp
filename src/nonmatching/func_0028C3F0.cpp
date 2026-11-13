@@ -1,4 +1,5 @@
-/* fuzzy: 62.7 */
+/* fuzzy: 97.3 */
+extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0028C3F0 {
@@ -43,9 +44,9 @@ union Vec_0028C3F0 {
         c[3] *= k;
     }
     float Length2() const { return c[0] * c[0] + c[1] * c[1] + c[2] * c[2]; }
+    float Length() const { return sqrtf(Length2()); }
     void Normalize();
 };
-extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
 extern "C" void func_003233B8(Vec_0028C3F0* dst, Vec_0028C3F0* src);
 inline void Vec_0028C3F0::Normalize() { func_003233B8(this, this); }
@@ -132,6 +133,7 @@ struct Body_0028C3F0 {
     Vec_0028C3F0 m60;
     Mat_0028C3F0 m70;
     Vec_0028C3F0 mB0;
+    const Vec_0028C3F0& GetPos() const { return m50; }
 };
 struct Wall_0028C3F0 {
     char pad0[0x68];
@@ -206,6 +208,7 @@ struct Snd_0028C3F0 {
 struct Game_0028C3F0 {
     char pad0[0x24];
     void* m24;
+    void* Get24() { return m24; }
 };
 struct Prefs_0028C3F0 {
     char pad0[0xAC];
@@ -234,8 +237,9 @@ extern "C" void func_00237A30(Score_0028C3F0* p, int v);
 extern "C" void func_00260A28(void* p);
 extern "C" int func_00263BD8(void*, unsigned int);
 extern "C" void func_00263C18(void*, int);
-extern "C" bool func_0026A968(Vec_0028C3F0* a, Vec_0028C3F0* b);
-extern "C" void func_0026B1B0(Vec_0028C3F0* out, Graph_0028C3F0* g, Node_0028C3F0* n);
+extern "C" bool func_0026A968(const Vec_0028C3F0& a, const Vec_0028C3F0& b);
+/* Graph point of a node (returns the vector by value through the hidden pointer). */
+extern "C" Vec_0028C3F0 func_0026B1B0(Graph_0028C3F0* g, Node_0028C3F0* n);
 extern "C" void func_0027C720(Obj_0028C3F0* o, int a);
 extern "C" int func_00285258(Obj_0028C3F0* o);
 extern "C" void func_0028D958(Obj_0028C3F0* o, const Vec_0028C3F0& in);
@@ -245,23 +249,8 @@ extern "C" void func_00323318(Mat_0028C3F0* d, Mat_0028C3F0* a, Mat_0028C3F0* b)
 extern "C" int func_0033EBE0(float f);
 extern "C" float func_00340F60(float);
 
-/* True when the turn a->b->c, measured flat on the ground plane, is gentler than the configured angle. */
-static inline bool Smooth_0028C3F0(Graph_0028C3F0* g, Node_0028C3F0* a, Node_0028C3F0* b, Node_0028C3F0* c)
-{
-    Vec_0028C3F0 pa;
-    Vec_0028C3F0 pb;
-    func_0026B1B0(&pa, g, a);
-    func_0026B1B0(&pb, g, b);
-    Vec_0028C3F0 u = pa - pb;
-    func_0026B1B0(&pa, g, b);
-    func_0026B1B0(&pb, g, c);
-    Vec_0028C3F0 v = pa - pb;
-    u[1] = 0.0f;
-    v[1] = 0.0f;
-    u.Normalize();
-    v.Normalize();
-    return !(Dot_0028C3F0(u, v) < func_00340F60(func_002032A0(0x76C1DA15, 0) * 0.017453294f));
-}
+/* Graph point of node n on this object's rail graph. */
+#define Pos(n) func_0026B1B0(m2A0, (n))
 
 struct Obj_0028C3F0 {
     char pad0[0xC];
@@ -297,7 +286,6 @@ struct Obj_0028C3F0 {
     Mode_0028C3F0* m5AC;
     Sub_0028C3F0* m5B0;
     Holder_0028C3F0* m5B4;
-    void Pos(Vec_0028C3F0* out, Node_0028C3F0* n) { func_0026B1B0(out, m2A0, n); }
     void Update();
 };
 
@@ -330,8 +318,8 @@ void Obj_0028C3F0::Update()
         case 0x255ED86F:
         case 0x8D10119D:
             func_00260A28(m5AC->mB0);
-            if (func_00263BD8(D_0038FC78->m24, 0xCD09E062)) {
-                func_00263C18(D_0038FC78->m24, func_001E53A0(0xCD09E062, 0));
+            if (func_00263BD8(D_0038FC78->Get24(), 0xCD09E062)) {
+                func_00263C18(D_0038FC78->Get24(), func_001E53A0(0xCD09E062, 0));
                 m5AC->mEC = 0;
                 m5AC->mF0 = 0;
                 D_00390EF8 = 1;
@@ -339,32 +327,34 @@ void Obj_0028C3F0::Update()
             break;
         case 0xA549B57B: /* present in the game's compare tree, no action */
             break;
+        default:
+            break;
         }
 
         Node_0028C3F0* node = m29C;
         Node_0028C3F0* prev = node->m50;
         Node_0028C3F0* next = 0;
 
+        float before = 1.0f;
         Vec_0028C3F0 dir;
         float len;
         {
-            Vec_0028C3F0 a;
-            Vec_0028C3F0 b;
-            Pos(&a, prev);
-            Pos(&b, node);
-            Vec_0028C3F0 d = a - b;
-            len = sqrtf(d.Length2());
-            dir = d * (1.0f / len);
+            Vec_0028C3F0 a = Pos(prev);
+            Vec_0028C3F0 b = Pos(node);
+            float dx = a[0] - b[0];
+            float dy = a[1] - b[1];
+            float dz = a[2] - b[2];
+            float dw = a[3] - b[3];
+            len = sqrtf(dx * dx + dy * dy + dz * dz);
+            float inv = 1.0f / len;
+            dir.Set(dx * inv, dy * inv, dz * inv, dw * inv);
         }
-        float before = 1.0f;
         if (Dot_0028C3F0(dir, mC->mB0) < 0.0f)
             before = -1.0f;
-        {
-            Vec_0028C3F0 g(0.0f, func_002032A0(0xD1F46992, 0), 0.0f, 1.0f);
-            func_00101890(&g, &dir);
-            mC->mB0 += g * m94;
-        }
         float after = 1.0f;
+        Vec_0028C3F0 g(0.0f, func_002032A0(0xD1F46992, 0), 0.0f, 1.0f);
+        func_00101890(&g, &dir);
+        mC->mB0 += g * m94;
         if (Dot_0028C3F0(dir, mC->mB0) < 0.0f)
             after = -1.0f;
         if (after != before)
@@ -372,74 +362,86 @@ void Obj_0028C3F0::Update()
 
         bool blocked = false;
         if (after < 0.0f) {
-            if (node->m54 && func_001CB7B8(node->m54, 2) && Smooth_0028C3F0(m2A0, prev, node, node->m54))
-                next = node->m54;
-            else
+            if (node->m54 && func_001CB7B8(node->m54, 2)) {
+                Vec_0028C3F0 u;
+                Vec_0028C3F0 v;
+                u = Pos(prev) - Pos(node);
+                v = Pos(node) - Pos(node->m54);
+                u[1] = 0.0f;
+                v[1] = 0.0f;
+                u.Normalize();
+                v.Normalize();
+                if (Dot_0028C3F0(u, v) < func_00340F60(func_002032A0(0x76C1DA15, 0) * 0.017453294f))
+                    blocked = true;
+                else
+                    next = node->m54;
+            } else {
                 blocked = true;
+            }
         } else {
-            if (prev && prev->m50 && func_001CB7B8(prev->m50, 2) && Smooth_0028C3F0(m2A0, node, prev, prev->m50))
-                next = prev;
-            else
+            if (prev && prev->m50 && func_001CB7B8(prev->m50, 2)) {
+                Vec_0028C3F0 u;
+                Vec_0028C3F0 v;
+                u = Pos(node) - Pos(prev);
+                v = Pos(prev) - Pos(prev->m50);
+                u[1] = 0.0f;
+                v[1] = 0.0f;
+                u.Normalize();
+                v.Normalize();
+                if (Dot_0028C3F0(u, v) < func_00340F60(func_002032A0(0x76C1DA15, 0) * 0.017453294f))
+                    blocked = true;
+                else
+                    next = prev;
+            } else {
                 blocked = true;
+            }
         }
 
         float over = 0.0f;
-        {
-            Vec_0028C3F0 end;
-            Vec_0028C3F0 p;
-            Pos(&end, after < 0.0f ? prev : node);
-            p = mC->m50 - end;
-            float dist = sqrtf(p.Length2());
-            if (dist > len + 0.1f) {
-                over = dist - len;
-                if (after < 0.0f) {
-                    if (node->m54 && func_001CB7B8(node->m54, 2)) {
-                        Pos(&p, node);
-                        Pos(&end, node->m54);
-                        if (func_0026A968(&p, &end) && !blocked) {
-                            Pos(&p, node);
-                            mC->m50 = p;
-                            m29C = node->m54;
-                            int terrain = m29C->m5E;
-                            m5B0->m13C = terrain;
-                            m59C->m20 = terrain;
-                            func_0028DF70(this, 5);
-                            goto rail;
-                        }
+        float dist;
+        if (after < 0.0f)
+            dist = (mC->GetPos() - Pos(prev)).Length();
+        else
+            dist = (mC->GetPos() - Pos(node)).Length();
+        if (len + 0.1f < dist) {
+            over = dist - len;
+            if (after < 0.0f) {
+                if (node->m54 && func_001CB7B8(node->m54, 2)) {
+                    bool clear = func_0026A968(Pos(node), Pos(node->m54));
+                    if (clear && !blocked) {
+                        mC->m50 = Pos(node);
+                        m29C = node->m54;
+                        int terrain = m29C->m5E;
+                        m5B0->m13C = terrain;
+                        m59C->m20 = terrain;
+                        func_0028DF70(this, 5);
+                    } else {
+                        func_0028D958(this, Pos(node));
                     }
-                    Pos(&p, node);
-                    func_0028D958(this, p);
                 } else {
-                    if (prev->m50 && func_001CB7B8(prev, 2)) {
-                        Pos(&p, prev);
-                        Pos(&end, prev->m50);
-                        if (func_0026A968(&p, &end) && !blocked) {
-                            Pos(&p, prev);
-                            mC->m50 = p;
-                            m29C = prev;
-                            int terrain = prev->m5E;
-                            m5B0->m13C = terrain;
-                            m59C->m20 = terrain;
-                            func_0028DF70(this, 5);
-                            goto rail;
-                        }
+                    func_0028D958(this, Pos(node));
+                }
+            } else {
+                if (prev->m50 && func_001CB7B8(prev, 2)) {
+                    bool clear = func_0026A968(Pos(prev), Pos(prev->m50));
+                    if (clear && !blocked) {
+                        mC->m50 = Pos(prev);
+                        m29C = prev;
+                        int terrain = prev->m5E;
+                        m5B0->m13C = terrain;
+                        m59C->m20 = terrain;
+                        func_0028DF70(this, 5);
+                    } else {
+                        func_0028D958(this, Pos(prev));
                     }
-                    Pos(&p, prev);
-                    func_0028D958(this, p);
+                } else {
+                    func_0028D958(this, Pos(prev));
                 }
             }
         }
-    rail:
         if (m5B0->m1C == 4) {
             Node_0028C3F0* cur = m29C;
-            Vec_0028C3F0 t;
-            {
-                Vec_0028C3F0 a;
-                Vec_0028C3F0 b;
-                Pos(&a, cur->m50);
-                Pos(&b, cur);
-                t = a - b;
-            }
+            Vec_0028C3F0 t = Pos(cur->m50) - Pos(cur);
             t.Normalize();
             float sign = 1.0f;
             if (Dot_0028C3F0(t, mC->mB0) < 0.0f)
@@ -459,13 +461,12 @@ void Obj_0028C3F0::Update()
             m20[1] = Cross_0028C3F0(m20[2], m20[0]);
             m20[1].Normalize();
 
-            Mat_0028C3F0& m = mC->m70;
-            m[2] = face;
-            m[2].Normalize();
-            m[0].Set(m[2][2], 0.0f, -m[2][0], 0.0f);
-            m[0].Normalize();
-            m[1] = Cross_0028C3F0(m[2], m[0]);
-            m[1].Normalize();
+            mC->m70[2] = face;
+            mC->m70[2].Normalize();
+            mC->m70[0].Set(mC->m70[2][2], 0.0f, -mC->m70[2][0], 0.0f);
+            mC->m70[0].Normalize();
+            mC->m70[1] = Cross_0028C3F0(mC->m70[2], mC->m70[0]);
+            mC->m70[1].Normalize();
 
             Vec_0028C3F0 lift(0.0f, 0.0f, 0.0f);
             Vec_0028C3F0 old = mC->m50;
@@ -478,26 +479,19 @@ void Obj_0028C3F0::Update()
 
             bool level = false;
             if (!blocked && D_00392808->mAC != 0xD443A2BC) {
-                Vec_0028C3F0 a;
-                Vec_0028C3F0 b;
-                Vec_0028C3F0 c;
-                Pos(&a, node->m50);
-                Pos(&b, node);
-                Vec_0028C3F0 u = a - b;
-                Pos(&b, next->m50);
-                Pos(&c, next);
-                a = b - c;
+                Vec_0028C3F0 u = Pos(node->m50) - Pos(node);
+                Vec_0028C3F0 w = Pos(next->m50) - Pos(next);
                 u.Normalize();
-                a.Normalize();
-                if (fabsf(u[1] - a[1]) < 0.01f)
+                w.Normalize();
+                if (fabsf(u[1] - w[1]) < 0.01f)
                     level = true;
             }
             if (blocked || level) {
                 m270 = old;
                 m280 = mC->m50;
                 m280 += step + heading * 6.0f;
-                m270 += m.r1;
-                m280 += m.r1;
+                m270 += mC->m70.r1;
+                m280 += mC->m70.r1;
                 if (func_0028E1C0(this, 0x10, 0)
                     && (D_00392808->mAC == 0xD443A2BC || !(mB0.m68 & 0x1000))) {
                     func_0028DF70(this, 4);
@@ -513,8 +507,8 @@ void Obj_0028C3F0::Update()
 
     m70 = mC->m70.r1;
     func_00237A30(m5A8->m1C, (int)((float)m42C * m5A8->m1C->m1544));
+    Node_0028C3F0* cur = m29C;
     if (m2A0->m58) {
-        Node_0028C3F0* cur = m29C;
         func_001E8A30(func_001E9378(func_001E55B8(0xC472ECC5, 0), cur->m5C), 0xA1DC81F9, &m2B0, 1);
         func_001B0EF0(m5A0, m2B0);
     }

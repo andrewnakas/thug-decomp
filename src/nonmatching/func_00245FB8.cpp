@@ -1,4 +1,4 @@
-/* fuzzy: 84.9 */
+/* fuzzy: 87.3 */
 /* NEAR MISS (r2 wt2): 42/106, size+frame now right (0x1a8, 0x60, s0-s7). Fixes: loop 2 uses its own index j and
    returns idx (the game's loop 2 'found' returns the last random idx: daddu v0,s2), which also gives the 8th saved reg.
    Left: game computes &used fresh in loop 1 (addiu a2,sp,4) and sets the loop-2 pointer s6=&used in loop 1 after the
@@ -43,28 +43,28 @@ int Obj_00245FB8::Pick(Array_00245FB8* arr)
     unsigned int used = 0;
     int v;
     unsigned int idx;
-again:
-    idx = func_00100030(n);
-    GetName_00245FB8(arr, idx, &name);
-    func_001E8398(info, name, &used, 0);
-    if (used) {
-        return idx;
-    }
-    if (func_001E7DE8(info, name, &v, 0)) {
-        return idx;
-    }
-    used = 0;
-    if (--i) {
-        goto again;
-    }
-    for (unsigned int j = 0; j < n; j++) {
-        GetName_00245FB8(arr, j, &name);
+    for (;;) {
+        idx = func_00100030(n);
+        GetName_00245FB8(arr, idx, &name);
         func_001E8398(info, name, &used, 0);
         if (used) {
             return idx;
         }
+        if (func_001E7DE8(info, name, &v, 0)) {
+            return idx;
+        }
         used = 0;
+        if (--i == 0) {
+            for (unsigned int j = 0; j < n; j++) {
+                GetName_00245FB8(arr, j, &name);
+                func_001E8398(info, name, &used, 0);
+                if (used) {
+                    return idx;
+                }
+                used = 0;
+            }
+            func_00246160(this);
+            return -1;
+        }
     }
-    func_00246160(this);
-    return -1;
 }

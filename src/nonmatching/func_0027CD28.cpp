@@ -1,4 +1,4 @@
-/* fuzzy: 92.1 */
+/* fuzzy: 95.8 */
 extern "C" float sqrtf(float);
 extern "C" int func_0010FC30();
 
@@ -184,6 +184,14 @@ struct Game_0027CD28 {
 extern Game_0027CD28* D_0038FC78;
 extern int D_00390EF8;
 
+// Line-of-sight query: segment start/end, result at +0x6C.
+struct Ray_0027CD28 {
+    Vec_0027CD28 m_start;
+    Vec_0027CD28 m_end;
+    char pad20[0x6C - 0x20];
+    int m_6C;
+};
+
 struct Skater_0027CD28 {
     char pad0[0xC];
     Body_0027CD28* m_body;
@@ -195,10 +203,7 @@ struct Skater_0027CD28 {
     float m_dt;
     char pad98[0xA0 - 0x98];
     Vec_0027CD28 m_lastPos;
-    Vec_0027CD28 m_rayStart;
-    Vec_0027CD28 m_rayEnd;
-    char padD0[0x11C - 0xD0];
-    int m_11C;
+    Ray_0027CD28 m_ray;
     char pad120[0x204 - 0x120];
     int m_204;
     char pad208[0x29C - 0x208];
@@ -322,8 +327,11 @@ void Skater_0027CD28::DoAirPhysics()
 
     if (m_state->m_onRail) {
         Contact_0027CD28* c = m_ground->m_contact;
-        if (c && c->m_obj)
-            body->m_vel = c->m_obj->m_vel * func_002032A0(0xDEF25B34, 0);
+        if (c) {
+            Mover_0027CD28* obj = c->m_obj;
+            if (obj)
+                body->m_vel = obj->m_vel * func_002032A0(0xDEF25B34, 0);
+        }
         step.Set(0.0f, 0.0f, 0.0f, 1.0f);
         func_0027E7A8(this);
     }
@@ -348,19 +356,18 @@ void Skater_0027CD28::DoAirPhysics()
     int again;
     do {
         again = 0;
-        body = m_body;
-        Vec_0027CD28 start = body->m_pos;
-        body->m_pos += step;
+        Body_0027CD28* bd = m_body;
+        Vec_0027CD28 start = bd->m_pos;
+        bd->m_pos += step;
         if (!m_state->m_onRail)
             func_0027ECE0(this);
         if (m_state->m_onRail) {
             Body_0027CD28* b = m_body;
-            m_rayStart = b->m_pos + b->m_mat[1] * 36.0f;
-            m_rayEnd = b->m_pos - b->m_mat[1] * 200.0f;
-            if (func_0028E1C0(this, 0x10, 0)) {
-                m_state->m_13C = m_11C;
-                m_59C->m_20 = m_11C;
-            }
+            Ray_0027CD28& ray = m_ray;
+            ray.m_start = b->m_pos + b->m_mat[1] * 36.0f;
+            ray.m_end = b->m_pos - b->m_mat[1] * 200.0f;
+            if (func_0028E1C0(this, 0x10, 0))
+                m_59C->m_20 = m_state->m_13C = ray.m_6C;
         } else {
             func_0027F6B0(this);
         }

@@ -126,9 +126,12 @@ struct CNode_001FF970 {
         if (~(int)n->m4 == 0) return 0;
         return n;
     }
-    CNode_001FF970* Self() { return this; }
-    CNode_001FF970* Live() { if (~(int)m4 == 0) return 0; return Self(); }
-    CNode_001FF970* Nx() { return mC->Live(); }
+    bool IsEnd() { return ~(int)m4 == 0; }
+    CNode_001FF970* Nx()
+    {
+        if (mC->IsEnd()) return 0;
+        return mC;
+    }
     CNode_001FF970* GetNextK(unsigned k = 0) { return mC->Valid(k); }
 };
 

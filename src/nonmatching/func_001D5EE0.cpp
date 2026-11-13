@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 90.9 */
+/* fuzzy: 94.2 */
 typedef int qword_001D5EE0 __attribute__((mode(TI)));
 
 struct Vec_001D5EE0 {
@@ -10,6 +10,7 @@ struct Vec_001D5EE0 {
         qword_001D5EE0 q;
     };
     Vec_001D5EE0() {}
+    float LengthSqr() const { return x * x + y * y + z * z; }
 };
 
 struct Face8_001D5EE0 {
@@ -149,18 +150,26 @@ bool Coll_001D5EE0::Collect(void* sphere, Box_001D5EE0* box, Out_001D5EE0* out)
             func_003233B8(&nrm, &nrm);
             c->normal = nrm;
         }
-        if (c->normal.x * c->normal.x + c->normal.y * c->normal.y + c->normal.z * c->normal.z <= 0.0f) continue;
+        if (c->normal.LengthSqr() <= 0.0f) continue;
         c->flag = flags & 0x40;
         c->pt[0].p = hit[0];
         c->id = m0;
         c->pt[1].p = hit[1];
-        int k = 2;
-        while (k--) {
+        for (int k = 1; k >= 0; k--) {
             int e = edges[k];
             Point_001D5EE0* pt = &c->pt[k];
             pt->edge = e != 0;
             Vec_001D5EE0 d;
             switch (e) {
+            case 0:
+                /* Pinned by elimination: func_001D2530 stores only literal 1/2/3 (s1/s4 at 001D2758,
+                   001D2870, 001D2944, 001D2A18, 001D2AF0) or $zero (001D30B4, 001D3360) into edges[],
+                   so e is in {0..3}. The game's tree (001D655C beq 1, 001D6564 slti 2, then 2, 3)
+                   needs a fourth case below 1: only 0 (no edge, cf. 'edge = e != 0') remains.
+                   Bulk writes checked: edges (callee t1 -> s3) is written only by sw at 0/4(s3) and at
+                   s3+4*s1 ($zero at 001D30B4, 001D319C, 001D3254); the callee's sq stores go through s2
+                   (hit, t0) and its memsets (func_003315B8 at 001D2C94, 001D2CA4) hit its own stack. */
+                break;
             case 1:
                 Dir_001D5EE0(d, v1, v0);
                 func_003233B8(&d, &d);

@@ -1,4 +1,4 @@
-/* fuzzy: 77.6 */
+/* fuzzy: 93.0 */
 struct Vec_001C59B0 {
     float x, y, z, w;
     Vec_001C59B0() {}
@@ -51,7 +51,8 @@ void func_001C59B0(Skater_001C59B0* sk)
 {
     if (!sk->m_onPlane)
         return;
-    Vec_001C59B0& pos = sk->m_pos;
+    /* one pointer reused for pos and vel: the game reloads the temp's z/w after stores through it (unknown base) */
+    Vec_001C59B0* p = &sk->m_pos;
     if (sk->m_pos.y > sk->m_planeTop) {
         sk->m_onPlane = 0;
         return;
@@ -59,9 +60,12 @@ void func_001C59B0(Skater_001C59B0* sk)
     float dist = sk->m_normal.x * sk->m_pos.x + sk->m_normal.y * sk->m_pos.y + sk->m_normal.z * sk->m_pos.z
         - sk->m_planeD;
     if (-GetPhysics_001C59B0(0xA20C43B7) < dist) {
-        pos -= sk->ScaledNormal(GetPhysics_001C59B0(0x4D16F37D) * sk->m98);
+        *p -= sk->ScaledNormal(GetPhysics_001C59B0(0x4D16F37D) * sk->m98);
         float dot = sk->m_vel.x * sk->m_normal.x + sk->m_vel.y * sk->m_normal.y + sk->m_vel.z * sk->m_normal.z;
         if (dot != 0.0f)
-            sk->m_vel -= sk->ScaledNormal(dot);
+        {
+            p = &sk->m_vel;
+            *p -= sk->ScaledNormal(dot);
+        }
     }
 }

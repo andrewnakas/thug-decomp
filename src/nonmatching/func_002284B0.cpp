@@ -1,4 +1,4 @@
-/* fuzzy: 81.8 */
+/* fuzzy: 99.6 */
 /* sym: __9Prm_284B0 = 0x001E6978 */
 /* sym: _$_9Prm_284B0 = 0x001E6AE8 */
 /* sym: _vt$14ListHead_284B0 = 0x003724F8 */
@@ -85,6 +85,7 @@ public:
     }
     virtual void Run();
     ListNode_284B0* Valid() { return ~(unsigned int)m_data ? this : 0; }
+    bool IsEnd() { return (unsigned int)m_data == 0xFFFFFFFF; }
 };
 
 class ListHead_284B0 : public ListNode_284B0 {
@@ -93,16 +94,20 @@ public:
     virtual ~ListHead_284B0() {}
     virtual void Run();
     ListNode_284B0* First() { return m_next->Valid(); }
+    ListNode_284B0* FirstItem()
+    {
+        if (m_next->IsEnd())
+            return 0;
+        return m_next;
+    }
     ListNode_284B0* Nth(unsigned int k)
     {
-        ListNode_284B0* n = First();
-        if (!n)
-            return 0;
-        do {
+        ListNode_284B0* n = FirstItem();
+        while (n) {
             if (k-- == 0)
                 return n;
             n = n->m_next->Valid();
-        } while (n);
+        }
         return 0;
     }
 };
@@ -147,12 +152,6 @@ struct Script_284B0 {
     Prm_284B0* m_params;
 };
 
-static inline void MarkDamaged_284B0(Prm_284B0* s, const char* name)
-{
-    func_001E7360(s, 0, func_001F0D78(D_0038FA20));
-    func_001E7138(s, D_003722E0, func_001E54B8(name, 0));
-}
-
 bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* script)
 {
     unsigned int fileType;
@@ -189,8 +188,8 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
 
     int total = 0;
     for (int i = 0; i < numFiles; i++) {
-        int platform = D_00388814;
         CardFile_284B0* file = files.Nth(i)->m_data;
+        int platform = D_00388814;
 
         bool ours = true;
         if (platform != 4) {
@@ -206,8 +205,20 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
         total++;
 
         unsigned int type = 0;
-        if (platform == 1 || platform == 2 || platform == 3 || platform == 5)
+        switch (platform) {
+        case 1:
+        case 2:
+        case 3:
+        case 5:
             type = func_00224400(file->m_name[prefixLen + 7]);
+            break;
+        // jtbl_00372420 spans 1..6 (sltiu 6 on t0-1 at 002286F0); gcc emits a table only with 6 labels here.
+        // 1, 2, 3 and 5 are the cases above and 6 is the table's top, so the 6th label can only be 4.
+        // Entries 4 and 6 both go to .L00228728 (the skip target).
+        case 4:
+        case 6:
+            break;
+        }
         if (!(fileType == 0 && type != 0) && type != fileType)
             continue;
         if (count >= 75)
@@ -232,27 +243,38 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
         if (f) {
             func_001139D8(f, 0, 0);
             SaveHeader_284B0* hdr = &D_003F5910;
+            char* body = hdr->m_data;
             func_00113B10(f, hdr, 0x78);
-            bool corrupt = true;
-            if (hdr->m_size <= 100)
-                corrupt = func_001053C8(hdr->m_data, hdr->m_size) != hdr->m_checksum;
-            func_001E7268(entry, D_00372228, func_00225D90(type, func_001139D8(f, 0, 2)));
+            bool corrupt;
+            if (hdr->m_size > 100)
+                corrupt = true;
+            else
+                corrupt = func_001053C8(body, hdr->m_size) != hdr->m_checksum;
+            int size = func_00225D90(type, func_001139D8(f, 0, 2));
+            func_001E7268(entry, D_00372228, size);
             if (corrupt) {
                 func_001E7360(entry, 0, func_001F0D78(D_0038FA20));
-                func_001E7138(entry, D_003722E0, func_001E54B8(D_00388814 == 5 ? D_003723F8 : D_00372408, 0));
-            } else if (func_00225EC0(type) != hdr->m_version) {
+                if (D_00388814 == 5)
+                    func_001E7138(entry, D_003722E0, func_001E54B8(D_003723F8, 0));
+                else
+                    func_001E7138(entry, D_003722E0, func_001E54B8(D_00372408, 0));
+            } else if (hdr->m_version != func_00225EC0(type)) {
                 func_001E7360(entry, 0, func_001F0D78(D_0038FA20));
-                func_001E7138(entry, D_003722E0, func_001E54B8(D_00388814 == 5 ? D_003723F8 : D_00372408, 0));
+                if (D_00388814 == 5)
+                    func_001E7138(entry, D_003722E0, func_001E54B8(D_003723F8, 0));
+                else
+                    func_001E7138(entry, D_003722E0, func_001E54B8(D_00372408, 0));
             } else {
                 Prm_284B0* data = new Prm_284B0;
-                func_001E9D70(data, hdr->m_data);
+                func_001E9D70(data, body);
                 func_001E6AC8(entry, data);
                 delete data;
             }
             func_00113988(f);
             delete f;
         } else {
-            MarkDamaged_284B0(entry, D_00372408);
+            func_001E7360(entry, 0, func_001F0D78(D_0038FA20));
+            func_001E7138(entry, D_003722E0, func_001E54B8(D_00372408, 0));
         }
         entries[count++] = entry;
     }

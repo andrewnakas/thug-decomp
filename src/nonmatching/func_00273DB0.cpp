@@ -1,4 +1,4 @@
-/* fuzzy: 89.2 */
+/* fuzzy: 96.7 */
 /* sym: _vt$11Cb_00200C00 = 0x00366B58 */
 /* sym: __12Msg_00273DB0 = 0x001FA800 */
 typedef int qword_00273DB0 __attribute__((mode(TI)));
@@ -39,6 +39,7 @@ struct Slot_00273DB0 {
     int m_0;
     int m_on;
     int m_8;
+    bool On() { return m_on; }
 };
 
 
@@ -51,7 +52,7 @@ struct Board_00273DB0 {
 struct Owner_00273DB0 {
     char pad[0x29C];
     Board_00273DB0* m_board;
-    int BoardId() { return m_board ? m_board->Id() : -1; }
+    short BoardId() { if (m_board) return m_board->Id(); return -1; }
 };
 
 struct Conn_00273DB0 {
@@ -179,7 +180,7 @@ void Sync_00273DB0::SendUpdate()
     int i;
     Slot_00273DB0* slot = (Slot_00273DB0*)(m_state + 0x24);
     for (i = 0; i < 23; i++) {
-        if (slot[i].m_on)
+        if (slot[i].On())
             mask |= 1 << i;
         else
             mask &= ~(1 << i);
@@ -195,11 +196,10 @@ void Sync_00273DB0::SendUpdate()
         D_00452FB0 = m_skater->m_pos;
     }
     for (i = 0; i < 3; i++) {
-        Skater_00273DB0* sk = m_skater;
         if (i == 1) {
-            a[1] = (int)(sk->m_pos.f.y * 4.0f);
+            a[1] = (int)(m_skater->m_pos.f.y * 4.0f);
         } else {
-            a[i] = (int)((&sk->m_pos.f.x)[i] + (&sk->m_pos.f.x)[i]);
+            a[i] = (int)(m_skater->m_pos[i] + m_skater->m_pos[i]);
         }
         if (i == 0) {
             if (flags & 1)
@@ -252,8 +252,9 @@ void Sync_00273DB0::SendUpdate()
         func_001FAA70(&bits, boardId, 16);
     }
     func_001FAB48(&bits);
-    msg.m_len = func_001FAA60(&bits);
+    int len = func_001FAA60(&bits);
     msg.m_id = 0x23;
+    msg.m_len = len;
     msg.m_14 = 1;
     msg.m_prio = 0x81;
     msg.m_data = buf;

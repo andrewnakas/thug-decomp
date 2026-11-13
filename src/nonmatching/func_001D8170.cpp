@@ -1,4 +1,4 @@
-/* fuzzy: 92.5 */
+/* fuzzy: 92.9 */
 typedef int qword_001D8170 __attribute__((mode(TI)));
 
 extern void* D_00388A70;
@@ -25,47 +25,48 @@ extern "C" void* func_001D7770(void*, int);
 
 Mesh_001D8170* func_001D8170(Mesh_001D8170* src, int arg, int check)
 {
-    if (check && src->m6 == 0)
-        return 0;
-    Mesh_001D8170* d = (Mesh_001D8170*)func_0010A638(D_00388A70, 0x40, 1, 0);
-    d->m0 = src->m0;
-    d->m4 = src->m4;
-    d->m6 = src->m6;
-    d->m8 = src->m8;
-    d->mA = src->mA;
-    d->mB = src->mB;
-    d->m10 = src->m10;
-    d->m20 = src->m20;
-    d->m34 = src->m34;
-    d->m38 = src->m38;
-    d->m3C = src->m3C;
-    d->mC = src->mC;
-    d->m30 = src->m30;
-    if (src->mB)
-        d->m30 = func_0010A638(D_00388A70, src->m6 * 6, 1, 0);
-    else
-        d->m30 = func_0010A638(D_00388A70, src->m6 * 12, 1, 0);
-    unsigned int n = src->m6;
-    if (src->mA)
-        d->mC = func_0010A638(D_00388A70, src->m8 * 8, 1, 0);
-    else
-        d->mC = func_0010A638(D_00388A70, src->m8 * 10, 1, 0);
-    if (!d->m30)
-        return 0;
-    if (!d->mC)
-        return 0;
-    if (src->mB)
-        func_00331404(d->m30, src->m30, src->m6 * 6);
-    else
-        func_00331404(d->m30, src->m30, src->m6 * 12);
-    if (src->mA)
-        func_00331404(d->mC, src->mC, src->m8 * 8);
-    else
-        func_00331404(d->mC, src->mC, src->m8 * 10);
-    if (src->m38) {
-        d->m38 = func_0010A638(D_00388A70, n, 1, 0);
-        func_00331404(d->m38, src->m38, n);
-    }
-    d->m34 = func_001D7770(src->m34, arg);
+    if (!check || src->m6 != 0) {
+        Mesh_001D8170* d = (Mesh_001D8170*)func_0010A638(D_00388A70, 0x40, 1, 0);
+        d->m0 = src->m0;
+        d->m4 = src->m4;
+        d->m6 = src->m6;
+        d->m8 = src->m8;
+        d->mA = src->mA;
+        d->mB = src->mB;
+        d->m10 = src->m10;
+        d->m20 = src->m20;
+        d->m34 = src->m34;
+        d->m38 = src->m38;
+        d->m3C = src->m3C;
+        d->mC = src->mC;
+        d->m30 = src->m30;
+        if (src->mB)
+            d->m30 = func_0010A638(D_00388A70, src->m6 * 6, 1, 0);
+        else
+            d->m30 = func_0010A638(D_00388A70, src->m6 * 12, 1, 0);
+        unsigned int n = src->m6;
+        if (src->mA)
+            d->mC = func_0010A638(D_00388A70, src->m8 * 8, 1, 0);
+        else
+            d->mC = func_0010A638(D_00388A70, src->m8 * 10, 1, 0);
+        if (!d->m30)
+            return 0;
+        if (!d->mC)
+            return 0;
+        if (src->mB)
+            func_00331404(d->m30, src->m30, src->m6 * 6);
+        else
+            func_00331404(d->m30, src->m30, src->m6 * 12);
+        if (src->mA)
+            func_00331404(d->mC, src->mC, src->m8 * 8);
+        else
+            func_00331404(d->mC, src->mC, src->m8 * 10);
+        if (src->m38) {
+            d->m38 = func_0010A638(D_00388A70, n, 1, 0);
+            func_00331404(d->m38, src->m38, n);
+        }
+        d->m34 = func_001D7770(src->m34, arg);
     return d;
+    }
+    return 0;
 }

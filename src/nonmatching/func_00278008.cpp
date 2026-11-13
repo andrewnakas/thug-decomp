@@ -1,4 +1,4 @@
-/* fuzzy: 85.8 */
+/* fuzzy: 94.2 */
 /* sym: __14Range_00278008 = 0x001E4C80 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -27,14 +27,12 @@ union Vec_00278008 {
     }
 };
 
-static inline Vec_00278008 Cross_00278008(const Vec_00278008& a, const Vec_00278008& b)
+static inline Vec_00278008 Cross_00278008(const Vec_00278008& a, const Vec_00278008& b) return r
 {
-    Vec_00278008 r;
     r.x = a[1] * b[2] - a[2] * b[1];
     r.y = a[2] * b[0] - a[0] * b[2];
     r.z = a[0] * b[1] - a[1] * b[0];
     r.w = 0.0f;
-    return r;
 }
 
 union Vec2_00278008 {
@@ -104,7 +102,8 @@ int Comp_00278008::CallMember(unsigned int name, void* params, Script_00278008* 
         Vec_00278008 v;
         v.q = m_obj->mB0.q;
         func_00101730(&v, &m30);
-        const Vec_00278008& c = Cross_00278008(v, m40);
+        Vec_00278008 c;
+        c = Cross_00278008(v, m40);
         return c.w < c.y;
     }
     case 0xC8C4D2F4: {

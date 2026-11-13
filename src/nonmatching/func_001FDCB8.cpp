@@ -1,4 +1,4 @@
-/* fuzzy: 74.9 */
+/* fuzzy: 85.6 */
 /* sym: _vt$17ConnIter_001FDCB8 = 0x00366B58 */
 /* sym: _vt$17NodeIter_001FDCB8 = 0x00366A90 */
 struct Msg_001FDCB8 {
@@ -50,6 +50,7 @@ struct Node_001FDCB8 {
     int m8;
     Node_001FDCB8* m_next;
     Node_001FDCB8* Valid() { return ~(int)m_item != 0 ? this : 0; }
+    Item_001FDCB8* GetData() { return m_item; }
     Node_001FDCB8* Next()
     {
         Node_001FDCB8* r = m_next;
@@ -83,7 +84,7 @@ public:
     {
         m_cur = m_cur->m_next->Valid();
         if (!m_cur) return 0;
-        return m_cur->m_item;
+        return m_cur->GetData();
     }
     Item_001FDCB8* First(Node_001FDCB8* h)
     {
@@ -127,7 +128,8 @@ void Mgr_001FDCB8::SendStreams()
         }
         Node_001FDCB8* list = &c->m_list;
         int n = 0;
-        Node_001FDCB8* nd = list->m_next->Valid();
+        Node_001FDCB8* nd = list->m_next;
+        nd = (nd->m_item != (Item_001FDCB8*)-1) ? nd : 0;
         if (nd) {
             do {
                 n++;

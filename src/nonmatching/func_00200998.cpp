@@ -1,10 +1,19 @@
-/* fuzzy: 82.4 */
+/* fuzzy: 89.7 */
 struct Link_00200998 {
     int m0;
     void* m_data;
     int m8;
     Link_00200998* m_prev;
     Link_00200998* m_next;
+    void* Data() { return m_data; }
+    Link_00200998* Valid() { return ~(unsigned int)m_data != 0 ? this : 0; }
+    bool IsEnd() { return ~(int)m_data == 0; }
+    Link_00200998* Nx()
+    {
+        if (m_prev->IsEnd())
+            return 0;
+        return m_prev;
+    }
 };
 
 // Iterator with vtable D_00366B58: the class of func_002016D8 (its vtable name is
@@ -18,17 +27,22 @@ public:
     virtual void Run();
     void* Next()
     {
-        Link_00200998* n = m_cur->m_prev;
-        m_cur = (n->m_data != (void*)-1) ? n : 0;
-        if (m_cur) {
-            return m_cur->m_data;
-        }
-        return 0;
+        m_cur = m_cur->Nx();
+        if (!m_cur)
+            return 0;
+        return m_cur->m_data;
+    }
+    void* Advance(Link_00200998* c)
+    {
+        m_cur = c->m_prev->Valid();
+        if (!m_cur)
+            return 0;
+        return m_cur->Data();
     }
     void* First(Link_00200998* head)
     {
         m_cur = head;
-        return Next();
+        return Advance(m_cur);
     }
 };
 

@@ -1,4 +1,4 @@
-/* fuzzy: 87.1 */
+/* fuzzy: 98.4 */
 /* sym: AddLines__15Goals_0024C590i = 0x0024C590 */
 // Adds `count` message lines to an on-screen goal/trick list. Each line takes a free slot of the
 // 30-entry table at this+0xA4, builds its text from script params (a random entry of a list, or
@@ -179,8 +179,9 @@ void Goals_0024C590::AddLines(int count)
 {
     int total;
     func_001E7DE8(m_params, 0x89473DB7, &total, 1);
+    int left = count;
     int grouped = 0;
-    int wanted = m_shown + count;
+    int wanted = m_shown + left;
     if (func_0024DFD0(this) || func_0024E048(this))
         grouped = 1;
     if (total < wanted) {
@@ -200,7 +201,7 @@ void Goals_0024C590::AddLines(int count)
         }
     }
 
-    while (count > 0) {
+    while (left > 0) {
         char text[0x200];
         Mgr_0024C590* mgr = D_00389A30;
         void* list = 0;
@@ -316,7 +317,7 @@ void Goals_0024C590::AddLines(int count)
         mgr->Add(line);
         int height = 20;
         if (grouped)
-            height = (count == 1) ? 40 : 20;
+            height = (left == 1) ? 40 : 20;
         func_001E7558(props, 0x34A68574, 100.0f, (float)height);
         line->SetProperties(props);
         Obj_0024C590* parent = func_0012DB48(mgr, 0xE35EC715, 1).m_obj;
@@ -363,17 +364,17 @@ void Goals_0024C590::AddLines(int count)
         m_slots[index].m_elemId = line->m_id;
         m_shown++;
 
-        props = NewParams_0024C590();
+        void* sprops = NewParams_0024C590();
         if (altText == 0)
-            func_001E7360(props, 0, 0x7B716096);
+            func_001E7360(sprops, 0, 0x7B716096);
         unsigned int script = 0x668CC9E3;
         if (!func_0024E0C0(this) && !func_0024E048(this) && (float)total * 0.75f < (float)m_shown)
             script = 0x8E68AFC2;
-        Script_0024C590* s = func_001F0750(script, props, 0, 0, -1, 0, 0, 0, 0, 0);
+        Script_0024C590* s = func_001F0750(script, sprops, 0, 0, -1, 0, 0, 0, 0, 0);
         s->m_elem = (Obj_0024C590*)line;
         func_001EFDC0(s);
-        if (props)
-            func_001E6AE8(props, 3);
+        if (sprops)
+            func_001E6AE8(sprops, 3);
 
         if (!func_0024E0C0(this) && !func_0024E048(this) && (float)total * 0.75f < (float)m_shown) {
             func_001E7200(m_params, 0xD02AC196, 1);
@@ -386,6 +387,6 @@ void Goals_0024C590::AddLines(int count)
                 }
             }
         }
-        count--;
+        left--;
     }
 }

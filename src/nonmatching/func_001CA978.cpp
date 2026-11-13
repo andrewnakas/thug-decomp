@@ -1,4 +1,4 @@
-/* fuzzy: 92.0 */
+/* fuzzy: 93.3 */
 typedef int qword_001CA978 __attribute__((mode(TI)));
 
 struct Vec_001CA978 {
@@ -90,8 +90,10 @@ struct Obj_001CA978 {
     {
         Vec_001CA978 a;
         Vec_001CA978 b;
-        func_0026B1B0(&a, mA24, mA1C);
-        func_0026B1B0(&b, mA24, mA20);
+        Vec_001CA978* p = &a;
+        func_0026B1B0(p, mA24, mA1C);
+        p = &b;
+        func_0026B1B0(p, mA24, mA20);
         return a + (b - a) * mBF0;
     }
     void UpdateRailPos();

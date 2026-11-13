@@ -1,4 +1,3 @@
-/* fuzzy: 88.8 */
 /* sym: Find__10C_0012E438ii = 0x0012DB48 */
 /* sym: Add__10C_0012E438P15Handle_0012DE78i = 0x0012ECE0 */
 /* sym: Remove__10C_0012E438P15Handle_0012DE78ii = 0x0012EE60 */
@@ -149,24 +148,25 @@ void C_0012E438::HandleEvent(Event_0012DE78* ev)
         for (n = m_lists[idx]; n; n = n->m_next)
             n->m_tried = 0;
         m_restart[idx] = 1;
-    restart:
-        m_restart[idx] = 0;
-        n = m_lists[idx];
-        if (n) {
-        do {
-            Visit(n);
-            if (!n->m_tried && !n->m_skip && !func_00125DC8(n->m_obj)) {
-                if (func_00189750(mgr, ev->m_type, n->m_obj->m18, ev->m4, ev->m_params, 0)) {
-                    found = 1;
-                    break;
-                }
-                n->m_tried = 1;
+        while (!found && m_restart[idx]) {
+            m_restart[idx] = 0;
+            n = m_lists[idx];
+            if (n) {
+                do {
+                    Visit(n);
+                    if (!n->m_tried && !n->m_skip && !func_00125DC8(n->m_obj)) {
+                        if (func_00189750(mgr, ev->m_type, n->m_obj->m18, ev->m4, ev->m_params, 0)) {
+                            found = 1;
+                            break;
+                        }
+                        n->m_tried = 1;
+                    }
+                    if (m_restart[idx])
+                        break;
+                    n = n->m_next;
+                } while (n);
             }
-            if (m_restart[idx]) break;
-            n = n->m_next;
-        } while (n);
         }
-        if (!found && m_restart[idx]) goto restart;
         if (found) func_00187D28(ev, 1, 0);
     }
 }

@@ -53,7 +53,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cc  # noqa: E402
-from common import (ASM, BUILD, EXE_NAME, EXE_SHA1, FILE_OFF, GP, ROOT, SRC_NONMATCHING, VRAM,  # noqa: E402
+from common import (ASM, BUILD, EXE_NAME, EXE_SHA1, FILE_OFF, GP, ROOT, SRC_CONCESSION, SRC_NONMATCHING, VRAM,  # noqa: E402
                     compiler_config, load_functions, tool, unit_path, unit_syms)
 
 OUT = BUILD / "functional"
@@ -72,6 +72,11 @@ META = (".reginfo", ".MIPS.abiflags", ".pdr", ".gnu.attributes")   # discarded b
 NAMED_ADDR = re.compile(r"^(?:func|D|jtbl)_([0-9A-F]{6,8})$")
 TOOL_STAMP = hashlib.sha1(Path(__file__).read_bytes() + Path(cc.__file__).read_bytes()
                           + (ROOT / "toolchain/compiler.toml").read_bytes()).hexdigest()[:12]
+
+
+def _UNITS():
+    """src/nonmatching and src/concession units: C++ the matching build does not link."""
+    return list(SRC_NONMATCHING.glob("func_*.cpp")) + list(SRC_CONCESSION.glob("func_*.cpp"))
 
 
 def vaddr_to_off(a):
@@ -510,7 +515,7 @@ def main():
     only, excl, use_asm = parse_list(a.only), parse_list(a.exclude), parse_list(a.use_asm)
     skipped = {}     # name -> reason
     cand = []
-    for src in sorted(SRC_NONMATCHING.glob("func_*.cpp")):
+    for src in sorted(_UNITS()):
         n = src.stem
         if only and n not in only:
             continue
@@ -526,7 +531,7 @@ def main():
             skipped[n] = f"original is only {f['size']} bytes: no room for a j+nop trampoline"
         else:
             cand.append(src)
-    for n in sorted(only - {p.stem for p in SRC_NONMATCHING.glob('func_*.cpp')}):
+    for n in sorted(only - {p.stem for p in _UNITS()}):
         skipped[n] = "--only names a function with no src/nonmatching unit"
 
     # mid-function entries: a branch/pointer from outside to +4 would land on the trampoline's nop
@@ -571,7 +576,7 @@ def main():
 
     symtab = main_symbols()
     extra = {}
-    for p in sorted(SRC_NONMATCHING.glob("func_*.cpp")):
+    for p in sorted(_UNITS()):
         for nm, ad in unit_syms(p):
             if nm in symtab and symtab[nm] != ad:
                 print(f"warning: {p.name} maps {nm} to 0x{ad:08X}, the matching build has 0x{symtab[nm]:08X}")

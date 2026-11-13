@@ -35,7 +35,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import CFLAGS_RE, CONFIG, FUNCTIONS_CSV, SRC_FUNCS, SRC_NONMATCHING, UNIT_CONST_RE, compiler_config  # noqa: E402
+from common import CFLAGS_RE, CONFIG, FUNCTIONS_CSV, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATCHING, UNIT_CONST_RE, compiler_config  # noqa: E402
 
 UNIT_NAME = re.compile(r"^func_([0-9A-F]{8})\.cpp$")
 ASM_RULE = (re.compile(r"\b__asm__\b|\b__asm\b|\basm\s*\(|\basm\s+volatile\b|\basm\s+__volatile__\b"),
@@ -273,7 +273,8 @@ def scan_file(path, allowed, funcs, asm_allow=None):
 
 
 def main(argv):
-    files = [Path(a) for a in argv] or (sorted(SRC_FUNCS.glob("*")) + sorted(SRC_NONMATCHING.glob("*")))
+    files = [Path(a) for a in argv] or (sorted(SRC_FUNCS.glob("*")) + sorted(SRC_NONMATCHING.glob("*"))
+                                   + sorted(SRC_CONCESSION.glob("*")))
     allowed = set(compiler_config()["per_file"]["allowed_cflags"])
     funcs = known_functions()
     asm_allow = inline_asm_allowlist()

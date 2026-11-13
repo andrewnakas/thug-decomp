@@ -30,3 +30,10 @@
    checking each against the PR's actual changes, plus the agent acknowledgement.
 9. Merges are decided by deterministic gates and rules only. No AI takes part in reviewing or merging.
    Appeals: open an issue labelled `appeal`.
+10. **Concession tier** (ruling of 2026-11-13). A function whose C++ matches the game exactly once a few
+    compiler-internal decisions are forced (a global-alloc order, a scheduler ready-list pick, a local-alloc
+    quantity order) may live in `src/concession/func_XXXXXXXX.cpp`. Each forced decision is a
+    `/* force: {...} */` line in the unit; the `match` gate replays them in SN's own cc1plus under gdb
+    (`tools/concession.py`) and requires a byte-exact match, and rejects a unit that matches without them.
+    Every other rule applies unchanged. Concession units are never linked and are reported separately: the
+    headline progress number counts only concession-free matches.

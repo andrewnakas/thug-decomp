@@ -6,7 +6,7 @@ repo = "andrewnakas/thug-decomp"
 default_branch = "main"
 unit_kind = "address"
 # one C file per function: src/funcs/func_XXXXXXXX.cpp (claims and progress are per address)
-unit_paths = ["src/funcs/**", "src/nonmatching/**"]   # nonmatching: equivalent C++, scored, never linked
+unit_paths = ["src/funcs/**", "src/nonmatching/**", "src/concession/**"]   # nonmatching: equivalent C++, scored, never linked; concession: matches with recorded forced compiler decisions, never linked
 unit_regex = 'func_([0-9A-F]{8})\.cpp$'
 function_table = "config/functions.us.csv"
 

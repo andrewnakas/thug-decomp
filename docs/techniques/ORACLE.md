@@ -290,6 +290,19 @@ compiler-internal ties or orders; only a shape the oracle cannot see (cse, loop.
 2. A word that is only shifted is not told apart from a real reorder.
 3. Insns created by loop.c and call-argument moves are not flagged as unreachable.
 
+## Concession tier (2026-11-13)
+
+`src/concession/func_X.cpp` units carry their forces as `/* force: {...} */` lines, in the JSON `--with` takes.
+`tools/concession.py` verifies a unit: a plain compile must NOT match, and a traced compile with exactly those
+forces must match byte for byte (relocations resolved); hook errors fail it. `gate.py` calls the same check, so
+the judge needs gdb and wibo, as the oracle does. A verification costs about 3 seconds. `--find --write` runs
+the greedy search (`--force --chain 4 --max-force 10`) on a src/nonmatching unit and moves it on a match.
+
+Forces are keyed by pseudo-register numbers, block numbers and clocks, so they are tied to the exact source
+text: any edit to a concession unit needs a fresh `--find`. Allowed kinds: `ga`, `la`, `sched` (at most 8 per
+unit). New kinds (reorg thread choice, find_reg, reload) are added to `FORCE_KINDS` in tools/concession.py as
+the oracle learns to force them, and listed here.
+
 ## Limits and next steps
 
 - Reorg has no force yet: the trace shows the filler, not the thread decision inside `fill_slots_from_thread`.

@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import FUZZY_RE, ROOT, SRC_FUNCS, SRC_NONMATCHING, load_functions  # noqa: E402
+from common import FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATCHING, load_functions  # noqa: E402
 
 REPORT_VERSION = 2
 VERSION = "SLUS_207.31"
@@ -43,7 +43,7 @@ def measures(funcs, matched, units, complete_units=0, fuzzy=None):
     }
 
 
-def report(funcs, matched, fuzzy=None):
+def report(funcs, matched, fuzzy=None, concession=frozenset()):
     fuzzy = fuzzy or {}
     units = []
     for f in funcs:
@@ -52,6 +52,8 @@ def report(funcs, matched, fuzzy=None):
         meta = {"complete": ok, "progress_categories": ["game"]}
         if ok:
             meta["source_path"] = f"src/funcs/{f['name']}.cpp"
+        elif f["name"] in concession:
+            meta["source_path"] = f"src/concession/{f['name']}.cpp"
         elif f["name"] in fuzzy:
             meta["source_path"] = f"src/nonmatching/{f['name']}.cpp"
         units.append({
@@ -82,7 +84,17 @@ def main():
         m = FUZZY_RE.search(p.read_text(errors="replace"))
         if m and p.stem not in matched:
             fuzzy[p.stem] = min(float(m.group(1)), 99.9)
-    rep = report(funcs, matched, fuzzy)
+    # src/concession units match exactly under recorded forced compiler decisions (gate.py replays them). They
+    # are not concession-free matches, so they count only toward fuzzy, at 99.9, never toward matched_code.
+    names = {f["name"] for f in funcs}
+    concession = {p.stem for p in SRC_CONCESSION.glob("func_*.cpp")} & names - matched
+    for n in concession:
+        fuzzy[n] = 99.9
+    rep = report(funcs, matched, fuzzy, concession)
+    sizes = {f["name"]: f["size"] for f in funcs}
+    with_conc = sum(sizes[n] for n in matched | concession)
+    rep["concession"] = {"functions": len(concession), "code": str(sum(sizes[n] for n in concession)),
+                         "matched_with_concessions_percent": 100.0 * with_conc / sum(sizes.values())}
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(rep, separators=(",", ":")) + "\n")
@@ -90,7 +102,9 @@ def main():
     print(f"{out.relative_to(ROOT) if out.is_relative_to(ROOT) else out}: "
           f"{m['matched_functions']}/{m['total_functions']} functions, "
           f"{m['matched_code']}/{m['total_code']} bytes ({m['matched_code_percent']:.3f}%), "
-          f"fuzzy {m['fuzzy_match_percent']:.3f}% ({len(fuzzy)} non-matching units)")
+          f"with concessions {rep['concession']['matched_with_concessions_percent']:.3f}% "
+          f"({len(concession)} units), "
+          f"fuzzy {m['fuzzy_match_percent']:.3f}% ({len(fuzzy) - len(concession)} non-matching units)")
 
 
 if __name__ == "__main__":

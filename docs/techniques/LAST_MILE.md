@@ -410,6 +410,12 @@ Liveness at the target cannot block this when the target's first insn sets the r
 deleted (no effect); a used label reproduces the target+4 branch but keeps the fall-through copy that the game
 removed (likely redundant_insn), so the game's missing fall-through insn has to be matched too.
 
+**`-fno-expensive-optimizations` "98 → 7" was an address-forming choice** (func_00128BF0, exact match 2026-11-13).
+With `&local.row[3]` the `&local` base gets its own pseudo, cse keeps it in `$s0` across the calls, and the
+game's `addiu a1,sp,0x10` is never recomputed. A running pointer (`Vec* r = local.row; r += 3;`), plus `Vec v;`
+declared before `Mat local;` and the scale split into its own statements, matches with the pinned flags. So when
+that flag collapses a residue, look for an address the game re-forms from `$sp` at each use.
+
 **gcse PRE merging a reload the game keeps** (func_00168F58). The `-dG` log line "PRE/HOIST: end of bb N ...
 copying expression" names the hoist: `n+1`, used after an inlined padding while-loop, is hoisted into that loop's
 preheader. Statement placement, `noreturn` and int/unsigned did not change it. Store aliasing (stores through

@@ -1,4 +1,3 @@
-/* fuzzy: 99.3 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -100,11 +99,12 @@ void Obj_001CC6B0::UpdateRail()
         func_001CCC00(this);
         return;
     }
+    float m = mBF0;
     float t;
-    if (1.0f < mBF0)
+    if (1.0f < m)
         t = 1.0f;
     else
-        t = mBF0;
+        t = m;
     if (t < 0.0f)
         t = 0.0f;
     mBF0 = t;

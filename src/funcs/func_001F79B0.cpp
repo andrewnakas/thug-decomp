@@ -1,7 +1,8 @@
-/* fuzzy: 90.0 */
-extern int D_0038EAA4;
+// Qualifiers follow the exactly-matched vsync handler func_001F77B0, which declares D_0038EAA4 (enable flag)
+// and D_0038EAA8 (counter) volatile and D_00394118 plain; volatile on D_00394118 would change that matched code.
+extern volatile int D_0038EAA4;
 extern int D_00394118;
-extern int D_0038EAA8;
+extern volatile int D_0038EAA8;
 extern "C" int func_00345160(int mode);
 
 static inline void WaitField_001F79B0(int field)

@@ -1,4 +1,4 @@
-/* fuzzy: 84.0 */
+/* fuzzy: 86.1 */
 typedef int qword_00116A48 __attribute__((mode(TI)));
 extern "C" float sqrtf(float);
 
@@ -29,6 +29,7 @@ struct Quat_00116A48 {
     };
     Quat_00116A48() { x = 0.0f; y = 0.0f; z = 0.0f; w = 1.0f; }
     Quat_00116A48(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    float& W() { return w; }
     void Decode(const QKey_00116A48& k)
     {
         if (k.x == 0 && k.y == 0 && k.z == 0) {
@@ -47,7 +48,7 @@ struct Quat_00116A48 {
             x = qx;
             y = qy;
             z = qz;
-            w = k.neg ? -sqrtf(qw) : sqrtf(qw);
+            W() = k.neg ? -sqrtf(qw) : sqrtf(qw);
         }
     }
     Quat_00116A48 operator-() const { return Quat_00116A48(-x, -y, -z, -w); }
@@ -138,7 +139,10 @@ static inline unsigned char* ReadQKey(QKey_00116A48* k, unsigned char* p)
 static inline unsigned char* ReadTKey(TKey_00116A48* k, unsigned char* p)
 {
     unsigned char b = *p++;
-    bool packed = (b & 0x80) ? true : false;
+    bool packed = false;
+    if (b & 0x80) {
+        packed = true;
+    }
     if (b & 0x40) {
         k->time = b & 0x3F;
     } else {
@@ -166,8 +170,8 @@ static inline Quat_00116A48 Slerp(const Quat_00116A48& a, Quat_00116A48& b, floa
     }
     float x = a.x + (b.x - a.x) * t;
     float y = a.y + (b.y - a.y) * t;
-    float z = a.z + (b.z - a.z) * t;
     float w = a.w + (b.w - a.w) * t;
+    float z = a.z + (b.z - a.z) * t;
     float r = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
     b.x = x * r;
     b.y = y * r;
@@ -322,8 +326,8 @@ bool Anim_00116A48::GetFrame(Quat_00116A48* q, Vec_00116A48* t, Ctx_00116A48* ct
         tdata += *tsizes;
         qsizes++;
         tsizes++;
-        q++;
         t++;
+        q++;
     }
     return true;
 }

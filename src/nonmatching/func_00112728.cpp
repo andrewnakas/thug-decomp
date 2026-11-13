@@ -1,4 +1,4 @@
-/* fuzzy: 81.3 */
+/* fuzzy: 88.2 */
 /* Loads a .HED index (from cdrom0: in uppercase, or host: on a dev kit) and builds a lookup table grouped by
    the first key func_001124E8 derives from each file name: one 12-byte group header per distinct key, a 0xFFFFFFFF
    terminator, then each group's {offset or name, size, key2} entries. With `keepNames` the index stays loaded,
@@ -150,18 +150,16 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
     unsigned int* keys2 = (unsigned int*)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
     char** names = (char**)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
 
-    unsigned int* po = offsets;
-    unsigned int* ps = sizes;
-    unsigned int* pk = keys;
-    unsigned int* pk2 = keys2;
-    char** pn = names;
+    int idx = 0;
     for (e = data; e->m_offset != 0xFFFFFFFF; e = e->Next(func_00331BB8(e->m_name))) {
-        *po++ = e->m_offset;
-        *ps++ = e->m_size;
-        *pn++ = e->m_name;
-        func_001124E8(e->m_name, pk++, pk2++);
+        offsets[idx] = e->m_offset;
+        sizes[idx] = e->m_size;
+        names[idx] = e->m_name;
+        func_001124E8(e->m_name, &keys[idx], &keys2[idx]);
+        idx++;
     }
 
+    Mem_00112728* mem = D_00388A70;
     for (int i = 0; i < count; i++) {
         int isNew = 1;
         for (int j = 0; j < i; j++) {
@@ -174,7 +172,7 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
             groups++;
     }
 
-    Group_00112728* table = (Group_00112728*)func_0010A638(D_00388A70, (groups + total) * 12, 1, 0);
+    Group_00112728* table = (Group_00112728*)func_0010A638(mem, (groups + total) * 12, 1, 0);
     int n = 0;
     for (int i = 0; i < count; i++) {
         int isNew = 1;
@@ -198,7 +196,7 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
             if (keys[i] == table[g].m_key) {
                 item->m_size = sizes[i];
                 if (keepNames) {
-                    item->m_size = sizes[i] | 0x80000000;
+                    item->m_size |= 0x80000000;
                     item->m_where = (unsigned int)names[i];
                 } else {
                     item->m_where = offsets[i];

@@ -1,4 +1,4 @@
-/* fuzzy: 45.8 */
+/* fuzzy: 68.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Q_0011CF08 {
@@ -14,11 +14,16 @@ struct Obj_0011CF08 {
 
 bool Obj_0011CF08::Copy(Q_0011CF08* dst)
 {
-    for (int i = 0; i < 64; i++) {
-        qword a = m_rows[i].a;
-        qword b = m_rows[i].b;
-        dst[i].a = a;
-        dst[i].b = b;
-    }
+    Q_0011CF08* src = m_rows;
+    Q_0011CF08* end = m_rows + 64;
+    // game: no pre-test, end pointer at this+0x820 compared with bne -> do/while over pointers
+    do {
+        qword a = src->a;
+        qword b = src->b;
+        dst->a = a;
+        dst->b = b;
+        src++;
+        dst++;
+    } while (src != end);
     return true;
 }

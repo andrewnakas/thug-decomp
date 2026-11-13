@@ -1,4 +1,4 @@
-/* fuzzy: 89.8 */
+/* fuzzy: 90.2 */
 typedef int qword_0016F050 __attribute__((mode(TI)));
 
 struct V_0016F050 {
@@ -196,9 +196,9 @@ static inline void PutMat(Mat_0016F050* c, bool full)
     D_00394280 += n - 1;
 }
 
-static inline void Fog(int& mode, float radius, float depth)
+static inline void Fog(int& mode, Node_0016F050* n, const float& depth)
 {
-    if (D_0038C02C && D_0038C020 < radius - depth) {
+    if (D_0038C02C && D_0038C020 < n->pos.w - depth) {
         mode |= 0x10;
     }
 }
@@ -406,7 +406,7 @@ extern "C" void func_0016F050(Node_0016F050* node, Mat_0016F050* m, unsigned int
     if (flags & 8) {
         mode = m8;
     }
-    Fog(mode, node->pos.w, depth.f);
+    Fog(mode, node, depth.f);
     Draw(node, mode);
     if ((node->m2C->mC & 4) && D_0039427C) {
         func_001617A0(0);
@@ -424,6 +424,6 @@ extern "C" void func_0016F050(Node_0016F050* node, Mat_0016F050* m, unsigned int
          (int)org[2] + (int)(node->pos[2] * 16.0f), 0);
     PutMat(D_003942FC->m50, true);
     mode = (flags & 2) ? 6 : ((flags & 1) ? 5 : 4);
-    Fog(mode, node->pos.w, depth.f);
+    Fog(mode, node, depth.f);
     Draw(node, mode);
 }

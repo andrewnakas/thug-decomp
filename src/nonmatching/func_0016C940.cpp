@@ -1,4 +1,4 @@
-/* fuzzy: 96.0 */
+/* fuzzy: 96.3 */
 // Rebuilds the view volumes for this frame: for each volume, four side planes through the eye and the
 // volume's far corners (wound to face inwards, whichever side of the far face the eye is on) plus the far
 // plane itself; optionally copies the volumes to the scratchpad, then uploads every plane to VU0 data memory
@@ -157,8 +157,8 @@ extern "C" void func_0016C940(const Vec_0016C940* eye)
         Volume_0016C940* dst = (Volume_0016C940*)0x70000000;
         for (int k = D_0038BC1C; k != 0; k--) {
             dst->m_corners = src->m_corners;
-            Vec_0016C940* sp = src->m_planes;
             Vec_0016C940* dp = dst->m_planes;
+            Vec_0016C940* sp = src->m_planes;
             int j = 5;
             while (j--) {
                 *dp++ = *sp++;

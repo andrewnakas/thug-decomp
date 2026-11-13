@@ -1,4 +1,4 @@
-/* fuzzy: 95.3 */
+/* fuzzy: 96.1 */
 /* func_0017BAA0: from lane 3 draft work/nm77/wt1 (size matches; remaining differences are scheduling/register allocation). */
 extern "C" float sqrtf(float);
 
@@ -119,15 +119,10 @@ struct Mat_0017BAA0 {
         r[3].x = -(t.x * r[0].x + t.y * r[0].y + t.z * r[0].z);
         r[3].y = -(t.x * r[1].x + t.y * r[1].y + t.z * r[1].z);
         r[3].z = -(t.x * r[2].x + t.y * r[2].y + t.z * r[2].z);
-        float a01 = r[0].y;
-        float a02 = r[0].z;
-        float a12 = r[1].z;
-        r[0].y = r[1].x;
-        r[0].z = r[2].x;
-        r[1].x = a01;
-        r[1].z = r[2].y;
-        r[2].x = a02;
-        r[2].y = a12;
+        float s;
+        s = r[0].y; r[0].y = r[1].x; r[1].x = s;
+        s = r[0].z; r[0].z = r[2].x; r[2].x = s;
+        s = r[1].z; r[1].z = r[2].y; r[2].y = s;
     }
     void Viewport(const Vec_0017BAA0& s, const Vec_0017BAA0& t)
     {

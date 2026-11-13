@@ -421,3 +421,16 @@ a table spanning 1..6 exists only with 6 labels, and if 1, 2, 3, 5, 6 are accoun
 field/array (including struct copies and bulk copies) writes only known constants, leaving exactly one candidate
 (func_001D5EE0, func_001CD048; cite the writer addresses). If more than one value would fit, it is invented and
 stays banned (e.g. switches on 32-bit script checksums).
+
+## Lever sweep results and idioms (lane 2, 2026-11-13)
+
+On 40 stuck units the levers that moved units most often were: separate/one-use locals and statement order (5),
+inline layers / `operator=` / a reference to a sub-object / evaluation order (5), and writing a shared tail out in
+each case instead of a `goto` or ternary (2, incl. one exact match: the extra loads raise `this`'s allocation
+priority). If-conversion shapes helped 1. Try those first.
+- An alignment nop where nothing is hoisted can mean the second loop sits inside the first loop's exit.
+- `Ray& ray = m_ray;` (a reference to a sub-object) keeps its address in a callee-saved register across a call.
+- A chained `a = b = x` gives one load stored twice.
+- An inline member that calls another inline member defined *later* in the class body is emitted out of line
+  (`jal`) by g++ 2.95; define the callee first.
+- A parameter copied into a local counter (`int left = count;`) reproduces the game's spill of that copy.

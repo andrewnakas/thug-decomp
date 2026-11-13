@@ -1,4 +1,3 @@
-/* fuzzy: 97.0 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -33,6 +32,7 @@ struct Quat_00195E38 {
     float& operator[](int i) { return (&x)[i]; }
     float LengthSqr() const { return x * x + y * y + z * z + w * w; }
     void GetMatrix(Mat_00195E38& m, float s) const;
+    void FromMatrix(Mat_00195E38& m);
 };
 
 inline void Quat_00195E38::GetMatrix(Mat_00195E38& m, float s) const
@@ -77,6 +77,40 @@ inline void Slerp_00195E38::Set(Mat_00195E38* from, Mat_00195E38* to) { func_001
 extern "C" void func_00103930(Slerp_00195E38* s, float t, Mat_00195E38* out);
 extern "C" void func_00119228(Quat_00195E38* q, float w);
 extern "C" void func_00119230(Quat_00195E38* q, float x, float y, float z);
+
+inline void Quat_00195E38::FromMatrix(Mat_00195E38& m)
+{
+    float tr = m[0][0] + m[1][1] + m[2][2];
+    float sq;
+    if (tr > 0.0f) {
+        sq = sqrtf(tr + 1.0f);
+        float h = sq * 0.5f;
+        sq = 0.5f / sq;
+        func_00119228(this, h);
+        func_00119230(this, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
+    } else {
+        int i = 0;
+        if (m[0][0] < m[1][1])
+            i = 1;
+        if (m[i][i] < m[2][2])
+            i = 2;
+        int j = (i + 1) % 3;
+        int k = (j + 1) % 3;
+        sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
+        (*this)[i] = sq * 0.5f;
+        sq = 0.5f / sq;
+        (*this)[j] = (m[j][i] + m[i][j]) * sq;
+        (*this)[k] = (m[k][i] + m[i][k]) * sq;
+        (*this)[3] = (m[k][j] - m[j][k]) * sq;
+    }
+}
+
+static inline float Clamp1(float t)
+{
+    if (t > 1.0f)
+        return 1.0f;
+    return t;
+}
 
 static inline unsigned int Elapsed(unsigned int since)
 {
@@ -139,40 +173,14 @@ void Obj_00195E38::Update()
     target.r[2] = m_mat.r[2];
     target.r[2].y = 0.0f;
     func_003233B8(&target.r[2], &target.r[2]);
-    target.r[1].Set(0.0f, 1.0f, 0.0f);
+    target[1].Set(0.0f, 1.0f, 0.0f);
     target.r[0].Set(target.r[2].z, 0.0f, -target.r[2].x);
     Slerp_00195E38 slerp;
     func_00102FD0(&slerp);
     slerp.Set(&m_mat, &target);
-    float t = func_0010FAB8() * 3.0f / slerp.m90;
-    if (t > 1.0f)
-        t = 1.0f;
-    func_00103930(&slerp, t, &m_mat);
+    func_00103930(&slerp, Clamp1(func_0010FAB8() * 3.0f / slerp.m90), &m_mat);
 
     Quat_00195E38 r;
-    Mat_00195E38& m = m_mat;
-    float tr = m[0][0] + m[1][1] + m[2][2];
-    float sq;
-    if (tr > 0.0f) {
-        sq = sqrtf(tr + 1.0f);
-        float h = sq * 0.5f;
-        sq = 0.5f / sq;
-        func_00119228(&r, h);
-        func_00119230(&r, (m[2][1] - m[1][2]) * sq, (m[0][2] - m[2][0]) * sq, (m[1][0] - m[0][1]) * sq);
-    } else {
-        int i = 0;
-        if (m[0][0] < m[1][1])
-            i = 1;
-        if (m[i][i] < m[2][2])
-            i = 2;
-        int j = (i + 1) % 3;
-        int k = (j + 1) % 3;
-        sq = sqrtf(m[i][i] - (m[j][j] + m[k][k]) + 1.0f);
-        r[i] = sq * 0.5f;
-        sq = 0.5f / sq;
-        r[j] = (m[j][i] + m[i][j]) * sq;
-        r[k] = (m[k][i] + m[i][k]) * sq;
-        r[3] = (m[k][j] - m[j][k]) * sq;
-    }
+    r.FromMatrix(m_mat);
     m_rot = r;
 }

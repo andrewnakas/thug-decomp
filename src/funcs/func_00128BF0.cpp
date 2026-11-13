@@ -1,4 +1,3 @@
-/* fuzzy: 92.6 */
 #include "game/vector.h"
 
 struct Vec_00128BF0 {
@@ -51,6 +50,7 @@ static inline Vec_00128BF0 operator*(Mat_00128BF0& m, Vec_00128BF0& v)
 
 extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, float x, float y, float z)
 {
+    Vec_00128BF0 v;
     Mat_00128BF0 local;
     if (D_00388814 == 4)
         x = (int)(x * 0.9090909362f + 32.0f);
@@ -76,7 +76,9 @@ extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, 
     } else {
         y -= 232.0f;
     }
-    x = x * 0.7500000596f * func_0013B490();
+    float s = func_0013B490();
+    float a = x * 0.7500000596f;
+    x = a * s;
     float t = -x * z;
     float sx;
     if (D_00388814 != 4) {
@@ -97,7 +99,6 @@ extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, 
     } else {
         sy = u * 0.002155172406f;
     }
-    Vec_00128BF0 v;
     v.x = sx + pos->x;
     v.y = sy + pos->y;
     v.z = z + pos->z;
@@ -107,7 +108,8 @@ extern "C" void func_00128BF0(void* self, Mat_00128BF0* out, Vec_00128BF0* pos, 
     if (!o)
         return;
     local = *func_00114E48(o);
-    Vec_00128BF0* r = &local.row[3];
+    Vec_00128BF0* r = local.row;
+    r += 3;
     r->Set(0.0f, 0.0f, 0.0f, 1.0f);
     Vec_00128BF0 w;
     w = local * v;

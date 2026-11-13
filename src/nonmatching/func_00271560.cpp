@@ -1,4 +1,4 @@
-/* fuzzy: 93.1 */
+/* fuzzy: 94.4 */
 /* near miss: 13 lines differ. (1) case 0: gcc threads first m58->m1C!=0 test directly into the 0x40 block (game re-tests); (2) else-branch: game loads const 1 into $a2 in the bnez delay slot and switch index in $a0. */
 extern void* D_0038C608;
 extern "C" void* func_00187B48(void* mgr, unsigned int id);
@@ -54,9 +54,12 @@ void Obj_00271560::Run(int* mode, int* mask)
             *mask |= 0x2000000;
             switch (m54->m5B0->m1C) {
             case 0:
-                if (!m54->m5B0->mD0 && !m58->m1C && !m58->m20) {
-                    *mode |= 1;
-                    *mask |= 0x10000;
+                if (!m54->m5B0->mD0) {
+                    Inner_00271560* in = m58;
+                    if (!in->m1C && !in->m20) {
+                        *mode |= 1;
+                        *mask |= 0x10000;
+                    }
                 }
                 if (m58->m1C || m58->m20) {
                     *mode |= 0x40;

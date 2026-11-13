@@ -1,4 +1,4 @@
-/* fuzzy: 91.8 */
+/* fuzzy: 62.2 */
 struct Vec_001D7B18 {
     float x, y, z, w;
 };
@@ -8,12 +8,8 @@ struct Link_001D7B18 {
 };
 
 struct Node_001D7B18 {
-    union {
-        struct {
-            unsigned char m_type : 2;
-        } b;
-        int m_word;
-    } u;
+    unsigned char m_type : 2;
+    int m_val : 30;
     Link_001D7B18 m_link;
     void Walk(Vec_001D7B18* v, int mode, int top);
 };
@@ -26,7 +22,7 @@ extern "C" Node_001D7B18* func_001DA820(Link_001D7B18* l);
 
 static inline void Flip_001D7B18(Node_001D7B18* n)
 {
-    n->u.m_word = (-(n->u.m_word >> 2) << 2) | n->u.b.m_type;
+    n->m_val = -n->m_val;
     func_001D7A30(&n->m_link, n->m_link.m_bit ^ 1);
 }
 
@@ -40,10 +36,11 @@ void Node_001D7B18::Walk(Vec_001D7B18* v, int mode, int top)
         t.w = -v->w;
         func_001D7A60(this, &t);
     }
-    char type = u.b.m_type;
+    int type = m_type;
     if (type != 3) {
         if (type != 1) {
-            int k = type ? 0 : 2;
+            int k = 2;
+            if (type) k = 0;
             switch (mode) {
             case 0: break;
             case 1:

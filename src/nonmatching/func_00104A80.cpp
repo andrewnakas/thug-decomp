@@ -1,4 +1,4 @@
-/* fuzzy: 74.4 */
+/* fuzzy: 81.7 */
 /* sym: _vt$11It_00104A80 = 0x0035A988 */
 class Obj_00104A80 {
 public:
@@ -66,24 +66,21 @@ extern "C" void func_00104A80(Mgr_00104A80* m, int unused, int mask)
     m->m_pass++;
     do {
         It_00104A80 it;
-        It_00104A80* p0 = &it;
-        Obj_00104A80* o = p0->First(&m->m_head);
+        It_00104A80* p = &it;
+        Obj_00104A80* o = p->First(&m->m_head);
         m->m_restart = 0;
-        if (o) {
-            It_00104A80* p = &it;
-            do {
-                Obj_00104A80* nx = p->Advance(it.m_cur);
-                if (o->m4 == 0 && o->m10 != m->m_pass) {
-                    o->m10 = m->m_pass;
-                    if ((o->m14 & mask) == 0) {
-                        o->Update();
-                    }
+        while (o) {
+            Obj_00104A80* cur = o;
+            o = p->Advance(it.m_cur);
+            if (cur->m4 == 0 && cur->m10 != m->m_pass) {
+                cur->m10 = m->m_pass;
+                if ((cur->m14 & mask) == 0) {
+                    cur->Update();
                 }
-                if (m->m_restart) {
-                    break;
-                }
-                o = nx;
-            } while (o);
+            }
+            if (m->m_restart) {
+                break;
+            }
         }
     } while (m->m_restart);
 }

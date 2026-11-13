@@ -240,6 +240,56 @@ Rule of thumb for agents: use the oracle to **classify** a near miss first. Only
 itself a luid tie, and global-alloc ties between user pseudos (not PRE regs), are worth source edits. Everything
 else above is an internal ordering that the source does not reach.
 
+## Classification of every nonmatching unit (2026-11-13)
+
+All 368 `src/nonmatching` units were run through `oracle.py --force --chain 3 --max-force 8 --json` and classified
+by `tools/oracle_classify.py`. The result is `work/oracle/classes.tsv`, also shared as
+`~/Documents/thpsundergroundDecompProject/work/oracle_classes.tsv`. Its columns are unit, size, fuzzy, class,
+deciding decision, forced result and differing words. The run took about 2 hours at 2 jobs through memgate.
+
+| Class | Units | Bytes | Gap bytes (size x (100 - fuzzy)) | Forced MATCH |
+|---|---|---|---|---|
+| A: reachable tie | 11 | 5,316 | 208 | 1 |
+| B: code shape | 230 | 252,016 | ~22,700 | 0 |
+| C: unreachable internal order | 127 | 118,652 | ~4,900 | 30 |
+
+**Rules.** A unit is **A** only if the forced flip that gained the most words is itself a reachable tie, meaning one of:
+- a ready-list luid tie that sched1 also tied on luid;
+- a global or local allocation tie on allocno or quantity number between pseudos that are not gcse PRE reaching regs.
+
+The first version labelled a unit A whenever any such tie appeared among its differing words. That gave 54 A units.
+Of the 11 worked by hand, 10 were misclassified:
+- the flip that gained was a priority decision or a PRE register;
+- or the "tie" was only a word shifted by code elsewhere, already in the game's order.
+
+**B** means the instruction multisets differ and no forced flip reaches a match. **C** covers everything else:
+- PRE-register ties, priority gaps, dependents and reg-weight keys;
+- sched2 orders fixed by sched1;
+- find_reg, reload and reorg choices.
+
+30 units in C reach a byte-exact match when the compiler's decisions are forced. They are 100% proven to be
+compiler-internal ties or orders; only a shape the oracle cannot see (cse, loop.c or PRE side effects) would fix them.
+
+**Converting A by hand, 18 units.**
+- 0 exact matches.
+- 4 fuzzy gains: func_001BA5D0 85.2->98.1, func_001A07E0 81.7->93.6, func_001A7108 80.7->83.3,
+  func_00209608 76.9->77.1 (PR #689).
+- Plain swaps of the two tied statements helped in 0 of 18 cases.
+- The gains came from:
+  - moving a *third* statement relative to the tied pair;
+  - an equally natural different shape: a `Trim()` that returns its list, a ternary instead of assign-then-if.
+
+**Reachable ties that the source still cannot reach:**
+- a store just before a call against that call's argument move (expand_call emits the move right before the jal);
+- luid ties between loop.c-generated preheader insns;
+- ties inside an inline helper that is used twice, where every reorder hits both uses.
+
+**Known classifier gaps:**
+1. The sched1 key in the JSON (`s1`) is read from the trace's ready list at the first cycle the pair met. In
+   func_00292630 the hand analysis found reg weight where the record said luid.
+2. A word that is only shifted is not told apart from a real reorder.
+3. Insns created by loop.c and call-argument moves are not flagged as unreachable.
+
 ## Limits and next steps
 
 - Reorg has no force yet: the trace shows the filler, not the thread decision inside `fill_slots_from_thread`.

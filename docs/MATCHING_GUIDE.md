@@ -281,3 +281,23 @@ Two tools for large near misses whose problems are structural (loop and switch s
   produced it (`[inlined]` lines come from an inline helper, `[calls inline]` is the statement that called it).
   Use it as "this idiom produced this exact code" and read the hit's source; a hit is a lead, not a recipe.
   `shapedb.py loo` runs the leave-one-out retrieval test.
+
+What the tools measured (2026-11-12):
+- **Index build.** 8,724 units in 486 s at `-j3`: 114k entries, 80 MB. For every unit, the `-g` words equal
+  the game's.
+- **Query.** About 2 s, most of it the compile and the alignment; `--block` alone takes well under 1 s.
+- **Leave-one-out** (`shapedb.py loo --recent 10`, 584 queries of 6+ words). The top hit's C++ has the same
+  shape (token similarity ≥ 0.6 after names and numbers are abstracted) in 48% of queries, and one of the top 5
+  in 62% (60% when identical-asm clones are left out). For random entries of the same size the figure is 10%.
+  Short, common idioms (iterators, list inserts, compare trees) are found reliably. Long, function-specific
+  blocks often have no good hit.
+
+Structural findings these tools surfaced:
+- **Constant-count loops.** `-O2` does not unroll loops. When the game has a run of near-identical stores or
+  calls where ours has a `for (k = 0; k < 3; k++)`, the original wrote it out (func_0014F538 40.0 → 48.2;
+  func_001780F0's zero-init). diffmap prints `loops: ours N, game 0` for such regions.
+- **Case body order.** gcc places case bodies in source order, whatever the order of the compare tree. diffmap
+  lists the game's body order and marks the cases that are out of place (`!!case`).
+- **Cross-jumping.** A "moved code" pair (our extra words = the game's missing words elsewhere) usually means the
+  other copy survived cross-jumping or the blocks are in another order. Check the statement order of the
+  duplicated tails.

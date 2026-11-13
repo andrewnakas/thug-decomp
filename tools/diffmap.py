@@ -280,6 +280,18 @@ def heat(st):
     return " " if bad == 0 else "." if bad < 0.25 else "+" if bad < 0.5 else "*" if bad < 0.75 else "#"
 
 
+def back_branches(words, lo, hi):
+    """Backward branches (loops) among words lo..hi."""
+    n = 0
+    for k in range(lo, hi + 1):
+        w = words[k]
+        op = w >> 26
+        if op in (1, 4, 5, 6, 7, 0x14, 0x15, 0x16, 0x17) or (op == 0x11 and (w >> 21) & 0x1F == 8):
+            if match.sext16(w & 0xFFFF) < 0:
+                n += 1
+    return n
+
+
 def dis(w, addr, reloc=None):
     return match.disasm(w, addr, reloc)
 
@@ -373,6 +385,13 @@ def report(name, src, res, lm, ops, pos, sites, note, nreg=10, show_asm=False, a
         for l in sorted(set(st_))[:5]:
             if 0 < l <= len(text):
                 print(f"           {l:5d}: {text[l - 1].strip()[:90]}")
+        bo = back_branches(res.ours.words, *o) if o else 0
+        bg = back_branches(res.target.words, *g) if g else 0
+        if bo != bg:
+            hint = ("ours loops where the game's code is straight-line: write the loop out (-O2 does not "
+                    "unroll loops)" if bg == 0 else "ours has more loops here" if bo > bg
+                    else "the game has more loops here")
+            print(f"         loops: ours {bo}, game {bg} backward branches -> {hint}")
         if show_asm:
             for kind, i, j in ops[r["start"]:r["end"] + 1][:40]:
                 gl = dis(res.target.words[j], addr + j * 4, res.target.relocs.get(j)) if j is not None else ""

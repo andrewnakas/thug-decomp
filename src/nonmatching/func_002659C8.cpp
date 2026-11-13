@@ -1,4 +1,4 @@
-/* fuzzy: 91.3 */
+/* fuzzy: 93.8 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00375F50[];
@@ -74,16 +74,16 @@ extern "C" void func_002659C8(int gen, unsigned int time, unsigned int n, unsign
     IdList3B_002659C8 list3B;
     IdList5B_002659C8 list5B;
     Msg_002659C8 msg;
+    void* game = D_0038FC78;
+    func_001FA800(&msg);
     Iter_002659C8 it;
     char flags[8];
     GroupInfo_002659C8 info;
     Msg_002659C8 infoMsg;
-    void* game = D_0038FC78;
     void* net = D_00392068;
     unsigned int i;
     void* c;
 
-    func_001FA800(&msg);
     if (broadcast) {
         void* client = func_002A39D8(net);
         void* owner = func_00265978(gen);

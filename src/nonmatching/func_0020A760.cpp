@@ -1,4 +1,4 @@
-/* fuzzy: 84.8 */
+/* fuzzy: 88.2 */
 typedef int qword_0020A760 __attribute__((mode(TI)));
 
 struct Vec_0020A760 {
@@ -36,10 +36,10 @@ struct Mat_0020A760 {
     const Vec_0020A760& operator[](int i) const { return r[i]; }
     Mat_0020A760& operator=(const Mat_0020A760& o)
     {
-        r[0] = o.r[0];
-        r[1] = o.r[1];
-        r[2] = o.r[2];
-        r[3] = o.r[3];
+        r[0] = o[0];
+        r[1] = o[1];
+        r[2] = o[2];
+        r[3] = o[3];
         return *this;
     }
     void ClearPos()

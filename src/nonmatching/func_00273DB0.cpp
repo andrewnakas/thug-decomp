@@ -1,4 +1,4 @@
-/* fuzzy: 81.5 */
+/* fuzzy: 89.2 */
 /* sym: _vt$11Cb_00200C00 = 0x00366B58 */
 /* sym: __12Msg_00273DB0 = 0x001FA800 */
 typedef int qword_00273DB0 __attribute__((mode(TI)));
@@ -10,13 +10,18 @@ struct Vec4_00273DB0 {
             float x, y, z, w;
         } f;
     };
+    const float& operator[](int i) const { return (&f.x)[i]; }
     Vec4_00273DB0 operator-(const Vec4_00273DB0& o) const
     {
+        float x = (*this)[0] - o[0];
+        float y = (*this)[1] - o[1];
+        float z = (*this)[2] - o[2];
+        float w = (*this)[3] - o[3];
         Vec4_00273DB0 r;
-        r.f.x = f.x - o.f.x;
-        r.f.y = f.y - o.f.y;
-        r.f.z = f.z - o.f.z;
-        r.f.w = f.w - o.f.w;
+        r.f.x = x;
+        r.f.y = y;
+        r.f.z = z;
+        r.f.w = w;
         return r;
     }
 };
@@ -40,12 +45,13 @@ struct Slot_00273DB0 {
 struct Board_00273DB0 {
     char pad[0x5C];
     unsigned short m_5C;
+    unsigned short Id() { return m_5C; }
 };
 
 struct Owner_00273DB0 {
     char pad[0x29C];
     Board_00273DB0* m_board;
-    int BoardId() { return m_board ? m_board->m_5C : -1; }
+    int BoardId() { return m_board ? m_board->Id() : -1; }
 };
 
 struct Conn_00273DB0 {
@@ -247,8 +253,8 @@ void Sync_00273DB0::SendUpdate()
     }
     func_001FAB48(&bits);
     msg.m_len = func_001FAA60(&bits);
-    msg.m_14 = 1;
     msg.m_id = 0x23;
+    msg.m_14 = 1;
     msg.m_prio = 0x81;
     msg.m_data = buf;
     func_00200C00(conn, &msg);

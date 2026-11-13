@@ -1,4 +1,3 @@
-/* fuzzy: 80.7 */
 typedef int qword_001D87F8 __attribute__((mode(TI)));
 
 struct Heap_001D87F8 {
@@ -90,14 +89,16 @@ extern "C" void func_001D87F8(Mesh_001D87F8* self, const Vec_001D87F8* pivot, co
             self->m_verts[i].z *= scale->u.f.z;
         }
     }
-    Box_001D87F8 box = self->m_box;
-    box.min.u.f.x *= scale->u.f.x;
-    box.min.u.f.y *= scale->u.f.y;
-    box.min.u.f.z *= scale->u.f.z;
-    box.max.u.f.x *= scale->u.f.x;
-    box.max.u.f.y *= scale->u.f.y;
-    box.max.u.f.z *= scale->u.f.z;
-    self->m_box = box;
+    Vec_001D87F8 mn = self->m_box.min;
+    Vec_001D87F8 mx = self->m_box.max;
+    mn.u.f.x *= scale->u.f.x;
+    mn.u.f.y *= scale->u.f.y;
+    mn.u.f.z *= scale->u.f.z;
+    mx.u.f.x *= scale->u.f.x;
+    mx.u.f.y *= scale->u.f.y;
+    mx.u.f.z *= scale->u.f.z;
+    self->m_box.min = mn;
+    self->m_box.max = mx;
     if (tmp) {
         func_001D8D10(self, tmp);
         delete[] tmp;

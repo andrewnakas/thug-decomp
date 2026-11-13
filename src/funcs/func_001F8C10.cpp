@@ -1,4 +1,3 @@
-/* fuzzy: 83.5 */
 extern char D_0038EB88[];
 extern char D_003F3400[];
 extern int D_0039412C;
@@ -30,7 +29,7 @@ extern "C" int func_001F8C10(void* cfg, void* a, void* b, void* c, int timeout, 
     int wait = timeout * 1000;
     int prev = -2;
     int up = 0;
-    while (!D_0039412C) {
+    while (state != 8 && !D_0039412C) {
         if (func_003276D8(&state)) return 2;
         if (!up) {
             if (state >= 5 && state <= 8) up = 1;
@@ -53,7 +52,6 @@ extern "C" int func_001F8C10(void* cfg, void* a, void* b, void* c, int timeout, 
             func_003247E8(10);
             wait -= 10;
         }
-        if (state == 8) break;
     }
     return 0;
 }

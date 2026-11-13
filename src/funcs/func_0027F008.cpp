@@ -1,6 +1,7 @@
-/* fuzzy: 84.9 */
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
+extern "C" float func_00340F60(float a);
+extern "C" float func_00341068(float a);
 
 typedef int qword __attribute__((mode(TI)));
 union Vec_0027F008 {
@@ -30,6 +31,15 @@ union Vec_0027F008 {
         c[2] *= k;
         c[3] *= k;
     }
+    void RotateY(float a)
+    {
+        float s = func_00341068(a);
+        float co = func_00340F60(a);
+        float vx = c[0];
+        float vz = c[2];
+        c[0] = co * vx + s * vz;
+        c[2] = -s * vx + co * vz;
+    }
     float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }
 };
 
@@ -49,6 +59,14 @@ struct Mat_0027F008 {
     Vec_0027F008 r2;
     Vec_0027F008 r3;
     const Vec_0027F008& operator[](int i) const { return (&r0)[i]; }
+    Mat_0027F008() {}
+    Mat_0027F008(const Mat_0027F008& o)
+    {
+        r0 = o[0];
+        r1 = o[1];
+        r2 = o[2];
+        r3 = o[3];
+    }
     Mat_0027F008& operator=(const Mat_0027F008& o)
     {
         r0 = o[0];
@@ -108,11 +126,14 @@ extern "C" float func_002032A0(unsigned int name, int def);
 extern "C" float func_00203D40(Body_0027F008* body, unsigned int name);
 extern "C" void func_00270DD8(void* sound, int id, float pitch);
 extern "C" int func_00283660(Obj_0027F008* self);
-extern "C" float func_00284AA8(Obj_0027F008* self, Vec_0027F008* dir, float k, float* angle);
+extern "C" float func_00284AA8(Obj_0027F008* self, Vec_0027F008* dir, float* angle, float k);
 extern "C" bool func_0028E1C0(Obj_0027F008* self, int flags, int a);
 extern "C" int func_003233B8(Vec_0027F008* d, Vec_0027F008* s);
 extern "C" float func_00340F60(float a);
 extern "C" float func_00341068(float a);
+
+/* The stance test is a stored flag: the binary computes side ^ want (xori) and branches on it. */
+static inline bool Off_0027F008(int side, int want) { return side != want; }
 
 void Obj_0027F008::Snap(Vec_0027F008* normal)
 {
@@ -127,9 +148,9 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
     Vec_0027F008 up = body->m_mat[1] * func_002032A0(0xD4205C9B, 0);
 
     float angle;
-    float turn = func_00284AA8(this, normal, 1.0f, &angle);
-    float absTurn = fabsf(turn);
+    float turn = func_00284AA8(this, normal, &angle, 1.0f);
     float limit = func_002032A0(0x1483FD01, 0) * 0.017453294f;
+    float absTurn = fabsf(turn);
     if (limit < absTurn) {
         Vec_0027F008& vel = m_body->m_vel;
         float scale = 1.0f - (absTurn - limit) / (1.5707964f - limit);
@@ -137,53 +158,40 @@ void Obj_0027F008::Snap(Vec_0027F008* normal)
         vel *= scale;
         if (func_002032A0(0xBE0A58A0, 0) < speed) {
             int side = m_5B0->m_34;
-            if (turn < 0.0f) {
-                if (side == 1)
-                    func_001848F0(m_body, 0x756A7535, 0);
-                else
-                    func_001848F0(m_body, 0xB4101D70, 0);
-            } else if (side == 0) {
-                func_001848F0(m_body, 0x756A7535, 0);
-            } else {
+            if (turn < 0.0f ? Off_0027F008(side, 1) : Off_0027F008(side, 0))
                 func_001848F0(m_body, 0xB4101D70, 0);
-            }
+            else
+                func_001848F0(m_body, 0x756A7535, 0);
             func_00270DD8(m_59C, m_11C, speed / func_00203D40(m_body, 0xCC5F87AA));
         }
     }
 
     m_body->m_pos = m_150 - up;
-    Vec_0027F008 push = *normal * 6.0f;
-    m_body->m_pos += push;
+    m_body->m_pos += *normal * 6.0f;
 
     float dist = moved.Length();
+    /* the binary initializes step with the velocity (sq to its slot) before overwriting it */
+    Vec_0027F008 step = m_body->m_vel;
     dir = m_body->m_vel;
     func_003233B8(&dir, &dir);
-    Vec_0027F008 step;
     step = dir * dist;
 
     m_270 = m_body->m_pos + up;
     m_270 += up;
 
-    Vec_0027F008 ahead = m_body->m_pos + up + step;
-    m_280 = ahead + dir * func_002032A0(0x20102726, 0);
+    Vec_0027F008 target = m_body->m_pos + up + step + dir * func_002032A0(0x20102726, 0);
+    m_280 = target;
 
     if (!func_0028E1C0(this, 0x10, 0))
         return;
-    body = m_body;
-    if (!body->m_31C)
+    Body_0027F008* hit = m_body;
+    if (!hit->m_31C)
         return;
 
-    float a = 3.141593f - angle;
-    float s = func_00341068(a);
-    float c = func_00340F60(a);
-    Vec_0027F008& vel = body->m_vel;
-    float vx = vel[0];
-    float vz = vel[2];
-    vel[0] = c * vx + s * vz;
-    vel[2] = -s * vx + c * vz;
+    hit->m_vel.RotateY(3.141593f - angle);
 
-    body = m_body;
-    body->m_mat = body->m_mat * *func_00100928((Mat_0027F008*)0x70003FC0, 3.141593f - angle);
+    Body_0027F008* cur = m_body;
+    cur->m_mat = cur->m_mat * *func_00100928((Mat_0027F008*)0x70003FC0, 3.141593f - angle);
     m_mat = m_body->m_mat;
     m_body->m_vel *= 0.5f;
     if (func_002032A0(0xBE0A58A0, 0) < dist)

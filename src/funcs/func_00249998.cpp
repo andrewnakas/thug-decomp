@@ -1,9 +1,3 @@
-/* fuzzy: 79.7 */
-/* NEAR MISS (r2 wt2): 76/175, SIZE NOW RIGHT (0x2bc). Fixes: GetWord inline helper taking char*& p (gives &p in s0
-   before strstr); last loop written as a goto loop (not a for: loop.c must not see it, else the found block is moved
-   before the loop and D_00373C68's lui hoisted). Left: register allocation only: game type=fp and obj/arg spilled
-   (0x108/0x104), ours obj=fp with type/arg spilled; arr/n s4/s3 swapped. Previous note: */
-/* near miss: size 0x2b4 vs 0x2bc: game lays the else-sprintf block out of line after the found-block (ours moves the found/break block instead); arg reg alloc differs (game this=s5, type=fp, base=s7) */
 extern void* D_0038FC78;
 extern char D_00390078[];
 extern char D_00373C58[];
@@ -85,28 +79,23 @@ void Goal_00249998::Pick(const char* type, int base, int extra, int arg)
         func_001E90A8(arr, j, func_001E9270(arr, i));
         func_001E90A8(arr, i, a);
     }
-    {
-        int i = 0;
-        if (n <= 0) goto done;
-    top:
+    for (int i = 0; i < n; i++) {
         int v = func_001E9270(arr, i);
-        if (v <= base) goto plain;
-        if (!func_002623B8(obj)) goto next;
-        func_003331D0(name, D_00373C58, prefix, type, word, v - base);
-    check:
-        if (func_001E11A8(func_001F0D78(name))) {
-            func_00248FF8(this, func_001F0D78(name), arg, 0, 0);
-            goto done;
+        if (v > base) {
+            if (!func_002623B8(obj)) continue;
+            func_003331D0(name, D_00373C58, prefix, type, word, v - base);
+            if (func_001E11A8(func_001F0D78(name))) {
+                func_00248FF8(this, func_001F0D78(name), arg, 0, 0);
+                break;
+            }
+        } else {
+            func_003331D0(name, D_00373C68, prefix, type, v);
+            if (func_001E11A8(func_001F0D78(name))) {
+                func_00248FF8(this, func_001F0D78(name), arg, 0, 0);
+                break;
+            }
         }
-        goto next;
-    plain:
-        func_003331D0(name, D_00373C68, prefix, type, v);
-        goto check;
-    next:
-        i++;
-        if (i < n) goto top;
     }
-done:
     func_001E6518(arr);
     if (arr) {
         func_001E8DE8(arr, 3);

@@ -184,6 +184,8 @@ extern "C" void func_001646D0(int a);
 extern "C" void func_00164E48(int a, unsigned int b);
 extern "C" void func_00164EB8(int a);
 extern "C" void func_00164F48(Mat_001780F0* m);
+/* Equivalence (asm): one argument. func_001726C0 reads only $a0 (lb 0x79($a0), lw 0x40/0x68($a0), 0x1726C0-0x1726DC);
+   at the call site 0x1798F0 only $a0 is set for it ($a1 still holds an unrelated compare constant). */
 extern "C" unsigned int func_001726C0(Inst_001780F0* i);
 extern "C" unsigned int func_00172778(Inst_001780F0* i);
 extern "C" unsigned int func_001727F8(Inst_001780F0* i, int a, int b);

@@ -1,4 +1,5 @@
 /* fuzzy: 95.5 */
+/* note (phase3-b1): the branchy Begin() is required: sibling First()/Next() (func_002A3B50) and q->Advance(it.cur) (func_002D0680) forms shrink the unit to 0x2EC-0x2F0. Residue: the game reads it.cur via the copy $a1 and stores via $s4; ours the reverse. */
 /* nonmatch func_002A44C0: best earlier draft (thug-claude-lane3/work/w53/p2/func_002A44C0.fail), 13 of 190 words differ. */
 extern char D_003714C0[];
 extern char D_00378C80[];

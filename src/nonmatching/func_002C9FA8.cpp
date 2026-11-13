@@ -1,4 +1,5 @@
 /* fuzzy: 96.4 */
+/* blocked: 13 words, all spill-slot offsets (0x58-0x68) of the five hoisted addresses &h, &t, &a, &b, pk+0xC; the slot order is reload's, from the PRE/loop invariant pseudo order, not reached by source order. */
 struct Elem_002C9FA8;
 struct Handle_002C9FA8;
 

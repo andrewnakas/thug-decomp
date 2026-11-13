@@ -1,4 +1,5 @@
 /* fuzzy: 97.1 */
+/* blocked: 4 words, msg fill stores at 0x2AC7F4-0x2AC810. sched1 picks `$a0=$sp+0x64` (prio 15) over `$2=1` (prio 14): a priority difference, not a tie; every order of the three member stores and a member Set() was tried (6-10 words). */
 struct Msg_002AC6D8 {
     unsigned char m0;
     char pad1;

@@ -1,4 +1,5 @@
 /* fuzzy: 94.0 */
+/* note (phase3-b1): game computes sltu/sltu/or for (D_00390EF8 != 0) | (call != 0); ours if-converts to ori+movz. Tried int/bool temps, || forms, inline argument: 10-47 words. Sibling iterator ctor/dtor (func_002A4DD0) gives the same 10. */
 struct Pool_002D9ED0 {
     char pad[0x108];
     int m108;

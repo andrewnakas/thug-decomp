@@ -1,5 +1,4 @@
-/* fuzzy: 89.6 */
-/* near miss: size 0x25c vs 0x254; inner-loop shape right (if (p && check) form gives the game's rotated loop); ours gets loop-align nops and hoists &bits out of the outer loop (game: no nops, &bits recomputed, only &msg hoisted); regs n/i/start differ */
+/* sym: __13Bits_00231188 = 0x001FAA08 */
 extern char D_00371C78[];
 extern void* D_00392068;
 
@@ -10,9 +9,14 @@ struct Iter_00231188 {
 };
 
 struct Bits_00231188 {
+    Bits_00231188();
     char pad[0x18];
     int m_18;
     void* m_1C;
+};
+
+/* Stream is inferred from the inline layering of the Bits ctor call (no own fields or methods seen in the binary). */
+struct Stream_00231188 : public Bits_00231188 {
 };
 
 struct Msg_00231188 {
@@ -41,8 +45,6 @@ struct Player_00231188 {
 extern "C" void* func_002A39D8(void* net);
 extern "C" Node_00231188* func_002A53F8(void* net, Iter_00231188* it, int a);
 extern "C" Node_00231188* func_002A5490(void* net, Iter_00231188* it, int a);
-extern "C" void func_001FAA08(Bits_00231188* b);
-static inline void Wrap_001FAA08(Bits_00231188* b) { func_001FAA08(b); }
 extern "C" int func_00202778(Conn_00231188* c);
 extern "C" void func_001FAA40(Bits_00231188* b, char* buf, int size);
 extern "C" int func_002B30B0(Node_00231188* n);
@@ -75,8 +77,7 @@ void Srv_00231188::Send()
     server = func_002A39D8(net);
     char buf[0x1000];
     for (Node_00231188* n = func_002A53F8(net, &it, 1); n; n = func_002A5490(net, &it, 1)) {
-        Bits_00231188 bits;
-        Wrap_001FAA08(&bits);
+        Stream_00231188 bits;
         if (!func_00202778(n->m_1C)) {
             continue;
         }
@@ -88,7 +89,8 @@ void Srv_00231188::Send()
         int start = (func_002B30B0(n) + 1) % 8;
         int slot;
         Player_00231188* p;
-        for (int i = 0; i < 8; i++) {
+        int i;
+        for (i = 0; i < 8; i++) {
             slot = (start + i) % 8;
             p = func_002A52F0(net, slot);
             if (p && func_00230A38(ctx, n, p->m_18)) {
@@ -103,7 +105,7 @@ void Srv_00231188::Send()
             continue;
         }
         func_001FAA70(&bits, mask, 8);
-        for (int i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++) {
             if ((mask >> i) & 1) {
                 func_00230D88(func_002A52F0(net, i)->m_18, &bits);
                 func_002B30B8(n, i);

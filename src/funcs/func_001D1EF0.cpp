@@ -1,4 +1,3 @@
-/* fuzzy: 90.7 */
 typedef int qword_001D1EF0 __attribute__((mode(TI)));
 
 struct Vec_001D1EF0 {
@@ -19,6 +18,14 @@ struct Vec_001D1EF0 {
         c[1] = y;
         c[2] = z;
         c[3] = w;
+    }
+    Vec_001D1EF0& operator*=(float s)
+    {
+        c[0] *= s;
+        c[1] *= s;
+        c[2] *= s;
+        c[3] *= s;
+        return *this;
     }
     float& operator[](int i) { return c[i]; }
     float operator[](int i) const { return c[i]; }
@@ -113,7 +120,11 @@ extern "C" bool func_001D1EF0(Seg_001D1EF0* line, Obj_001D1EF0* obj, Hit_001D1EF
         info->m59 = flags & 0x40;
         info->m40 = obj;
         info->m44 = obj->m0;
-        Vec_001D1EF0 d = (line->p1 - line->p0) * t;
+        Vec_001D1EF0 d;
+        Vec_001D1EF0 e;
+        e = line->p1 - line->p0;
+        e *= t;
+        d = e;
         d = line->p0 + d;
         d[3] = 1.0f;
         info->hit.point = d;

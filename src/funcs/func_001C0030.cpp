@@ -1,4 +1,3 @@
-/* fuzzy: 89.7 */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C0030 {
@@ -93,6 +92,7 @@ struct Rec_001C0030 {
     char pad0[0x1C];
     Handle_001C0030* m1C;
     unsigned int m20;
+    Body_001C0030* Get() { return m1C->m0; }
     bool Valid()
     {
         Handle_001C0030* h = m1C;
@@ -196,12 +196,11 @@ int Obj_001C0030::Probe()
             c.end = c.start + m40 * m98;
             float g = func_001C6B28(this);
             float dt = m98;
-            c.end[1] += m50 * dt + -g * (dt * dt * 0.5f);
+            c.end[1] += m50 * dt + 0.5f * -g * (dt * dt);
         } else {
             c.start = m30;
             c.start[1] += up;
-            Vec_001C0030 d = func_001C63B0(this, i) * reach;
-            c.end = m30 + d;
+            c.end = m30 + func_001C63B0(this, i) * reach;
             c.end[1] += up;
         }
         m_probes[i].m_valid = func_002093E8(&c, 1, 0);
@@ -214,10 +213,11 @@ int Obj_001C0030::Probe()
         }
         func_0019C9D8(m_probes[i].m_contact, &c);
         touching = true;
-        m_probes[i].m_normal = c.normal;
-        m_probes[i].m_normal[1] = 0.0f;
-        func_003233B8(&m_probes[i].m_normal, &m_probes[i].m_normal);
-        if (func_00209A00(&c) && !(mA3C->Valid() && mA3C->m1C->m0 == func_00209A30(&c))) {
+        Vec_001C0030& n = m_probes[i].m_normal;
+        n = c.normal;
+        n[1] = 0.0f;
+        func_003233B8(&n, &n);
+        if (func_00209A00(&c) && !(mA3C->Valid() && mA3C->Get() == func_00209A30(&c))) {
             m_probes[i].m_dist = func_00209A30(&c)->mB0.Dot3(m_probes[i].m_normal);
         } else {
             m_probes[i].m_dist = 0.0f;
@@ -226,7 +226,8 @@ int Obj_001C0030::Probe()
 
     if (m1C == 0) {
         if (func_001C37F0(this)) {
-            float t = func_0010FC30() - mA68;
+            unsigned int start = mA68;
+            float t = func_0010FC30() - start;
             if (Param_001C0030(0x38D36700) < t) {
                 if (func_001CB7D0(this, 0) || func_001C3870(this)) {
                     return 0;
@@ -282,7 +283,7 @@ int Obj_001C0030::Probe()
             if (m_probes[j].m_valid && m_probes[i].m_normal.Dot3(m_probes[j].m_normal) <= 0.0f) {
                 m40.Set(0.0f, 0.0f, 0.0f, 1.0f);
                 float cap = Param_001C0030(0x0BD6A05D);
-                m954 = m954 < cap ? m954 : cap;
+                m954 = cap < m954 ? cap : m954;
                 mB58 = 1;
                 return 1;
             }
@@ -308,7 +309,7 @@ int Obj_001C0030::Probe()
         if (v.Dot3(m40) <= 0.0f) {
             m40.Set(0.0f, 0.0f, 0.0f, 1.0f);
             float cap = Param_001C0030(0x0BD6A05D);
-            m954 = m954 < cap ? m954 : cap;
+            m954 = cap < m954 ? cap : m954;
             mB58 = 1;
             return 1;
         }
@@ -327,7 +328,7 @@ int Obj_001C0030::Probe()
     if (Param_001C0030(0x0BD6A05D) < m954) {
         m954 = speed;
         float cap = Param_001C0030(0x0BD6A05D);
-        m954 = m954 > cap ? m954 : cap;
+        m954 = cap > m954 ? cap : m954;
     }
     return 1;
 }

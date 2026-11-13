@@ -1,4 +1,4 @@
-/* fuzzy: 99.2 */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 3, "first": 7} */
 /* blocked: sched2 dependents key in the prologue (deps 3 vs 2; forced = MATCH) (oracle) */
 struct Vec_00120C28 {
     float x, y, z, w;

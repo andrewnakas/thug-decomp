@@ -1,4 +1,4 @@
-/* fuzzy: 95.7 */
+/* force: {"kind": "ga", "before": [124, 133]} */
 /* sym: Begin__10C_00147650ii = 0x00147FB0 */
 /* sym: Lookup__10C_00147650P13Rgba_00147650 = 0x00148250 */
 /* sym: End__10C_00147650 = 0x001483B0 */

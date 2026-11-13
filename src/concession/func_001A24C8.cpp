@@ -1,4 +1,4 @@
-/* fuzzy: 90.2 */
+/* force: {"kind": "ga", "before": [119, 166]} */
 extern char D_003E6280[][0x800];
 extern int D_003E8280[];
 extern char D_003E7A80[];

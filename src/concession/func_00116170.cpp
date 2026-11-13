@@ -1,4 +1,6 @@
-/* fuzzy: 98.6 */
+/* force: {"kind": "ga", "before": [415, 424]} */
+/* force: {"kind": "ga", "swap": [420, 424]} */
+/* force: {"kind": "sched", "pass": 2, "block": 31, "clock": 2, "first": 723} */
 extern "C" float sqrtf(float);
 
 typedef int qword_00116170 __attribute__((mode(TI)));

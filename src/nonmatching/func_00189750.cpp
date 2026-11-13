@@ -1,4 +1,4 @@
-/* fuzzy: 84.1 */
+/* fuzzy: 90.9 */
 /* sym: __11Ev_00189750 = 0x00187C78 */
 /* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;
@@ -144,7 +144,7 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
         if (g) {
             N_00189750* head = &g->m_list;
             int count = 0;
-            for (N_00189750* n = head->NextA(); n; n = n->GetNext()) {
+            for (N_00189750* n = head->NextA(); n; n = n->NextA()) {
                 count++;
             }
             if (count == 1) {
@@ -152,17 +152,11 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
             } else {
                 Data_00189750** objs = new Data_00189750*[count];
                 Handle_00189750* refs = new Handle_00189750[count];
-                Handle_00189750* r = refs;
-                Data_00189750** o = objs;
-                N_00189750* m = head->NextA();
-                if (m) {
-                    do {
-                        *o = m->m_data;
-                        *r = &m->m_data->mE8;
-                        m = m->NextA();
-                        r++;
-                        o++;
-                    } while (m);
+                int k = 0;
+                for (N_00189750* m = head->NextA(); m; m = m->NextA()) {
+                    objs[k] = m->m_data;
+                    refs[k] = &m->m_data->mE8;
+                    k++;
                 }
                 for (int i = 0; i < count; i++) {
                     if (refs[i].m_obj) {
@@ -188,8 +182,8 @@ int Mgr_00189750::Send(unsigned int key, unsigned int id, int a, void* params, i
             }
         }
     }
-    Slot_00189750* s = m_slots;
-    for (int i = 0; i < 40; i++, s++) {
+    for (int i = 0; i < 40; i++) {
+        Slot_00189750* s = &m_slots[i];
         if (s->m_key == key) {
             if (s->m_id == id || s->m_id == 0 || id == 0x36B2EE74 || broadcast) {
                 s->m_key = 0;

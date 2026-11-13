@@ -311,3 +311,19 @@ local that nothing reads (func_00219A98) or a whole-vector copy that rewrites a 
 nothing of its own, or emits instructions the game does not have) stays banned: dead initialisations folded away,
 self-assignments, empty branches, invented `case` values. Small local buffers such as `unsigned short seq[1]` passed
 as message data are ordinary C++.
+
+## Findings from lane 2's fuzzy push (2026-11-12)
+
+- **A `goto` loop is not a loop to gcc:** no alignment nop, no loop weighting, no hoisting. A nop before an 8-aligned
+  label in the game means the original had a real `for`/`while`/`do`.
+- **`break` vs `return`:** `break` keeps a found-block inside the loop; `return` moves it out.
+- **Conditional moves follow the branch polarity:** `r = b; if (a >= b) r = a;` gives `slti`/`movn`.
+- **Repeat the full array index expression at each use** to get the game's CSE register copies.
+- **A 1-element array local** (`unsigned short seq[1]`) gets its stack slot at its declaration, ahead of scalars
+  whose address is taken.
+- **Vector operators:** `const float& operator[](int) const` (or a `const Vec& Row(int) const` accessor) inside the
+  operators folds member reference arguments to base+offset (fixed five units).
+- **Count-down loops:** `while (k--)` and `for (i = n; --i != -1;)`.
+- **Callee arity again:** two more units had a wrong argument count; check the callee's asm first.
+- **Stale per-file flags:** removing a leftover `-fno-gcse` gained 6 points on one unit; re-check flags after reworks.
+- **diffmap caveat:** its "moved code" flag can misalign when a switch has several identical tails (func_001FF970).

@@ -1,4 +1,5 @@
 /* fuzzy: 89.6 */
+/* blocked: sched2 priority of prologue saves vs body loads in block 0 (sp adjust 717 prio 13 vs tag load 25 prio 12; forced chain 43 -> 28 words) (oracle) */
 typedef int qword __attribute__((mode(TI)));
 
 struct Pk_001F7410 {

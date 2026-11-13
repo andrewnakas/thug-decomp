@@ -1,5 +1,5 @@
-/* fuzzy: 86.2 */
-/* near miss: 22 words; game schedules += loads as if off/pos may alias, and stores m94 before reloading m4C */
+/* fuzzy: 91.3 */
+/* near miss: 13 words; game schedules the += loads as if off/pos may alias */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00257978 {
@@ -52,11 +52,9 @@ void Obj_00257978::Fn(Dst_00257978* d, void* params)
     Vec_00257978* pos = &d->m70;
     d->m90 = 0;
     d->m94 = 0;
-    off.w = d->m4C;
     d->m70.q = m130.q;
-    d->m44 = d->m4C;
-    d->m48 = d->m4C;
-    d->m40 = d->m4C;
+    d->m40 = d->m48 = d->m44 = d->m4C;
+    off.w = d->m4C;
     if (func_001E7FA8(params, 0xA6F5352F, &off, 0)) {
         func_001019B0(&off);
         *pos += off;

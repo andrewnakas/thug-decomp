@@ -1,4 +1,4 @@
-/* fuzzy: 81.7 */
+/* fuzzy: 93.6 */
 struct Node_001A07E0 {
     int m0;
     int m_tag;
@@ -51,21 +51,6 @@ inline int Node_001A07E0::Count()
     for (Node_001A07E0* n = Next_001A07E0(this); n; n = Next_001A07E0(n))
         cnt++;
     return cnt;
-}
-
-static inline Node_001A07E0* Prune_001A07E0(Node_001A07E0* head)
-{
-    int i = 0;
-    Node_001A07E0* n = Valid_001A07E0(head->m_next);
-    while (n) {
-        Node_001A07E0* next = Valid_001A07E0(n->m_next);
-        if (++i >= 3) {
-            n->Remove();
-            delete n;
-        }
-        n = next;
-    }
-    return head;
 }
 
 inline void Node_001A07E0::Trim(int max)
@@ -121,9 +106,9 @@ extern "C" Part_001A07E0* func_001A0718(C_001A07E0* self);
 
 void C_001A07E0::Fn(float f)
 {
-    m_head.Trim(3);
-    Part_001A07E0* part = 0;
-    if (m_head.Count()) part = func_001A0718(this);
+    Node_001A07E0* head = &m_head;
+    head->Trim(3);
+    Part_001A07E0* part = head->Count() ? func_001A0718(this) : 0;
     if (part && func_0011A080(part, f)) {
         float sum = 0.0f;
         for (Part_001A07E0* q = Valid_001A07E0(part->m_next); q; q = Valid_001A07E0(q->m_next)) {
@@ -132,5 +117,5 @@ void C_001A07E0::Fn(float f)
         part->m58 = (1.0f - sum) / part->m54;
     }
     Node_001A07E0* nn = func_00119978(func_001046B0(0x7C), mC);
-    m_head.Insert(nn);
+    head->Insert(nn);
 }

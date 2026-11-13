@@ -1,4 +1,5 @@
 /* fuzzy: 76.9 */
+/* blocked: sched2 priority differences in block 12 (Length param copy 489 prio 44 vs v2-v1 loads 531/537 prio 43, then 553/555 vs 500; forced chain 79 -> 53 words) (oracle) */
 typedef int qword_00209608 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);

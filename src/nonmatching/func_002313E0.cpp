@@ -1,4 +1,4 @@
-/* fuzzy: 92.3 */
+/* fuzzy: 94.5 */
 /* sym: __12Msg_002313E0 = 0x001FA800 */
 extern "C" void* memcpy(void*, const void*, unsigned int);
 
@@ -25,6 +25,10 @@ struct Msg_002313E0 {
     unsigned char m10;
     char pad11[0xF];
     Msg_002313E0();
+};
+
+// derived wrapper: its implicit inline ctor keeps &msg out of a saved register at the ctor call (game: addiu a0,sp,0x130 in the jal delay slot).
+struct MsgX_002313E0 : Msg_002313E0 {
 };
 
 struct Packet_002313E0 {
@@ -100,7 +104,7 @@ next:
             }
         }
         if (count > 0) {
-            Msg_002313E0 msg;
+            MsgX_002313E0 msg;
             int key = func_00236248(self);
             msg.m_data = &pkt;
             pkt.m_key = key;

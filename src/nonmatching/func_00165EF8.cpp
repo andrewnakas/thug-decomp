@@ -1,4 +1,5 @@
 /* fuzzy: 63.4 */
+/* blocked: global-alloc priority (dst 118 p1923 vs PRE reg 184 p1860) and inner-loop sched1 priority/hazard order; forced 36 -> 27 words (oracle) */
 extern unsigned int D_0034DEF0[256];
 
 static inline unsigned char Nibble_00165EF8(unsigned char* src, unsigned int a)

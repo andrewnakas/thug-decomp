@@ -1,4 +1,4 @@
-/* fuzzy: 92.5 */
+/* fuzzy: 97.3 */
 extern int D_003940A0;   /* current time */
 
 struct ColorKey_00171EB0 {
@@ -23,7 +23,8 @@ void Obj_00171EB0::UpdateColors()
         int offset = *q++;
         ColorKey_00171EB0* keys = (ColorKey_00171EB0*)q;
         int last = n - 1;
-        ColorKey_00171EB0* key = keys + n - 1;
+        ColorKey_00171EB0* key = keys + n;
+        key--;
         int start = keys[0].time;
         int end = key->time;
         int t = start + (D_003940A0 + offset) % (end - start);

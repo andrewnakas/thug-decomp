@@ -1,4 +1,4 @@
-/* fuzzy: 93.1 */
+/* fuzzy: 98.3 */
 extern "C" void* func_003315B8(void* dst, int c, unsigned int n);   /* memset */
 extern char D_002CE630[];
 extern char D_10000[];   /* linker-defined size symbol (0x10000) */
@@ -31,8 +31,9 @@ extern "C" void func_00106098(int initialize, int priority)
         func_003315B8(&d, 0, sizeof(d));
         *(Name5_00106098*)d.name = *(Name5_00106098*)D_0035AA60;
         func_003315B8(d.name + 5, 0, 11);
+        int t = D_003886AC;
         d.m18 = D_002CE630;
-        d.m1C = D_003886AC;
+        d.m1C = t;
         d.m20 = D_10000;
         *root = d;
     }

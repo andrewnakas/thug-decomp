@@ -1,4 +1,4 @@
-/* fuzzy: 83.3 */
+/* fuzzy: 84.4 */
 extern "C" int func_0031A838(int, int, int, int);
 extern "C" int func_0031A970(int, int, int, int);
 extern "C" int func_0031AC78(int, int);
@@ -75,8 +75,8 @@ void Pad_00107768::Detect()
             for (int j = i; j < 6; j++)
                 m_40[j] = 0xFF;
             func_0031AAE8(m_10, m_14, m_40);
-            m_E0 = 2;
             m_DC = 5;
+            m_E0 = 2;
             return;
         }
         // No ports: fall through to the default m_DC = 2 (0x001078A4 `blez $v1, 0x00107988`).

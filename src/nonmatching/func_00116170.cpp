@@ -1,4 +1,4 @@
-/* fuzzy: 96.0 */
+/* fuzzy: 98.6 */
 extern "C" float sqrtf(float);
 
 typedef int qword_00116170 __attribute__((mode(TI)));
@@ -76,7 +76,7 @@ static inline Vec_00116170 operator-(const Vec_00116170& a, const Vec_00116170& 
 
 static inline Vec_00116170 operator+(const Vec_00116170& a, const Vec_00116170& b)
 {
-    return Vec_00116170(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_00116170(b.x + a.x, b.y + a.y, b.z + a.z, b.w + a.w);
 }
 
 static inline Vec_00116170 operator*(const Vec_00116170& a, float s)

@@ -59,7 +59,9 @@ before the `0x128($sp)` one in the source.
 
 Force specs (`--with` or the trace's `forced` field): `{"kind":"ga","before":[A,B]}` / `{"kind":"ga","swap":[A,B]}`
 (pseudo numbers), `{"kind":"la","block":N,"before":[A,B]}`, `{"kind":"sched","pass":1|2,"block":N,"clock":C,"first":UID}`,
-`{"kind":"cprop","reg":R}`.
+`{"kind":"sched",...,"clock":C,"first":[U1,U2]}` (U1 issued first, U2 second in that cycle: the EE issues up to
+two insns a cycle), `{"kind":"sched","pass":P,"block":N,"picks":K,"order":[UIDs]}` (replay a whole block; see
+"Target-directed search"), `{"kind":"cprop","reg":R}`.
 
 ## Hook points in SN 1.36 `cc1plus.exe` (all verified by disassembly against gcc 2.95.3's source)
 
@@ -299,9 +301,61 @@ the judge needs gdb and wibo, as the oracle does. A verification costs about 3 s
 the greedy search (`--force --chain 4 --max-force 10`) on a src/nonmatching unit and moves it on a match.
 
 Forces are keyed by pseudo-register numbers, block numbers and clocks, so they are tied to the exact source
-text: any edit to a concession unit needs a fresh `--find`. Allowed kinds: `ga`, `la`, `sched` (at most 8 per
-unit). New kinds (reorg thread choice, find_reg, reload) are added to `FORCE_KINDS` in tools/concession.py as
+text: any edit to a concession unit needs a fresh `--find`. Allowed kinds: `ga`, `la`, `sched` (at most 8 decisions
+per unit, counted as in "Target-directed search" below). New kinds (reorg thread choice, find_reg, reload) are added to `FORCE_KINDS` in tools/concession.py as
 the oracle learns to force them, and listed here.
+
+## Target-directed search (2026-11-13)
+
+`tools/oracle_directed.py NAME` (and `tools/concession.py --find --directed [--write]`) reads the decisions off
+the game's code instead of flipping one tie at a time:
+
+1. **Word alignment.** Every game word is paired with one of our words: the same word nearby (a reorder), else
+   the same instruction with other registers. Two variants (identical words first, or a shape-level sequence
+   alignment first) because each fails somewhere: two same-shape insns swapped, against an identical word that
+   lives elsewhere. The word -> INSN_UID map then names, for every game word, our insn that produced it.
+2. **sched replay.** Per basic block, the game's order of those insns becomes a target. The new force
+   `{"kind":"sched","pass":P,"block":B,"order":[uids]}` ranks every ready list of that block by the target
+   (earliest issued first; insns it does not name stay in front in their own order). It only permutes the
+   ready list the compiler built: a busy unit still skips or queues an insn. Delay-slot insns filled from
+   before their branch are put back before it. Done for sched2 and for sched1 (the target there is the game's
+   final order, an approximation).
+3. **Directed global alloc.** For every pseudo whose register differs from the game's, the conflicting pseudo
+   that holds the game's register and was allocated first gives `{"kind":"ga","before":[p,q]}`; the whole set is
+   tried at once, and each constraint alone.
+4. **Beam search** (width 2, 5 rounds, 60 traced compiles by default) over those candidates plus oracle.py's
+   own single flips, so a flip that does not lower the count can still be kept if a later one does.
+5. **Minimise.** Forces whose removal keeps the match are dropped. Each replay order is rewritten as the
+   cycles it actually overrode, `{"kind":"sched",...,"clock":C,"first":[U1,U2]}`: the EE issues two insns a
+   cycle, and the greedy search could only name the first. The drop pass runs again on the result.
+
+**Result on the 97 class C units the greedy search could not force** (`work/concession/batch2c.txt`):
+**17 reach a forced match** (16 written to src/concession; func_00292630 needs 13 decisions, over the cap).
+By the classifier's deciding decision: ga priority gap 4 of 22, sched2 dependents 5 of 7, luid tie 3 of 8,
+sched2 luid / sched1 reg weight 2 of 3, dependence order 1 of 2, find_reg 1 of 11, reload 1 of 5; sched
+priority 0 of 22, ga order tie 0 of 15. Decisions per written unit: 1 (6 units), 2 (6), 3 (3), 8 (1). A rerun
+of the 22 units left at 1-4 differing words with beam 3, 8 rounds and 200 compiles found nothing more. About
+1-2 minutes per unit at 2 jobs (each traced compile is light: under 100 MB).
+
+Why the greedy search missed them: 30 of the 35 force lines in these units set **both** issue slots of a cycle
+(`"first":[U1,U2]`). Forcing only the first slot moves the second insn to another cycle, so the count does
+not drop and the greedy search discards the flip. Classification by `oracle_classify.py` was often wrong about
+the deciding pass: func_001154D0 and func_0011B148 were labelled "ga priority gap" and need one sched2 cycle.
+
+Counting: `MAX_FORCES` (8) now counts decisions, not lines (`concession.count_decisions`). A
+`"first":[U1,U2]` line is one decision (one cycle's ready list). A replay `order` line counts as its `"picks"`,
+the number of cycles whose top of the ready list it changed; `verify` recounts that from the trace and fails a
+unit whose declared `picks` differs. The minimiser turns every order into per-cycle lines when that reproduces
+the match, so no unit written in this batch carries an `order` line.
+
+What still fails (measured, not assumed):
+- **Hazard timing.** In func_00201488 the game issues `sd $s4` before `daddu $s5,$v0`; under the replayed
+  order the store unit is busy in that cycle and the scheduler issues the `daddu` in the free slot. The game's
+  cycle structure differed earlier (a dependence or latency we do not reproduce), not its ready-list order.
+- **find_reg and local alloc.** func_00133170: the game gives the higher-priority pseudo `$v0` while ours takes
+  `$v1` with `$v0` free; no allocno order produces that. These need live ranges from a different sched1.
+- **Dependences.** func_0012F420: the game hoists a load above stores ours keeps it behind (memory
+  dependence), so it is never in the same ready list.
 
 ## Limits and next steps
 

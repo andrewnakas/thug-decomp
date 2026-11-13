@@ -1,4 +1,4 @@
-/* fuzzy: 87.1 */
+/* fuzzy: 87.9 */
 /* sym: _vt$14NodeA_00133D48 = 0x0035D5C8 */
 /* sym: _vt$14HeadA_00133D48 = 0x0035D5B0 */
 /* sym: _vt$14NodeB_00133D48 = 0x0035D5F8 */
@@ -180,7 +180,8 @@ void Obj_00133D48::Update(HeadB_00133D48* list)
                 NodeA_00133D48* next2;
                 for (NodeA_00133D48* m = l1.Next(); m; m = next2) {
                     next2 = m->Next();
-                    if (m->m_data == func_001354F8(it)) {
+                    unsigned int d = m->m_data;
+                    if (d == func_001354F8(it)) {
                         add = 0;
                         break;
                     }

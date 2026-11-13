@@ -1,4 +1,4 @@
-/* fuzzy: 74.5 */
+/* fuzzy: 87.8 */
 /* sym: __13Inst_00133550 = 0x001D5608 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern void* D_00388A70;
@@ -62,14 +62,16 @@ extern "C" int func_00133550(void* p0, char* name, char* buf, int* outCount, Ins
     func_003331D0(buf, D_0035D4F8, name, name, flag ? D_00389CD8 : D_00389CE0, func_00132580());
     int any = 0;
     char* data = func_0010DAB0(buf);
-    Header_00133550* h = (Header_00133550*)data;
-    if (h) {
+    if (data) {
+        Header_00133550* h = (Header_00133550*)data;
         *outCount = h->m4;
         char* base = (char*)(h + 1);
         *outMesh = (Mesh_00133550*)base;
-        char* p1 = (char*)((unsigned int)(base + (*outCount << 6) + 15) & 0xFFFFFFF0);
+        char* p1 = base + (*outCount << 6);
+        p1 = (char*)((unsigned int)(p1 + 15) & 0xFFFFFFF0);
         char* p2 = p1 + (h->m14 * 12 + h->m18 * 6);
-        char* p3 = (char*)((unsigned int)(p2 + h->m8 + 3) & 0xFFFFFFFC);
+        char* p3 = p2 + h->m8;
+        p3 = (char*)((unsigned int)(p3 + 3) & 0xFFFFFFFC);
         char* p4 = p3 + (h->mC * 10 + h->m10 * 8);
         if (h->mC & 1)
             p4 += 2;

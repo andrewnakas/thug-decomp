@@ -1,5 +1,5 @@
-/* cflags: -fno-gcse -fno-rerun-loop-opt */
-/* fuzzy: 50.8 */
+/* cflags: -fno-gcse */
+/* fuzzy: 59.7 */
 // One entry of the trick history ring (100 entries, newest at m_head).
 struct Hist_001AC030 {
     unsigned int time;
@@ -26,11 +26,12 @@ struct Rec_001AC030 {
     char pad0[0x524];
     int m524;
     int m528;
-    bool Busy()
+    int Busy()
     {
+        int r = 0;
         if (m524 || m528)
-            return true;
-        return false;
+            r = 1;
+        return r;
     }
 };
 
@@ -119,16 +120,19 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         do {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
+            switch (stage) {
+            case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1]) {
                     stage = 1;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
                     goto ok_flags;
                 }
+                break;
             }
             idx--;
             if (idx < 0)
@@ -150,21 +154,25 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         do {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
+            switch (stage) {
+            case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 2 && m_hist[idx].id == ids[1]) {
                     stage = 1;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     stage = 2;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 2) {
+                break;
+            case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
                     goto ok_flags;
                 }
+                break;
             }
             idx--;
             if (idx < 0)
@@ -238,16 +246,19 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         do {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
+            switch (stage) {
+            case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
                     stage = 1;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
                     goto ok_flags;
                 }
+                break;
             }
             idx--;
             if (idx < 0)
@@ -320,21 +331,25 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         do {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 0) {
+            switch (stage) {
+            case 0:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
                     stage = 1;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 1) {
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[1]) {
                     stage = 2;
                     m_hist[idx].used = 1;
                 }
-            } else if (stage == 2) {
+                break;
+            case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[0]) {
                     m_hist[idx].used = 1;
                     goto ok_flags;
                 }
+                break;
             }
             idx--;
             if (idx < 0)
@@ -527,7 +542,14 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
         do {
             if (!(Since_001AC030(m_hist[idx].time) < window))
                 return 0;
-            if (stage == 1) {
+            switch (stage) {
+            case 0:
+                if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
+                    stage = 1;
+                    m_hist[idx].used = 1;
+                }
+                break;
+            case 1:
                 if (!(m_hist[idx].flags & mask)) {
                     if (m_hist[idx].id == ids[1]) {
                         if (m_hist[idx].type == 1) {
@@ -545,12 +567,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                         }
                     }
                 }
-            } else if (stage == 0) {
-                if (!(m_hist[idx].flags & mask) && m_hist[idx].type == 1 && m_hist[idx].id == ids[2]) {
-                    stage = 1;
-                    m_hist[idx].used = 1;
-                }
-            } else if (stage == 2) {
+                break;
+            case 2:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].id == ids[0]) {
                     if (m_hist[idx].type == 1) {
                         m_hist[idx].used = 1;
@@ -559,7 +577,8 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                     if (m_hist[idx].type == 2)
                         return 0;
                 }
-            } else if (stage == 3) {
+                break;
+            case 3:
                 if (!(m_hist[idx].flags & mask) && m_hist[idx].id == ids[1]) {
                     if (m_hist[idx].type == 1) {
                         m_hist[idx].used = 1;
@@ -568,6 +587,7 @@ int Combo_001AC030::Check(void* script, int flags, unsigned int mask)
                     if (m_hist[idx].type == 2)
                         return 0;
                 }
+                break;
             }
             idx--;
             if (idx < 0)

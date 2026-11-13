@@ -1,4 +1,4 @@
-/* fuzzy: 75.0 */
+/* fuzzy: 85.4 */
 extern "C" void* func_00180388(const char* name, int a, int b, int c, int d, void* out);
 extern "C" void* func_00180430(int a, int b, int c, int d, int e);
 extern "C" void func_00149BD0(void* self);
@@ -15,13 +15,13 @@ int Tree_00149D10::Init(const char* name, int a, int b, int flag, int c, int d, 
 {
     int x, y, z;
     if (flag || (!d && !c)) {
+        z = 1;
         x = 0;
         y = 0;
-        z = 1;
     } else {
+        z = 0;
         x = 1;
         y = 1;
-        z = 0;
     }
     if (!flag && d) e = 1;
     if (name) {

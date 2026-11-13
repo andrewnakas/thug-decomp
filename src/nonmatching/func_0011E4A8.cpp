@@ -1,5 +1,4 @@
-/* cflags: -fno-strength-reduce */
-/* fuzzy: 57.1 */
+/* fuzzy: 85.4 */
 // Skeleton pose: builds each bone's matrix from its rotation and translation (or copies a fixed one),
 // applies per-bone scale and the parent transform, then multiplies every bone by its inverse-bind matrix.
 
@@ -71,10 +70,14 @@ static inline void Mul_0011E4A8(Vec_0011E4A8* dst, const Vec_0011E4A8* a, const 
 
 static inline void ScaleRows_0011E4A8(Mat_0011E4A8* m, const Vec_0011E4A8* s)
 {
-    Mul_0011E4A8(&m->row[0], s, &m->row[0]);
-    Mul_0011E4A8(&m->row[1], s, &m->row[1]);
-    Mul_0011E4A8(&m->row[2], s, &m->row[2]);
-    Mul_0011E4A8(&m->row[3], s, &m->row[3]);
+    Vec_0011E4A8* r = m->row;
+    Mul_0011E4A8(r, s, r);
+    r++;
+    Mul_0011E4A8(r, s, r);
+    r++;
+    Mul_0011E4A8(r, s, r);
+    r++;
+    Mul_0011E4A8(r, s, r);
 }
 
 static inline void Scale_0011E4A8(Vec_0011E4A8* v, float s)
@@ -94,7 +97,7 @@ extern "C" void func_0011E4A8(Skel_0011E4A8* self, const Vec_0011E4A8* rot, cons
     int i;
     for (i = 0; i < self->m_count; i++) {
         if (!(bone->m_flags & 0x40000000)) {
-            if (!(*fixed & bit)) {
+            if (!(fixed[i] & bit)) {
                 func_0011E278(rot, pos, mat, 0, 0);
                 if (bone->m_flags & 0x10000000) {
                     ScaleRows_0011E4A8(mat, &bone->m_scale);
@@ -110,7 +113,6 @@ extern "C" void func_0011E4A8(Skel_0011E4A8* self, const Vec_0011E4A8* rot, cons
         bone++;
         rot++;
         pos++;
-        fixed++;
     }
 
     Mat_0011E4A8* inv = func_0011F540(self->m_data);

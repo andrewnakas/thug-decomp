@@ -1,4 +1,3 @@
-/* fuzzy: 99.3 */
 // Script command: reads x/y offsets, a scale and an angle from the params and sets a 2D transform built
 // around the centre of the unit square (translate -0.5, scale, rotate about z, translate back, offset).
 
@@ -77,10 +76,9 @@ static inline void Mul_00121200(Vec_00121200* dst, const Vec_00121200* a, const 
     StoreVF6(dst);
 }
 
-// every row of m multiplied by (s.x, s.y, s.z, 1), component by component
+// every row of m multiplied by s, component by component
 static inline void ScaleRows_00121200(Mat_00121200* m, Vec_00121200* s)
 {
-    s->w = 1.0f;
     Mul_00121200(&m->row[0], s, &m->row[0]);
     Mul_00121200(&m->row[1], s, &m->row[1]);
     Mul_00121200(&m->row[2], s, &m->row[2]);
@@ -143,7 +141,8 @@ extern "C" bool func_00121200(void* a0, void* a1, void* a, void* b)
     Identity_00121200(&m);
     v.Set(-0.5f, -0.5f, 0.0f, 0.0f);
     m.Translate(v);
-    v.z = v.y = v.x = scale * 0.01f;
+    float s = scale * 0.01f;
+    v.Set(s, s, s, 1.0f);
     ScaleRows_00121200(&m, &v);
 
     v.Set(0.0f, 0.0f, 1.0f, 1.0f);

@@ -1,4 +1,4 @@
-/* fuzzy: 76.1 */
+/* fuzzy: 94.6 */
 struct Vec_001C5330 {
     float x, y, z, w;
     Vec_001C5330() {}
@@ -9,16 +9,17 @@ struct Vec_001C5330 {
         z = az;
         w = aw;
     }
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 static inline Vec_001C5330 operator-(const Vec_001C5330& a, const Vec_001C5330& b)
 {
-    return Vec_001C5330(a.x - b.x, a.y - b.y, a.z - b.z, a.w);
+    return Vec_001C5330(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3]);
 }
 
 static inline Vec_001C5330 operator+(const Vec_001C5330& a, const Vec_001C5330& b)
 {
-    return Vec_001C5330(a.x + b.x, a.y + b.y, a.z + b.z, a.w);
+    return Vec_001C5330(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3]);
 }
 
 struct Box_001C5330 {
@@ -62,9 +63,8 @@ void Obj_001C5330::Update()
     float width = Param_001C5330(0x99978D2B) + 1.0f;
     float up = Param_001C5330(0x9EA1974A) + 1.0f;
     float down = Param_001C5330(0xAF3E4251) + 1.0f;
-    Vec_001C5330 ext(width, down, width, 0.0f);
     Box_001C5330 box;
-    InitBox_001C5330(&box, m_C->m_50 - ext, m_C->m_50 + Vec_001C5330(ext.x, up, ext.z, ext.w));
+    InitBox_001C5330(&box, m_C->m_50 - Vec_001C5330(width, down, width, 0.0f), m_C->m_50 + Vec_001C5330(width, up, width, 0.0f));
     func_001DA948(m_A10, &box);
     D_0038EE60 = m_A10;
 }

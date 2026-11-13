@@ -1,10 +1,11 @@
-/* fuzzy: 95.1 */
+/* fuzzy: 96.5 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float fabsf(float);
 extern "C" void* func_003315B8(void* dst, int c, unsigned int n);
-extern "C" int func_001D2438(float* t, float ox, float oy, float ux, float uy, float px, float py,
-                             float dx, float dy);
+/* t is passed in $a0; the game evaluates it after the float arguments, so it is the last parameter (EABI: separate int/float registers) */
+extern "C" int func_001D2438(float ox, float oy, float ux, float uy, float px, float py, float dx,
+                             float dy, float* t);
 
 struct Vec_001D2530 {
     union {
@@ -204,7 +205,7 @@ bool func_001D2530(Box_001D2530* box, const Vec_001D2530& p0, const Vec_001D2530
     }
 
     float t;
-    if (func_001D2438(&t, ox, oy, ux, uy, ax, ay, cx - ax, cy - ay)) {
+    if (func_001D2438(ox, oy, ux, uy, ax, ay, cx - ax, cy - ay, &t)) {
         out[cnt] = box->u;
         out[cnt] *= t;
         out[cnt] += box->o;
@@ -214,7 +215,7 @@ bool func_001D2530(Box_001D2530* box, const Vec_001D2530& p0, const Vec_001D2530
         }
         cnt = 1;
     }
-    if (func_001D2438(&t, ox + vx, oy + vy, ux, uy, ax, ay, cx - ax, cy - ay)) {
+    if (func_001D2438(ox + vx, oy + vy, ux, uy, ax, ay, cx - ax, cy - ay, &t)) {
         out[cnt] = box->u;
         out[cnt] *= t;
         out[cnt] += box->o;
@@ -228,7 +229,7 @@ bool func_001D2530(Box_001D2530* box, const Vec_001D2530& p0, const Vec_001D2530
         }
         cnt = 1;
     }
-    if (func_001D2438(&t, ox, oy, vx, vy, ax, ay, cx - ax, cy - ay)) {
+    if (func_001D2438(ox, oy, vx, vy, ax, ay, cx - ax, cy - ay, &t)) {
         out[cnt] = box->v;
         out[cnt] *= t;
         out[cnt] += box->o;
@@ -238,7 +239,7 @@ bool func_001D2530(Box_001D2530* box, const Vec_001D2530& p0, const Vec_001D2530
         }
         cnt = 1;
     }
-    if (func_001D2438(&t, ox + ux, oy + uy, vx, vy, ax, ay, cx - ax, cy - ay)) {
+    if (func_001D2438(ox + ux, oy + uy, vx, vy, ax, ay, cx - ax, cy - ay, &t)) {
         if (cnt == 1) {
             Vec_001D2530& r = out[cnt];
             r = box->v;

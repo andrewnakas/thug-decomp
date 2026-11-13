@@ -1,4 +1,4 @@
-/* fuzzy: 76.5 */
+/* fuzzy: 77.9 */
 typedef int qword_001D1EF0 __attribute__((mode(TI)));
 
 struct Vec_001D1EF0 {
@@ -128,5 +128,5 @@ extern "C" bool func_001D1EF0(Seg_001D1EF0* line, Obj_001D1EF0* obj, Hit_001D1EF
     if (!accept) {
         *info = saved;
     }
-    return accept ? found : false;
+    return accept && found;
 }

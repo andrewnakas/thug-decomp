@@ -1,11 +1,11 @@
-/* fuzzy: 82.2 */
+/* fuzzy: 89.7 */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C0030 {
     qword q;
     float c[4];
     float& operator[](int i) { return c[i]; }
-    float operator[](int i) const { return c[i]; }
+    const float& operator[](int i) const { return c[i]; }
     Vec_001C0030() {}
     Vec_001C0030(float x, float y, float z, float w)
     {
@@ -21,7 +21,7 @@ union Vec_001C0030 {
         c[2] = z;
         c[3] = w;
     }
-    float Dot3(const Vec_001C0030& o) const { return c[0] * o[0] + c[1] * o[1] + c[2] * o[2]; }
+    float Dot3(const Vec_001C0030& o) const { return (*this)[0] * o[0] + (*this)[1] * o[1] + (*this)[2] * o[2]; }
     float LengthSqr() const { return c[0] * c[0] + c[1] * c[1] + c[2] * c[2]; }
     void operator+=(const Vec_001C0030& o)
     {
@@ -217,18 +217,11 @@ int Obj_001C0030::Probe()
         m_probes[i].m_normal = c.normal;
         m_probes[i].m_normal[1] = 0.0f;
         func_003233B8(&m_probes[i].m_normal, &m_probes[i].m_normal);
-        if (!func_00209A00(&c)) {
+        if (func_00209A00(&c) && !(mA3C->Valid() && mA3C->m1C->m0 == func_00209A30(&c))) {
+            m_probes[i].m_dist = func_00209A30(&c)->mB0.Dot3(m_probes[i].m_normal);
+        } else {
             m_probes[i].m_dist = 0.0f;
-            continue;
         }
-        if (mA3C->Valid()) {
-            Body_001C0030* ground = mA3C->m1C->m0;
-            if (func_00209A30(&c) == ground) {
-                m_probes[i].m_dist = 0.0f;
-                continue;
-            }
-        }
-        m_probes[i].m_dist = func_00209A30(&c)->mB0.Dot3(m_probes[i].m_normal);
     }
 
     if (m1C == 0) {
@@ -302,15 +295,15 @@ int Obj_001C0030::Probe()
     Vec_001C0030 v = m40;
     Order_001C0030 order = D_00363470;
     for (int k = 0; k < 8; k++) {
-        Probe_001C0030* p = &m_probes[order.idx[k]];
-        if (!p->m_valid) {
+        int j = order.idx[k];
+        if (!m_probes[j].m_valid) {
             continue;
         }
-        float dot = v.Dot3(p->m_normal);
-        if (p->m_dist <= dot) {
+        float dot = v.Dot3(m_probes[j].m_normal);
+        if (m_probes[j].m_dist <= dot) {
             continue;
         }
-        Vec_001C0030 push = p->m_normal * (dot - p->m_dist);
+        Vec_001C0030 push = m_probes[j].m_normal * (dot - m_probes[j].m_dist);
         v -= push;
         if (v.Dot3(m40) <= 0.0f) {
             m40.Set(0.0f, 0.0f, 0.0f, 1.0f);

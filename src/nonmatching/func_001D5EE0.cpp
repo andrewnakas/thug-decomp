@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 80.9 */
+/* fuzzy: 90.9 */
 typedef int qword_001D5EE0 __attribute__((mode(TI)));
 
 struct Vec_001D5EE0 {
@@ -134,23 +134,28 @@ bool Coll_001D5EE0::Collect(void* sphere, Box_001D5EE0* box, Out_001D5EE0* out)
         if (!func_001D2530(sphere, &v0, &v1, &v2, hit, edges)) continue;
         if (out->count == 32) return true;
         Contact_001D5EE0* c = &out->c[out->count];
-        Vec_001D5EE0 e1;
-        Vec_001D5EE0 e2;
-        Dir_001D5EE0(e1, v1, v0);
-        Dir_001D5EE0(e2, v2, v0);
-        Vec_001D5EE0 nrm;
-        nrm.x = e1.y * e2.z - e1.z * e2.y;
-        nrm.y = e1.z * e2.x - e1.x * e2.z;
-        nrm.z = e1.x * e2.y - e1.y * e2.x;
-        nrm.w = 0.0f;
-        func_003233B8(&nrm, &nrm);
-        c->normal = nrm;
+        {
+            Vec_001D5EE0 nrm;
+            {
+                Vec_001D5EE0 e1;
+                Vec_001D5EE0 e2;
+                Dir_001D5EE0(e1, v1, v0);
+                Dir_001D5EE0(e2, v2, v0);
+                nrm.x = e1.y * e2.z - e1.z * e2.y;
+                nrm.y = e1.z * e2.x - e1.x * e2.z;
+                nrm.z = e1.x * e2.y - e1.y * e2.x;
+                nrm.w = 0.0f;
+            }
+            func_003233B8(&nrm, &nrm);
+            c->normal = nrm;
+        }
         if (c->normal.x * c->normal.x + c->normal.y * c->normal.y + c->normal.z * c->normal.z <= 0.0f) continue;
         c->flag = flags & 0x40;
         c->pt[0].p = hit[0];
         c->id = m0;
         c->pt[1].p = hit[1];
-        for (int k = 1; k >= 0; k--) {
+        int k = 2;
+        while (k--) {
             int e = edges[k];
             Point_001D5EE0* pt = &c->pt[k];
             pt->edge = e != 0;

@@ -1,4 +1,4 @@
-/* fuzzy: 73.8 */
+/* fuzzy: 74.9 */
 /* sym: _vt$17ConnIter_001FDCB8 = 0x00366B58 */
 /* sym: _vt$17NodeIter_001FDCB8 = 0x00366A90 */
 struct Msg_001FDCB8 {
@@ -49,21 +49,14 @@ struct Node_001FDCB8 {
     Item_001FDCB8* m_item;
     int m8;
     Node_001FDCB8* m_next;
+    Node_001FDCB8* Valid() { return ~(int)m_item != 0 ? this : 0; }
+    Node_001FDCB8* Next()
+    {
+        Node_001FDCB8* r = m_next;
+        if (~(int)r->m_item == 0) return 0;
+        return r;
+    }
 };
-
-static inline Node_001FDCB8* Valid_001FDCB8(Node_001FDCB8* n)
-{
-    Node_001FDCB8* r = 0;
-    if ((int)n->m_item != -1) r = n;
-    return r;
-}
-
-static inline Node_001FDCB8* Next_001FDCB8(Node_001FDCB8* n)
-{
-    Node_001FDCB8* r = n->m_next;
-    if ((int)r->m_item == -1) r = 0;
-    return r;
-}
 
 struct Conn_001FDCB8 {
     char pad0[0x48];
@@ -86,6 +79,17 @@ public:
     int m0;
     Node_001FDCB8* m_cur;
     NodeIter_001FDCB8() { m_cur = 0; }
+    Item_001FDCB8* Next()
+    {
+        m_cur = m_cur->m_next->Valid();
+        if (!m_cur) return 0;
+        return m_cur->m_item;
+    }
+    Item_001FDCB8* First(Node_001FDCB8* h)
+    {
+        m_cur = h;
+        return Next();
+    }
     virtual void Run();
     virtual ~NodeIter_001FDCB8() {}
 };
@@ -123,19 +127,21 @@ void Mgr_001FDCB8::SendStreams()
         }
         Node_001FDCB8* list = &c->m_list;
         int n = 0;
-        for (Node_001FDCB8* nd = Valid_001FDCB8(list->m_next); nd; nd = Next_001FDCB8(nd))
-            n++;
+        Node_001FDCB8* nd = list->m_next->Valid();
+        if (nd) {
+            do {
+                n++;
+                nd = nd->Next();
+            } while (nd);
+        }
         if (n == 0) continue;
         int queued = func_00202950(c);
         if (queued >= maxQueued) continue;
-        nit.m_cur = list;
         int budget = maxQueued - queued;
         if (maxSend < budget) budget = maxSend;
-        nit.m_cur = Valid_001FDCB8(nit.m_cur->m_next);
-        Item_001FDCB8* item = nit.m_cur ? nit.m_cur->m_item : 0;
+        Item_001FDCB8* item = nit.First(list);
         while (item) {
-            nit.m_cur = Valid_001FDCB8(nit.m_cur->m_next);
-            Item_001FDCB8* next = nit.m_cur ? nit.m_cur->m_item : 0;
+            Item_001FDCB8* next = nit.Next();
             Buf_001FDCB8* b = item->m18;
             int sent = b->m_cur - b->m_base;
             int total = b->m_total;

@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 70.4 */
+/* fuzzy: 78.5 */
 extern char D_0038EB88[];
 extern char D_003F3400[];
 extern int D_0039412C;
@@ -34,8 +34,7 @@ extern "C" int func_001F8C10(void* cfg, void* a, void* b, void* c, int timeout, 
     while (!D_0039412C) {
         if (func_003276D8(&state)) return 2;
         if (!up) {
-            up = 1;
-            if (state < 5 || state > 8) up = 0;
+            if (state >= 5 && state <= 8) up = 1;
         } else if (state < 5 || state > 8) {
             int error;
             if (func_00327870(&error)) return 2;
@@ -47,13 +46,13 @@ extern "C" int func_001F8C10(void* cfg, void* a, void* b, void* c, int timeout, 
             default: return 5;
             }
         }
-        if (state == prev) {
+        if (state != prev) {
+            prev = state;
+            if (callback) callback(state);
+        } else {
             if (wait <= 0) return 6;
             func_003247E8(10);
             wait -= 10;
-        } else {
-            prev = state;
-            if (callback) callback(state);
         }
         if (state == 8) break;
     }

@@ -1,4 +1,5 @@
-/* fuzzy: 94.4 */
+/* force: {"kind": "ga", "before": [124, 122]} */
+/* force: {"kind": "ga", "before": [137, 135]} */
 struct File_00166648 {
     char pad0[0xC];
     void* mC;

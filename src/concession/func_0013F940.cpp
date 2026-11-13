@@ -1,4 +1,4 @@
-/* fuzzy: 84.9 */
+/* force: {"kind": "ga", "before": [134, 149]} */
 /* blocked: global-alloc priority difference (p 2.50 < j 2.67, self 2.56; ga p-before-j forced = MATCH) (oracle) */
 struct Part_0013F940 {
     float x, y, z;

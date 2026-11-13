@@ -1,4 +1,4 @@
-/* fuzzy: 90.9 */
+/* force: {"kind": "ga", "before": [126, 116]} */
 class Node_0011A870 {
 public:
     int m_0;

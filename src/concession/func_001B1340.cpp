@@ -1,4 +1,4 @@
-/* fuzzy: 99.6 */
+/* force: {"kind": "sched", "pass": 2, "block": 62, "clock": 87, "first": 1229} */
 extern "C" float sqrtf(float);
 struct Vec_001B1340;
 extern "C" void func_003233B8(Vec_001B1340* d, Vec_001B1340* s);

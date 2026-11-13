@@ -1,4 +1,4 @@
-/* fuzzy: 95.8 */
+/* force: {"kind": "ga", "before": [124, 168]} */
 static inline char ToLower_00104328(char c)
 {
     return (c >= 'A' && c <= 'Z') ? (char)(c + ('a' - 'A')) : c;

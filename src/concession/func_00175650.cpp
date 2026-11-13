@@ -1,4 +1,6 @@
-/* fuzzy: 97.2 */
+/* force: {"kind": "ga", "before": [242, 320]} */
+/* force: {"kind": "sched", "pass": 2, "block": 33, "clock": 1, "first": 1155} */
+/* force: {"kind": "sched", "pass": 2, "block": 33, "clock": 1, "first": 739} */
 struct Tex_00175650 {
     int pad0;
     int pad4;

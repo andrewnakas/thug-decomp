@@ -1,4 +1,4 @@
-/* fuzzy: 98.4 */
+/* fuzzy: 99.5 */
 typedef int qword_00231FE8 __attribute__((mode(TI)));
 
 union Row_00231FE8 {
@@ -117,8 +117,9 @@ int Cmd_00231FE8::Run()
     func_001FAA08(&bs);
     Conn_00231FE8* c = func_002A5248(net, m14);
     if (c) {
+        Owner_00231FE8* in = c->m1C;
         bs.m20 = 1;
-        if ((c->m1C->m68 & 1) && !(m18 & 3))
+        if ((in->m68 & 1) && !(m18 & 3))
             goto decode;
     }
     {

@@ -235,10 +235,20 @@ def main():
         presses.append((float(parts[0]), parts[1].split("+"), float(parts[2]) if len(parts) > 2 else 0.15))
     presses.sort()
 
+    # The game reads its own executable name at boot and overflows a buffer on longer names (any ELF,
+    # the original included, crashes with a TLB miss at pc 0x114318 storing to 0x2000000). Always boot
+    # it under the retail name.
+    elf = Path(a.elf).resolve()
+    if elf.name != "SLUS_207.31":
+        named = base / "elf" / "SLUS_207.31"
+        named.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(elf, named)
+        elf = named
+
     pad = Pad()
     time.sleep(1.0)
     cmd = [a.pcsx2 or find_pcsx2(), "-datapath", str(base), "-batch", "-fastboot", "-nofullscreen",
-           "-elf", str(Path(a.elf).resolve()), "--", iso]
+           "-elf", str(elf), "--", iso]
     print(" ".join(cmd))
     # SDL sees only the virtual pad, so it is always SDL-0 and a real controller plugged in is left alone
     env = dict(os.environ, SDL_GAMECONTROLLERCONFIG=PAD_MAPPING,

@@ -582,6 +582,7 @@ def explain(unit, a, base=()):
             print(f"      insn {ug} (the game's) was never in a ready list together with {uid}: a dependence or an "
                   f"earlier decision, not a ready-list tie")
             rec("sched_dep", uid=uid, ug=ug)
+    REC["cands"] = [f for _, f in forces]
     # forcing
     if a.force and forces:
         print("\nforcing (recompiled with one decision flipped in the compiler's memory):")

@@ -275,13 +275,29 @@ def sched_reordered():
     for f in forces("sched"):
         if f.get("pass") != state["pass"] or f.get("block") != state["block"]:
             continue
+        if "order" in f:
+            # replay: in every cycle of the block, rank the ready insns by their place in the target order (the
+            # earliest at the end, i.e. issued first); insns the order does not name keep their relative order in
+            # front. It only permutes this cycle's ready list: a hazard still queues an insn as usual.
+            pos = {u: k for k, u in enumerate(f["order"])}
+            uids = [uid(p) for p in ptrs]
+            free = [p for p, u in zip(ptrs, uids) if u not in pos]
+            named = sorted([p for p, u in zip(ptrs, uids) if u in pos], key=lambda p: -pos[uid(p)])
+            new = free + named
+            if new != ptrs:
+                wr32(base, new, signed=False)
+                nu = [uid(p) for p in new]
+                forced = dict(kind="sched", order_block=f["block"], top=nu[-2:], was=uids[-2:])
+                ptrs = new
+            continue
         if f.get("clock") is not None and f["clock"] != clock:
             continue
         uids = [uid(p) for p in ptrs]
-        if f["first"] in uids and (f.get("over") is None or f["over"] in uids):
-            k = uids.index(f["first"])
-            p = ptrs.pop(k)
-            ptrs.append(p)                          # the end of the array is issued first
+        first = f["first"] if isinstance(f["first"], list) else [f["first"]]   # [u1, u2]: u1 first, then u2
+        if first and all(u in uids for u in first) and (f.get("over") is None or f["over"] in uids):
+            for u in first[::-1]:
+                k = [uid(p) for p in ptrs].index(u)
+                ptrs.append(ptrs.pop(k))            # the end of the array is issued first
             wr32(base, ptrs, signed=False)
             forced = f
             f["done"] = f.get("done", 0) + 1

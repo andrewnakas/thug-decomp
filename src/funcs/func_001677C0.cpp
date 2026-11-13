@@ -1,4 +1,3 @@
-/* fuzzy: 76.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001677C0 {
@@ -50,16 +49,13 @@ void func_001677C0(Obj_001677C0* self, const Mat_001677C0* mat)
         Vec_001677C0 v2;
         Vec_001677C0 v;
         Vec_001677C0 p = tmp.row[3];
-        float x = p.x * tmp.row[0].x + p.y * tmp.row[0].y + p.z * tmp.row[0].z;
-        float y = p.x * tmp.row[1].x + p.y * tmp.row[1].y + p.z * tmp.row[1].z;
-        float z = p.x * tmp.row[2].x + p.y * tmp.row[2].y + p.z * tmp.row[2].z;
+        tmp.row[3].x = -(p.x * tmp.row[0].x + p.y * tmp.row[0].y + p.z * tmp.row[0].z);
+        tmp.row[3].y = -(p.x * tmp.row[1].x + p.y * tmp.row[1].y + p.z * tmp.row[1].z);
+        tmp.row[3].z = -(p.x * tmp.row[2].x + p.y * tmp.row[2].y + p.z * tmp.row[2].z);
         float t;
         t = tmp.row[0].y; tmp.row[0].y = tmp.row[1].x; tmp.row[1].x = t;
         t = tmp.row[0].z; tmp.row[0].z = tmp.row[2].x; tmp.row[2].x = t;
         t = tmp.row[1].z; tmp.row[1].z = tmp.row[2].y; tmp.row[2].y = t;
-        tmp.row[3].x = -x;
-        tmp.row[3].y = -y;
-        tmp.row[3].z = -z;
         v.x = -tmp.row[3].x;
         v.y = -tmp.row[3].y;
         v.z = -tmp.row[3].z;

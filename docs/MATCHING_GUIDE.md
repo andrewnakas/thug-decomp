@@ -327,3 +327,12 @@ as message data are ordinary C++.
 - **Callee arity again:** two more units had a wrong argument count; check the callee's asm first.
 - **Stale per-file flags:** removing a leftover `-fno-gcse` gained 6 points on one unit; re-check flags after reworks.
 - **diffmap caveat:** its "moved code" flag can misalign when a switch has several identical tails (func_001FF970).
+- **Element alignment changes the address shape:** a 16-byte-aligned element type keeps the field offset in the
+  load; a 4-aligned struct puts base+field in a register, which loop.c hoists (func_00208088, func_00208C50).
+- **Duplicate whole case bodies** when the game does not hoist case constants: the bigger loop blocks hoisting,
+  and cross-jumping merges the tails afterwards (func_001F4850).
+- **Bool temps give `xori`/`beqz`:** `bool leaf = bits == 3; if (!leaf) ...`.
+- **Return slot before locals:** an inline member returning a Vec by value, used as `m = F();`, places the return
+  slot ahead of the inline's locals.
+- **Reuse a Vec in place** when the game reuses its stack slot.
+- **Compare against `0.0f` right after storing `w = 0`** and gcc reloads the zero from the stack slot.

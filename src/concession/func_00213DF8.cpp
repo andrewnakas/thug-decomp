@@ -1,4 +1,4 @@
-/* fuzzy: 97.9 */
+/* force: {"kind": "sched", "pass": 2, "block": 21, "clock": 1, "first": 137} */
 struct Obj_00213DF8;
 struct Msg_00213DF8 {
     int m0;

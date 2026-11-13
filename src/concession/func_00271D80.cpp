@@ -1,4 +1,4 @@
-/* fuzzy: 98.9 */
+/* force: {"kind": "ga", "before": [337, 332]} */
 typedef int qword_00271D80 __attribute__((mode(TI)));
 
 struct Vec_00271D80 {

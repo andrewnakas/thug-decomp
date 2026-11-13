@@ -1,4 +1,4 @@
-/* fuzzy: 93.8 */
+/* force: {"kind": "sched", "pass": 1, "block": 4, "clock": 1, "first": 96} */
 /* sym: _vt$12Ctx_002C7BF8 = 0x00367170 */
 struct Box_002C7BF8 {
     unsigned char x;

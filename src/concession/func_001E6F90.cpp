@@ -1,4 +1,4 @@
-/* fuzzy: 90.1 */
+/* force: {"kind": "ga", "before": [118, 117]} */
 struct Comp_001E6F90 {
     unsigned char m0;
     unsigned char m1;

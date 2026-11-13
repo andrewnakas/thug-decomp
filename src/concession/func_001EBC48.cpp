@@ -1,4 +1,6 @@
-/* fuzzy: 97.1 */
+/* force: {"kind": "sched", "pass": 2, "block": 2, "clock": 3, "first": [46, 48]} */
+/* force: {"kind": "sched", "pass": 2, "block": 3, "clock": 3, "first": [79, 81]} */
+/* force: {"kind": "sched", "pass": 2, "block": 5, "clock": 6, "first": [121, 123]} */
 struct Comp_001EBC48 {
     char m_0;
     unsigned char m_type;

@@ -1,4 +1,4 @@
-/* fuzzy: 98.9 */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 3, "first": [122, 120]} */
 // Builds a scaled orientation matrix from a direction and the third row of a reference matrix
 // (side = dir x up), moves it to pos + dir * offset and hands it to the attached object.
 

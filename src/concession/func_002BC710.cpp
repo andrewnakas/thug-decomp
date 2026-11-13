@@ -1,4 +1,5 @@
-/* fuzzy: 84.8 */
+/* force: {"kind": "ga", "before": [143, 116]} */
+/* force: {"kind": "sched", "pass": 2, "block": 7, "clock": 7, "first": [633, 352]} */
 /* sym: __12Box_002BC710UcScUcUcUcUc = 0x002BAA28 */
 /* NEAR MISS: only this ($s1 in game, $s0 here) swaps with the array/loop-counter pseudos, plus one sched pair in the key loop. */
 struct Box_002BC710 {

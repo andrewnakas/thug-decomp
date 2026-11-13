@@ -1,4 +1,5 @@
-/* fuzzy: 95.1 */
+/* force: {"kind": "sched", "pass": 1, "block": 0, "clock": 9, "first": [63, 65]} */
+/* force: {"kind": "sched", "pass": 1, "block": 0, "clock": 10, "first": [65, 70]} */
 extern float D_00387B80;
 
 static inline float Abs_001D2438(float x)

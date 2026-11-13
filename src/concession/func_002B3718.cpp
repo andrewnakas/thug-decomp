@@ -1,4 +1,5 @@
-/* fuzzy: 98.2 */
+/* force: {"kind": "sched", "pass": 2, "block": 12, "clock": 1, "first": 480} */
+/* force: {"kind": "sched", "pass": 2, "block": 12, "clock": 1, "first": 250} */
 extern char D_00379E70[];
 extern char D_003799A0[];
 extern unsigned int D_00392448;

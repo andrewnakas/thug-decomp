@@ -1,4 +1,3 @@
-/* fuzzy: 92.6 */
 extern volatile int D_00388C90;
 extern "C" int func_001092D0();
 extern "C" void* func_00109328(const char* name, char* mode, int a);
@@ -13,7 +12,9 @@ public:
     int m10;
     int m14;
     int m18;
-    volatile int m1C;
+    // Plain here: the game fills jal func_001092D0's delay slot with this store. Matched func_0010E3F8 needs a
+    // volatile access to the same member (likely a volatile pointer/cast at that site in the original).
+    int m1C;
     int m20;
     int m24;
     volatile int m28;

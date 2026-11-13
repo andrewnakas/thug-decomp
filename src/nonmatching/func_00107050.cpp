@@ -1,4 +1,6 @@
 /* fuzzy: 97.8 */
+/* blocked: the game sets $s3 = &it in the loop preheader after the copied exit test (0x001070CC); ours sets
+   it before the test. Dropping p, declaring it in the loop or an if/do-while all change the shape. */
 /* sym: _vt$11It_00107050 = 0x0035AE38 */
 /* sym: _vt$13List_00107050 = 0x0035AE80 */
 /* sym: _vt$12Mgr_00107050 = 0x0035AE50 */

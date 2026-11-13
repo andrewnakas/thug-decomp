@@ -1,4 +1,7 @@
 /* fuzzy: 96.6 */
+/* blocked: the game forms the "=value" result as a copy of arg+len (0x00106540 daddu $v0,$v1) plus 1;
+   ours adds len+1 to arg. &arg[len]+1, arg+len+1, a pointer local, size_t len and 12k cxxperm candidates
+   did not reproduce the copy (cse/regalloc tie). */
 extern "C" bool func_00106420(const char*, const char*);
 extern "C" int func_00331BB8(const char*);
 

@@ -1,4 +1,3 @@
-/* fuzzy: 99.0 */
 struct Obj_001276E0;
 struct Handle_001276E0;
 
@@ -110,11 +109,6 @@ static inline Handle_001276E0 First_001276E0(Obj_001276E0* o)
     return Handle_001276E0(o->m54.m_obj);
 }
 
-static inline Handle_001276E0 Next_001276E0(Obj_001276E0* o)
-{
-    Handle_001276E0 t(o->m60.m_obj);
-    return t;
-}
 
 extern "C" void func_001276E0(Obj_001276E0* self, char** strs, int n)
 {
@@ -122,7 +116,7 @@ extern "C" void func_001276E0(Obj_001276E0* self, char** strs, int n)
     func_00124118(self, 0);
     Handle_001276E0 h(First_001276E0(self).m_obj);
     while (h) {
-        Handle_001276E0 next = Next_001276E0(h);
+        Handle_001276E0 next(Handle_001276E0(h->m60.m_obj).m_obj);
         func_0012D8B0(mgr, h->m18, 1, 0, 0);
         h = next;
     }

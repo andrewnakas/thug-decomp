@@ -1,4 +1,6 @@
 /* fuzzy: 88.3 */
+/* blocked: the game keeps a second copy of this+0x60 for the loop ($t0 = $a2 at 0x00107FE4); local, member,
+   struct-pointer, reference and per-iteration pointer forms and cxxperm give one register (loop.c tie). */
 extern "C" void func_0031AA28(int a, int b);
 
 struct Obj_00107FB0 {

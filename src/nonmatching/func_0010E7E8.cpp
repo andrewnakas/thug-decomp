@@ -1,4 +1,7 @@
 /* fuzzy: 76.5 */
+/* blocked: sched1 tie. The game stores m_result before loading 1 and m_async (0x0010E7EC-0x0010E7F8);
+   only -fno-schedule-insns (no neighbour evidence, still 2 words off) moves them. Reordered loads, a
+   non-volatile flag and cxxperm did not. */
 struct Req_0010E7E8 {
     int m_result;
     int m_async;

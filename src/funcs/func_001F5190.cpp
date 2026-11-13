@@ -1,12 +1,12 @@
-/* fuzzy: 92.0 */
+// m8/mC are ring-buffer indices also updated from the vsync handler (cf. func_001F51F8: volatile int mC).
 struct Blk_001F5190 {
     char m[0x4CE40];
 };
 struct Obj_001F5190 {
     int m0;
     Blk_001F5190* m4;
-    int m8;
-    int mC;
+    volatile int m8;
+    volatile int mC;
     int m10;
     Blk_001F5190* Get();
 };

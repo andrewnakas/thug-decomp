@@ -1,4 +1,5 @@
 /* fuzzy: 83.7 */
+/* sym: __15Feeler_0019AD48RC12Vec_0019AD48T1 = 0x00209280 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0019AD48 {
@@ -69,6 +70,7 @@ struct Feeler_0019AD48 {
     Vec_0019AD48 m_normal;
     int m_ref;
     char padC4[0xE0 - 0xC4];
+    Feeler_0019AD48(const Vec_0019AD48& start, const Vec_0019AD48& end);
     ~Feeler_0019AD48()
     {
         if (m_ref) {
@@ -78,8 +80,7 @@ struct Feeler_0019AD48 {
     }
 };
 
-extern "C" void func_00209280(Feeler_0019AD48* f, const Vec_0019AD48& start, const Vec_0019AD48& end);
-static inline void Wrap_00209280(Feeler_0019AD48* f, const Vec_0019AD48& start, const Vec_0019AD48& end) { func_00209280(f, start, end); }
+static inline Feeler_0019AD48 MakeFeeler_0019AD48(const Vec_0019AD48& start, const Vec_0019AD48& end) { return Feeler_0019AD48(start, end); }
 extern "C" int func_002093E8(Feeler_0019AD48* f, int a, int b);
 extern "C" int func_00103F28(const char* fmt, ...);
 extern "C" void func_0018DF70(int obj, Feeler_0019AD48* f);
@@ -100,8 +101,7 @@ struct Obj_0019AD48 {
 void Obj_0019AD48::Move(const Vec_0019AD48& delta)
 {
     Vec_0019AD48 old = m_pos;
-    Feeler_0019AD48 f;
-    Wrap_00209280(&f, m_pos, Vec_0019AD48(m_pos.x + delta.x, m_pos.y + delta.y, m_pos.z + delta.z, m_pos.w + delta.w));
+    Feeler_0019AD48 f = MakeFeeler_0019AD48(m_pos, Vec_0019AD48(m_pos.x + delta.x, m_pos.y + delta.y, m_pos.z + delta.z, m_pos.w + delta.w));
     if (func_002093E8(&f, 0, 0)) {
         func_00103F28(D_00362060, D_0036207F, 0xAF1, D_003620F0);
         m_pos = f.m_point + f.m_normal;

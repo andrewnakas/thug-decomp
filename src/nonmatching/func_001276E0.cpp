@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 83.8 */
+/* fuzzy: 99.0 */
 struct Obj_001276E0;
 struct Handle_001276E0;
 
@@ -175,7 +174,7 @@ extern "C" void func_001276E0(Obj_001276E0* self, char** strs, int n)
         }
     }
     self->m1CC = 0.0f;
-    for (i = 0; i < self->m1D0; i++) {
+    for (int k = 0; k < self->m1D0; k++) {
         func_0010A950(D_00388A70, D_00388A70->mE4);
         Obj_001276E0* e = func_00125F10(func_001046B0(0x1E0));
         func_0010A9B0(D_00388A70);

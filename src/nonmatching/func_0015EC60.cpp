@@ -1,4 +1,4 @@
-/* fuzzy: 86.2 */
+/* fuzzy: 93.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Row_0015EC60 {
@@ -41,10 +41,9 @@ struct Src_0015EC60 {
     long m30;
 };
 
-extern float D_00387664;
 extern Mat_0015EC60 D_003E1180;
-extern unsigned int* D_00394274;
-extern unsigned int* D_00394278;
+extern unsigned char* D_00394274;
+extern unsigned char* D_00394278;
 extern int D_0039427C;
 extern unsigned int D_00394280;
 extern int D_00394290;
@@ -59,10 +58,26 @@ extern "C" void func_0015F870(Burst_0015EC60* b, int n);
 extern "C" void func_00323318(Mat_0015EC60* d, Mat_0015EC60* a, Mat_0015EC60* b);
 extern "C" void func_001617A0(int mode);
 
-static inline void SetMode_0015EC60(int mode)
+static inline void Put_0015EC60(unsigned int v)
 {
-    if (D_0039427C != mode)
-        func_001617A0(mode);
+    unsigned int* p = (unsigned int*)D_00394274;
+    *p = v;
+    D_00394274 = (unsigned char*)(p + 1);
+}
+
+static inline void Tag_0015EC60(unsigned int v, unsigned int a)
+{
+    unsigned int* p = (unsigned int*)D_00394274;
+    D_00394278 = (unsigned char*)p;
+    p[0] = v;
+    p[1] = a;
+    D_00394274 = (unsigned char*)(p + 2);
+}
+
+static inline void Cycle_0015EC60(int n)
+{
+    Put_0015EC60(0x01000000 | (n << 8) | n);
+    D_0039429C = n;
 }
 
 static inline Mat_0015EC60 ToScreen(const Mat_0015EC60& a)
@@ -130,7 +145,7 @@ void Emitter_0015EC60::Update()
 
     Burst_0015EC60* b = m_tail;
     for (int i = 0; i < m_count; i++) {
-        b->m_age += D_00387664;
+        b->m_age += 1.0f / 60.0f;
         b++;
         if (b == End())
             b = m_ring;
@@ -161,53 +176,51 @@ void Emitter_0015EC60::Update()
     }
     m_380 = ToScreen(m_240);
 
-    SetMode_0015EC60(D_00394298);
-
-    unsigned int* p = D_00394274;
-    D_00394278 = p;
-    p[0] = 0x30000014;
-    p[1] = (unsigned int)((char*)this + 0x280);
-    D_00394274 = p + 2;
-    p[2] = 0x01000101;
-    D_0039429C = 1;
-    D_00394274 = p + 3;
-    int qwc = (m_count * 2 + 0x14) & 0xFF;
-    p[3] = 0x6C000000 | (qwc << 16) | (((unsigned short)D_00394280 & 0x3FF) | 0x8000);
-    D_00394274 = p + 4;
-    D_00394278 = p + 4;
-    D_00394290 = qwc;
-    p[4] = 0x10000000;
-    p[5] = 0;
-    D_00394274 = p + 6;
+    int prev = D_00394298;
+    if (D_0039427C != prev)
+        func_001617A0(prev);
+    unsigned int ad = (unsigned int)((char*)this + 0x280);
+    Tag_0015EC60(0x30000014, ad);
+    Cycle_0015EC60(1);
+    unsigned int num = (m_count * 2 + 0x14) & 0xFF;
+    unsigned int hi = (num << 16) | 0x6C000000;
+    unsigned int addr = ((unsigned short)D_00394280 & 0x3FF) | 0x8000;
+    Put_0015EC60(hi | addr);
+    unsigned int* t = (unsigned int*)D_00394274;
+    D_00394278 = (unsigned char*)t;
+    D_00394290 = num;
+    t[0] = 0x10000000;
+    t[1] = 0;
+    D_00394274 = (unsigned char*)(t + 2);
 
     b = m_tail;
     for (int i = 0; i < m_count; i++) {
         if (b == End())
             b = m_ring;
-        *(float*)&D_00394274[0] = b->m_age;
-        *(float*)&D_00394274[1] = b->m_invRate;
-        D_00394274[2] = b->m_count;
-        D_00394274[3] = b == m_head ? 0x8000 : 0;
-        D_00394274[4] = b->m_seed[0];
-        D_00394274[5] = b->m_seed[1];
-        D_00394274[6] = b->m_seed[2];
-        D_00394274[7] = b->m_seed[3];
-        int c = b->m_count;
+        ((float*)D_00394274)[0] = b->m_age;
+        ((float*)D_00394274)[1] = b->m_invRate;
+        ((int*)D_00394274)[2] = b->m_count;
+        ((int*)D_00394274)[3] = b == m_head ? 0x8000 : 0;
+        ((int*)D_00394274)[4] = b->m_seed[0];
+        ((int*)D_00394274)[5] = b->m_seed[1];
+        ((int*)D_00394274)[6] = b->m_seed[2];
+        ((int*)D_00394274)[7] = b->m_seed[3];
+        D_00394274 += 0x20;
+        D_003940A4 += b->m_count;
         b++;
-        D_00394274 += 8;
-        D_003940A4 += c;
     }
 
-    *D_00394274 = 0x1400000A;
-    D_00394274++;
+    Put_0015EC60(0x1400000A);
     D_00394294 = D_00394280;
-    int type = (*D_00394278 >> 28) & 7;
+    int kind = (*(unsigned int*)D_00394278 >> 28) & 7;
     while ((unsigned int)D_00394274 & 0xF) {
-        *D_00394274 = 0;
-        D_00394274++;
+        *(unsigned int*)D_00394274 = 0;
+        D_00394274 += 4;
     }
-    if (type != 3 && type != 0 && type != 4) {
-        *(unsigned short*)D_00394278 = ((int)D_00394274 - (int)D_00394278 - 8) >> 4;
+    if (kind != 3 && kind != 0 && kind != 4) {
+        *(unsigned short*)D_00394278 = ((D_00394274 - D_00394278) - 8) >> 4;
     }
-    SetMode_0015EC60(D_003942A0);
+    int next = D_003942A0;
+    if (D_0039427C != next)
+        func_001617A0(next);
 }

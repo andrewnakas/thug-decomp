@@ -494,7 +494,8 @@ def explain(unit, a, base=()):
         # a different instruction at this position: scheduling (same insns, other order) or code shape
         if pass_filter not in (None, "sched", "sched1", "sched2"):
             continue
-        cand = [j for j in range(max(0, i - 24), min(len(ot), i + 25)) if ot[j] == g and j != i]
+        cand = [j for j in range(max(0, i - 24), min(len(ot), i + 25)) if ot[j] == g and j != i
+                and not (d.word_uid and j < len(d.word_uid) and d.word_uid[j] == uid)]
         print(head)
         if not cand or uid is None:
             print("      deciding pass: not a reordering (the game's instruction is not nearby in ours): code shape")

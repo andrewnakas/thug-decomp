@@ -193,11 +193,52 @@ cases are sched2. In those cases the competing insns tie on priority. They are s
 
 So the levers are statement order and which value gets used more.
 
-Model note: in `func_00106098` the tracer reports two different insns with the same luid. The rank explanation
-there ("luid 21 vs 21") is not trustworthy, which suggests luids are not unique across a region. Not investigated.
+Correction: the "luid 21 vs 21" line in `func_00106098` was a bug. When an insn spans two words, the oracle compared
+it with itself. That is fixed.
 
 Because the chain is greedy, it keeps a flip only if the word count drops. An earlier version kept a worse one:
 `func_0023A778` went 7 -> 17. That is fixed.
+
+## From forced flip to source fix (2026-11-13)
+
+We took the 14 units that matched under forcing, plus 6 that improved, and looked for a natural source change that
+flips the same decision. Every result was checked with `match.py` on a real compile. **2 became exact matches**
+(PR #682). The rest stayed as they were.
+
+| Unit | Decision the oracle named | Outcome |
+|---|---|---|
+| func_001CFB18 | sched2 luid tie: `out++` against the strength-reduced `pts[j-2]` pointer | **MATCH**: index `&out[j]` instead of `out++`, so loop.c makes both induction variables in the game's order |
+| func_00121200 | sched1 reg-weight key: the `v.y` store against `s->w = 1.0f` | **MATCH**: one `v.Set(s, s, s, 1.0f)` replaces the split stores |
+| func_00271D80, func_0025E0A8 | global-alloc tie broken by allocno number, but both pseudos are **gcse PRE reaching regs** | none (see below) |
+| func_001E04D8, func_001DF490, func_00290A80, func_00116170 | global-alloc priority **difference** (not a tie), from live lengths set by sched1's argument-move order | none |
+| func_001B1340, func_001BB720, func_00106098 | sched2 luid order inherited from **sched1's reg-weight key**: a store or block copy against a hard-register argument setter | none |
+| func_002B3718 | sched2 luid order inherited from sched1, where one insn is a PRE copy placed at the end of its block | none |
+| func_001C2870, func_002284B0, func_00120C28, func_002A8270 | "dependents" key; counts fixed by call-clobber output dependences or argument setup | none |
+| func_001C1808 | global-alloc exact tie between two pseudos made inside one dot-product expression | none |
+| func_001D6800, func_0019FD58, func_001C0F20 | alias/dependence or argument-move order | none |
+
+What converted, and what cannot convert:
+
+- **Converted:** both ties sat between two insns from neighbouring statements or one statement, and the original
+  shape was a different but equally natural way to write those statements: indexing instead of bumping, one
+  setter instead of member stores. Swapping two statements alone fixed nothing here.
+- **Check sched1 before trusting a sched2 luid tie.** luid is the insn order after sched1. When sched1 ordered the
+  pair by reg weight (a store or block copy frees or births no register; a hard-register argument setter births
+  one), no statement order flips it. Run `sched_explain.py --pass 1 --why A B` or the oracle's sched1 lines first.
+  This was the case in 4 units: func_001B1340, func_001BB720, func_00106098 and func_002B3718.
+- **Allocno-number ties between PRE reaching regs are not source order.** gcse creates the reaching regs in hash
+  bucket order, bucket = (hash + K) mod S, with S = max_cuid/2 | 1 (the gcse hash-table size). It was measured on
+  two units; for a SYMBOL_REF the hash is h += (h << 7) + c over the name, K = 7933. Flipping the order means
+  changing the insn count at gcse time by a computable amount, for example -16 or +27 insns in func_00271D80. In
+  both units every edit that did this also changed the final code. The `-dG` log line "reaching reg is N" identifies
+  this class.
+- **Global-alloc priority is not a tie** when live lengths differ by one or two insns because sched1 placed the
+  argument loads. The argument order fixes those, not the source.
+- **"Dependents" decisions** need a real extra use of a value. The game showed none in all 4 units.
+
+Rule of thumb for agents: use the oracle to **classify** a near miss first. Only luid ties whose sched1 order was
+itself a luid tie, and global-alloc ties between user pseudos (not PRE regs), are worth source edits. Everything
+else above is an internal ordering that the source does not reach.
 
 ## Limits and next steps
 

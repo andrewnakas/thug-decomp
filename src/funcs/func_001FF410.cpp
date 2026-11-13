@@ -1,4 +1,3 @@
-/* fuzzy: 67.7 */
 /* sym: _vt$12ItA_001FF410 = 0x00366AC0 */
 /* sym: _vt$12ItB_001FF410 = 0x00366AA8 */
 /* sym: _vt$12ItC_001FF410 = 0x00366AF8 */
@@ -98,11 +97,7 @@ bool Obj_001FF410::Check(Owner_001FF410* o)
         ItA_001FF410 a;
         HA_001FF410* ha = a.First(&o->mA);
         while (ha) {
-            if (!ha->m18) return true;
-            unsigned int t = m0;
-            if (t < ha->m28) return true;
-            unsigned int d = t - ha->m18;
-            if (func_00202788(o) < d) return true;
+            if (!ha->m18 || m0 < ha->m28 || m0 - ha->m18 > func_00202788(o)) return true;
             ha = a.Next();
         }
     }
@@ -110,11 +105,7 @@ bool Obj_001FF410::Check(Owner_001FF410* o)
         ItB_001FF410 b;
         HB_001FF410* hb = b.First(&o->mB);
         while (hb) {
-            if (!hb->m20) return true;
-            unsigned int t = m0;
-            if (t < hb->m28) return true;
-            unsigned int d = t - hb->m20;
-            if (func_00202788(o) < d) return true;
+            if (!hb->m20 || m0 < hb->m28 || m0 - hb->m20 > func_00202788(o)) return true;
             hb = b.Next();
         }
     }

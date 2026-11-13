@@ -1,4 +1,3 @@
-/* fuzzy: 99.8 */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0016FFE8 {
@@ -175,7 +174,9 @@ extern "C" void func_0016FFE8(Node_0016FFE8* n, Ctx_0016FFE8* ctx, unsigned int 
         } else {
             mode = 2;
         }
-        mode = (flags & 8) | mode;
+        unsigned int f8 = flags & 8;
+        f8 |= mode;
+        mode = f8;
         if (D_0038C02C)
             mode |= 0x10;
         Tag_0016FFE8(n->m_tag, n->m_data);

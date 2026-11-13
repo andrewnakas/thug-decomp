@@ -1,4 +1,4 @@
-/* fuzzy: 83.2 */
+/* fuzzy: 87.5 */
 struct Arr_00258528 {
     int m0;
     int m4;
@@ -19,9 +19,9 @@ int Fn_00258528(int type, int* out, int start)
     int n = 0;
     Arr_00258528* arr = func_001E55B8(0xC472ECC5, 0);
     if (!arr) return 0;
-    int i = 0;
-    if (start >= 0) i = start + 1;
-    for (; i < arr->mC; i++) {
+    int i = -1;
+    if (start >= 0) i = start;
+    for (i++; i < arr->mC; i++) {
         void* item = func_001E9378(arr, i);
         if (func_002584A0(item)) {
             if (!type) {

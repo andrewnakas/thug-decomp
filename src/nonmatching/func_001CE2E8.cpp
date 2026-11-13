@@ -1,4 +1,4 @@
-/* fuzzy: 91.0 */
+/* fuzzy: 91.3 */
 struct Button_001CE2E8 {
     char pad[0x14];
     int m_pressed;
@@ -109,8 +109,8 @@ void Cam_001CE2E8::Update()
             m_tilt += m_tiltRate * dt2;
         } else {
             m_time = 0.0f;
-            m_pan = m_panTarget;
             m_tilt = m_tiltTarget;
+            m_pan = m_panTarget;
         }
     }
 }

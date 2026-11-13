@@ -1,4 +1,5 @@
-/* fuzzy: 82.2 */
+/* cflags: -mvu0-use-vf0-vf2 */
+/* fuzzy: 94.5 */
 struct Vec3_00230D88 {
     float v[3];
 };

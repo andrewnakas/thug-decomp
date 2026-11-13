@@ -1,4 +1,4 @@
-/* fuzzy: 85.8 */
+/* fuzzy: 87.2 */
 /* sym: Turn__10C_001A6CA0PvPfifi = 0x001A7108 */
 /* sym: Start__10C_001A6CA0i = 0x001A6A10 */
 extern "C" int func_001E7EB0(void* params, unsigned int name, float* out, int req);
@@ -30,9 +30,9 @@ struct C_001A6CA0 {
 
 int C_001A6CA0::Rotate(void* params, void* script)
 {
-    float time = 0.0f;
     int deg = 360;
     int speed = 0;
+    float time = 0.0f;
     int axes = 2;
     if (!(m1C & 0x40)) {
         m1C = (m1C | 0x40) & ~7;

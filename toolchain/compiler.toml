@@ -20,7 +20,8 @@ flags = ["-EL", "-march=r5900", "-mabi=o64", "-mno-pdr", "-no-pad-sections", "-G
 allowed_cflags = ["-O0", "-O1", "-O2", "-O3", "-G0", "-G4", "-G8",
                   "-fno-schedule-insns", "-fno-schedule-insns2", "-fno-strength-reduce",
                   "-fno-inline", "-funsigned-char", "-fsigned-char", "-fopt-stack",
-                  "-fno-rerun-loop-opt", "-fno-gcse", "-mno-split-addresses"]
+                  "-fno-rerun-loop-opt", "-fno-gcse", "-mno-split-addresses",
+                  "-mvu0-use-vf0-vf2"]
 
 # Known compilers: decompme/compilers "compilers" release assets, verified by sha256.
 # dir is relative to toolchain/compilers/, driver relative to dir.

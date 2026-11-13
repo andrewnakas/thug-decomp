@@ -336,3 +336,13 @@ as message data are ordinary C++.
   slot ahead of the inline's locals.
 - **Reuse a Vec in place** when the game reuses its stack slot.
 - **Compare against `0.0f` right after storing `w = 0`** and gcc reloads the zero from the stack slot.
+
+## Per-file flags need neighbour evidence (2026-11-13)
+
+A per-file flag is a claim about how the original *source file* was compiled. Before shipping one, check that the
+already-matched functions around the unit (the same source file) still match with it. If they break, the gain is
+a coincidence: don't ship it (lane 2 found this for `-fno-schedule-insns` on func_001D7350 / func_001DA8F0).
+`-mvu0-use-vf0-vf2` is allowed (RAC3, same SN 1.36 compiler, found it on all its ranges): it changes loop.c's
+hoisting and strength-reduction thresholds even in code without VU0. It matched func_00165CB0, and all 38 matched
+loop units around it still match. See docs/techniques/LAST_MILE.md for the measured flag results and why
+`-fforce-addr`, `-fno-cse-follow-jumps` and `-fno-expensive-optimizations` are not allowed (yet).

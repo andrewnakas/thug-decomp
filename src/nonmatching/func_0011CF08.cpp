@@ -1,4 +1,6 @@
 /* fuzzy: 68.2 */
+/* blocked: register/schedule tie. The game allocates the end pointer to $v0 and keeps both sq before the
+   pointer bump (0x0011CF18-20); index, struct-copy and declaration-order forms and cxxperm do not. */
 typedef int qword __attribute__((mode(TI)));
 
 struct Q_0011CF08 {

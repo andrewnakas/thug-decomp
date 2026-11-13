@@ -1,4 +1,6 @@
 /* fuzzy: 97.3 */
+/* blocked: the game loads the last key time as -0x14(keys + n*20) beside key = that - 0x14 (0x00171F08-14);
+   &keys[last], keys + n - 1, an end-pointer local, keys[n - 1].time and cxxperm all change the address shape. */
 extern int D_003940A0;   /* current time */
 
 struct ColorKey_00171EB0 {

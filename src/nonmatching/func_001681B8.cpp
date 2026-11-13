@@ -1,4 +1,7 @@
 /* fuzzy: 97.2 */
+/* blocked: FP register tie. The game puts freq[0]*t + phase[0] in a fresh $f2 (0x00168238) and
+   freq[1]*t + phase[1] in phase's register (0x001682CC); operand orders, statement orders, folded temps and
+   cxxperm do not reproduce both. */
 extern "C" long func_0010FA98();
 extern "C" float func_00341068(float x);   /* sinf */
 

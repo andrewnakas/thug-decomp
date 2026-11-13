@@ -1,4 +1,3 @@
-/* fuzzy: 98.7 */
 struct Obj_00125418;
 struct Handle_00125418;
 
@@ -68,11 +67,6 @@ struct Obj_00125418 {
     float m194;
 };
 
-static inline Handle_00125418 First_00125418(Obj_00125418* p)
-{
-    Handle_00125418 t(p->m54.m_obj);
-    return t;
-}
 
 extern "C" void func_00125800(Obj_00125418* self, float f);
 
@@ -95,7 +89,7 @@ extern "C" void func_00125418(Obj_00125418* self, const Handle_00125418& parent)
     }
     self->m48 = parent.m_obj;
     if (self->m48) {
-        Handle_00125418 h = First_00125418(self->m48);
+        Handle_00125418 h(Handle_00125418(self->m48->m54.m_obj).m_obj);
         if (h) {
             while (h->m60)
                 h = h->m60.m_obj;

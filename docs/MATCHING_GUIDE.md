@@ -438,3 +438,11 @@ priority). If-conversion shapes helped 1. Try those first.
 - An inline member that calls another inline member defined *later* in the class body is emitted out of line
   (`jal`) by g++ 2.95; define the callee first.
 - A parameter copied into a local counter (`int left = count;`) reproduces the game's spill of that copy.
+
+## Identical-arm `if` (ruling 2026-11-13)
+
+An `if (x) { S; } else { S; }` with identical arms is allowed only when the game shows a trace of the tested value
+that is otherwise dead (a copy/spill/compare such as func_00146B80's `daddu $s2,$a1` at 0x146B9C) and the identical
+arms are what reproduces it: jump2 cross-jumps the arms after allocation and leaves exactly that trace (LAST_MILE
+fact 57). Comment the trace's address and that the original arms probably differed in a way that compiled the
+same. Never use it to steer scheduling without such a trace.

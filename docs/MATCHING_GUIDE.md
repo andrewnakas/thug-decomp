@@ -346,3 +346,21 @@ a coincidence: don't ship it (lane 2 found this for `-fno-schedule-insns` on fun
 hoisting and strength-reduction thresholds even in code without VU0. It matched func_00165CB0, and all 38 matched
 loop units around it still match. See docs/techniques/LAST_MILE.md for the measured flag results and why
 `-fforce-addr`, `-fno-cse-follow-jumps` and `-fno-expensive-optimizations` are not allowed (yet).
+
+## More from lane 2's second pass (2026-11-13)
+
+- **Merged early-out conditions:** `if (a || b || c) return X;` gives one shared in-loop exit block (decides what
+  loop.c hoists).
+- **Write a shared tail in both if/else arms** to keep gcc's block order; cross-jumping merges them afterwards.
+- **A `goto` outer loop** where the game has no alignment nop at that loop head (loop.c then hoists nothing).
+- **Stack slot order:** address-taken scalars get their slot late; a 1-element array (`T k[1]`, `T k[2]`) gets its
+  slot at its declaration.
+- **`T* pm = &obj` for call arguments with direct `obj.field` stores** reproduces `&obj` kept in a saved register.
+- **A callee doing `daddu v0,a0` is a constructor:** declare it returning the pointer.
+- **Offset-0 field via base+offset, other fields via a pointer register** = it was a member function; write it as one.
+- **A second reference to the same member** reproduces the game copying the pointer into a callee-saved register.
+- **Float `&&` tests stay un-inverted** inside return-early inline helpers.
+- **In-place `*=`** removes Vec temporaries and shrinks the frame.
+- **Loops the game did not strength-reduce:** `for (i = 0; i < n;) { int k = i + 1; ...; i = k; }`.
+- **Split an aggregate local into per-row Vec locals** so they reuse freed temp slots.
+- **EABI mixed float/pointer arguments:** the prototype's argument order decides evaluation order.

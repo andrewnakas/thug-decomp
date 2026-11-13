@@ -250,6 +250,7 @@ extern "C" void func_0016FCF8(Node_0016FCF8* node, Mat_0016FCF8* m)
     if (node->m44) {
         node->m44->m40++;
     }
+    // volatile: stands in for the original memory-operand asm that type-puns the VU0 depth value (qmfc2 store, lwc1 reload).
     volatile union {
         unsigned int i;
         float f;

@@ -1,4 +1,4 @@
-/* fuzzy: 97.8 */
+/* fuzzy: 98.9 */
 // Builds a scaled orientation matrix from a direction and the third row of a reference matrix
 // (side = dir x up), moves it to pos + dir * offset and hands it to the attached object.
 
@@ -54,10 +54,9 @@ static inline void Mul_001154D0(Vec_001154D0* dst, const Vec_001154D0* a, const 
     StoreVF6(dst);
 }
 
-// every row of m multiplied by (s.x, s.y, s.z, 1), component by component
+// every row of m multiplied by s, component by component
 static inline void ScaleRows_001154D0(Mat_001154D0* m, Vec_001154D0* s)
 {
-    s->w = 1.0f;
     Mul_001154D0(&m->row[0], s, &m->row[0]);
     Mul_001154D0(&m->row[1], s, &m->row[1]);
     Mul_001154D0(&m->row[2], s, &m->row[2]);
@@ -80,6 +79,8 @@ extern "C" void func_001154D0(Obj_001154D0* self, const Vec_001154D0* pos, const
     v.x = s;
     v.y = s;
     v.z = s;
+    Vec_001154D0* sv = &v;  // game: w is stored through a register copy of &v (swc1 $f9, 0xC($v1))
+    sv->w = 1.0f;
     ScaleRows_001154D0(&m, &v);
     float k = self->m_offset;
     Vec_001154D0 p;

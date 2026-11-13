@@ -1,4 +1,3 @@
-/* fuzzy: 32.3 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00141B70 {
@@ -7,29 +6,19 @@ struct Vec_00141B70 {
         qword q;
     };
     Vec_00141B70() {}
-    Vec_00141B70(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
-    Vec_00141B70 operator*(float s) const { return Vec_00141B70(x * s, y * s, z * s, w * s); }
+    Vec_00141B70(const Vec_00141B70& v) { q = v.q; }
+    Vec_00141B70(float ax, float ay, float az, float aw) : x(ax), y(ay), z(az), w(aw) {}
+    float& operator[](int i) { return (&x)[i]; }
+    const float& operator[](int i) const { return (&x)[i]; }
+    Vec_00141B70 operator+(const Vec_00141B70& b) const { return Vec_00141B70((*this)[0] + b[0], (*this)[1] + b[1], (*this)[2] + b[2], (*this)[3] + b[3]); }
+    Vec_00141B70 operator-(const Vec_00141B70& b) const { return Vec_00141B70((*this)[0] - b[0], (*this)[1] - b[1], (*this)[2] - b[2], (*this)[3] - b[3]); }
+    Vec_00141B70 operator*(float s) const { return Vec_00141B70((*this)[0] * s, (*this)[1] * s, (*this)[2] * s, (*this)[3] * s); }
 };
 
-static inline Vec_00141B70 operator+(const Vec_00141B70& a, const Vec_00141B70& b)
-{
-    return Vec_00141B70(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-}
-
-static inline Vec_00141B70 operator-(const Vec_00141B70& a, const Vec_00141B70& b)
-{
-    return Vec_00141B70(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-}
-
-
-extern "C" Vec_00141B70 func_001415F8(const Vec_00141B70& p0, const Vec_00141B70& p2, const Vec_00141B70& p1, float t1, float t2);
+extern "C" Vec_00141B70 func_001415F8(Vec_00141B70 p0, Vec_00141B70 p2, Vec_00141B70 p1, float t1, float t2);
 Vec_00141B70 Min_00141810(const Vec_00141B70& a, const Vec_00141B70& b);
 Vec_00141B70 Max_00141890(const Vec_00141B70& a, const Vec_00141B70& b);
 
-static inline Vec_00141B70 Bez(Vec_00141B70 a, Vec_00141B70 b, Vec_00141B70 c, float t1, float t2)
-{
-    return func_001415F8(a, b, c, t1, t2);
-}
 
 /* sym: Min_00141810__FRC12Vec_00141B70T0 = 0x00141810 */
 /* sym: Max_00141890__FRC12Vec_00141B70T0 = 0x00141890 */
@@ -68,12 +57,12 @@ void C_00141B70::Update()
     p0 = m80[0];
     p1 = m80[1];
     p2 = m80[2];
-    e0 = mB0[0] * 0.5f;
-    e1 = mB0[1] * 0.5f;
-    e2 = mB0[2] * 0.5f;
     p0.w = mC[0];
     p1.w = mC[1];
     p2.w = mC[2];
+    e0 = Vec_00141B70(mB0[0].x * 0.5f, mB0[0].y * 0.5f, mB0[0].z * 0.5f, mB0[0].w * 0.5f);
+    e1 = Vec_00141B70(mB0[1].x * 0.5f, mB0[1].y * 0.5f, mB0[1].z * 0.5f, mB0[1].w * 0.5f);
+    e2 = Vec_00141B70(mB0[2].x * 0.5f, mB0[2].y * 0.5f, mB0[2].z * 0.5f, mB0[2].w * 0.5f);
     e0.w = m18[0] * 0.5f;
     e1.w = m18[1] * 0.5f;
     e2.w = m18[2] * 0.5f;
@@ -87,9 +76,9 @@ void C_00141B70::Update()
     mx = Max_00141890(hi0, hi2);
     if (m8) {
         Vec_00141B70 t;
-        t = Bez(lo0, lo1, lo2, m2C * m30 * 0.01f, m2C);
+        t = func_001415F8(lo0, lo1, lo2, m2C * m30 * 0.01f, m2C);
         mn = Min_00141810(mn, t);
-        t = Bez(hi0, hi1, hi2, m2C * m30 * 0.01f, m2C);
+        t = func_001415F8(hi0, hi1, hi2, m2C * m30 * 0.01f, m2C);
         mx = Max_00141890(mx, t);
     }
     Vec_00141B70 h((mx.x - mn.x) * 0.5f, (mx.y - mn.y) * 0.5f, (mx.z - mn.z) * 0.5f, 0.0f);

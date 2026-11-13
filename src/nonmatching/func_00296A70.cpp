@@ -1,4 +1,4 @@
-/* fuzzy: 90.7 */
+/* fuzzy: 99.6 */
 typedef int qword_00296A70 __attribute__((mode(TI)));
 struct Vec_00296A70 {
     union {
@@ -49,7 +49,13 @@ struct Obj_00296A70 {
 
 extern char D_00391E10[];
 extern char D_00391E20[];
+/* D_00391E28 is the 8-byte .sdata string "goal_id". The game itself mixes both addressing forms for it in this
+   function: compiler-split %hi/%lo everywhere except the cross-jumped 0x259C59DD/0x5BD8050A tail, where reload
+   rematerialised it as an `la` macro that the assembler made gp-relative (0x002973DC). So the original translation
+   unit learned the symbol's size partway through: the incomplete first declaration is the compiler's view (not
+   small data), and the completed one lets gcc emit `.extern D_00391E28, 8` for the assembler. */
 extern char D_00391E28[];
+extern char D_00391E28[8];
 extern char D_00391E30[];
 extern char D_00391DD0[];
 extern char D_00377480[];
@@ -132,11 +138,13 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
     }
     case 0xFB279560: {
         Ent_00296A70* e = func_00295CC8(this, params);
-        if (!e)
-            return 0;
-        int v = 0;
-        func_001E7DE8(params, 0x3AC9AB5E, &v, 0);
-        return func_00293998(e, v) ? 1 : 0;
+        if (e) {
+            int v = 0;
+            func_001E7DE8(params, 0x3AC9AB5E, &v, 0);
+            if (func_00293998(e, v) == true)
+                break;
+        }
+        return 0;
     }
     case 0xCCA11C78: {
         Ent_00296A70* e = func_00295CC8(this, params);

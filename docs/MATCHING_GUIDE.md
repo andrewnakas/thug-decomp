@@ -421,6 +421,10 @@ a table spanning 1..6 exists only with 6 labels, and if 1, 2, 3, 5, 6 are accoun
 field/array (including struct copies and bulk copies) writes only known constants, leaving exactly one candidate
 (func_001D5EE0, func_001CD048; cite the writer addresses). If more than one value would fit, it is invented and
 stays banned (e.g. switches on 32-bit script checksums).
+A key may also be cited from a matched sibling when all three hold: the tree shape proves a node in that range;
+the empty case has no behaviour of its own (its compare was pruned because it goes where falling out / default
+goes); and a matched sibling's *asm* actually tests that value on the same key (an inference in another unit's
+source does not count). Comment that the value is inferred from the sibling (func_001B3A48 <- func_001B3870).
 
 ## Lever sweep results and idioms (lane 2, 2026-11-13)
 

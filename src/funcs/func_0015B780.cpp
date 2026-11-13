@@ -1,4 +1,3 @@
-/* fuzzy: 84.2 */
 typedef int qword_0015B780 __attribute__((mode(TI)));
 
 struct V4_0015B780 {
@@ -86,4 +85,9 @@ void C_0015B780::Calc()
     m270 = p0 - V4_0015B780(m2A0.x * 1.5f, m2A0.y * 1.5f, m2A0.z * 1.5f, m2A0.w * 1.5f);
     m280 = a - V4_0015B780(m2B0.x * 1.5f, m2B0.y * 1.5f, m2B0.z * 1.5f, m2B0.w * 1.5f);
     m290 = b - V4_0015B780(m2C0.x * 1.5f, m2C0.y * 1.5f, m2C0.z * 1.5f, m2C0.w * 1.5f);
+    // the game stores each w again after the qword copies (0015BAB4 swc1 $f12, 0x27C; 0015BACC swc1 $f11, 0x28C;
+    // 0015BADC swc1 $f3, 0x29C)
+    m270.w = p0.w - m2A0.w * 1.5f;
+    m280.w = a.w - m2B0.w * 1.5f;
+    m290.w = b.w - m2C0.w * 1.5f;
 }

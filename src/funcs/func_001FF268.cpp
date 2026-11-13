@@ -1,4 +1,3 @@
-/* fuzzy: 65.5 */
 /* sym: _vt$12ItA_001FF268 = 0x00366AC0 */
 /* sym: _vt$12ItB_001FF268 = 0x00366AA8 */
 struct HA_001FF268 {
@@ -35,13 +34,6 @@ public:
     int m0;
     Node_001FF268<HA_001FF268>* cur;
     ItA_001FF268() { cur = 0; }
-    HA_001FF268* Advance(Node_001FF268<HA_001FF268>* c)
-    {
-        cur = c->mC->Valid();
-        HA_001FF268* r = 0;
-        if (cur) r = cur->GetData();
-        return r;
-    }
     virtual ~ItA_001FF268() {}
     virtual void Run();
     HA_001FF268* Next()
@@ -62,13 +54,6 @@ public:
     int m0;
     Node_001FF268<HB_001FF268>* cur;
     ItB_001FF268() { cur = 0; }
-    HB_001FF268* Advance(Node_001FF268<HB_001FF268>* c)
-    {
-        cur = c->mC->Valid();
-        HB_001FF268* r = 0;
-        if (cur) r = cur->GetData();
-        return r;
-    }
     virtual ~ItB_001FF268() {}
     virtual void Run();
     HB_001FF268* Next()
@@ -92,20 +77,16 @@ int func_001FF268(unsigned int* now, Owner_001FF268* o)
         ItA_001FF268 a;
         HA_001FF268* h = a.First(&o->mA);
         while (h) {
-            if (h->m18 == 0) return 1;
-            unsigned int d = *now - h->m18;
-            if (func_00202788(o) < d) return 1;
-            h = a.Advance(a.cur);
+            if (h->m18 == 0 || *now - h->m18 > func_00202788(o)) return 1;
+            h = a.Next();
         }
     }
     {
         ItB_001FF268 b;
         HB_001FF268* h = b.First(&o->mB);
         while (h) {
-            if (h->m20 == 0) return 1;
-            unsigned int d = *now - h->m20;
-            if (func_00202788(o) < d) return 1;
-            h = b.Advance(b.cur);
+            if (h->m20 == 0 || *now - h->m20 > func_00202788(o)) return 1;
+            h = b.Next();
         }
     }
     return 0;

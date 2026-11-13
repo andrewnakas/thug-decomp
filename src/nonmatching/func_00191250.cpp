@@ -1,4 +1,4 @@
-/* fuzzy: 83.3 */
+/* fuzzy: 95.7 */
 /* Rigid-body contact solver for the points in D_003E4540 (0x30 each: position, normal, cached effective mass,
    accumulated normal impulse, rolling factor, in-contact and mass-cached flags). Up to 20 passes of normal
    impulses (restitution m24) until no contact point approaches; on failure it fires the m90 event or zeroes
@@ -15,6 +15,7 @@ struct Vec_00191250 {
         qword q;
     };
     Vec_00191250() {}
+    Vec_00191250(const Vec_00191250& o) { q = o.q; }
     const float& operator[](int i) const { return (&x)[i]; }
     Vec_00191250(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     Vec_00191250(float ax, float ay, float az) { x = ax; y = ay; z = az; w = 1.0f; }
@@ -24,6 +25,14 @@ struct Vec_00191250 {
         y += o[1];
         z += o[2];
         w += o[3];
+        return *this;
+    }
+    Vec_00191250& operator-=(const Vec_00191250& o)
+    {
+        x -= o[0];
+        y -= o[1];
+        z -= o[2];
+        w -= o[3];
         return *this;
     }
     Vec_00191250& operator*=(float s)
@@ -41,6 +50,7 @@ struct Vec_00191250 {
         z = az;
         w = 1.0f;
     }
+    Vec_00191250 operator*(const struct Mat_00191250& m) const;
     float Length() const { return sqrtf(x * x + y * y + z * z); }
 };
 
@@ -69,15 +79,27 @@ static inline float Dot_00191250(const Vec_00191250& a, const Vec_00191250& b)
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
+static inline float Clamp_00191250(float v, float lo, float hi)
+{
+    if (v > hi)
+        v = hi;
+    if (v < lo)
+        v = lo;
+    return v;
+}
+
 struct Mat_00191250 {
     Vec_00191250 r[3];
 };
 
-static inline Vec_00191250 operator*(const Vec_00191250& v, const Mat_00191250& m)
+inline Vec_00191250 Vec_00191250::operator*(const Mat_00191250& m) const
 {
-    return Vec_00191250(v.x * m.r[0].x + v.y * m.r[1].x + v.z * m.r[2].x,
-                        v.x * m.r[0].y + v.y * m.r[1].y + v.z * m.r[2].y,
-                        v.x * m.r[0].z + v.y * m.r[1].z + v.z * m.r[2].z, v.w);
+    Vec_00191250 r;
+    r.x = (*this)[0] * m.r[0].x + (*this)[1] * m.r[1].x + (*this)[2] * m.r[2].x;
+    r.y = (*this)[0] * m.r[0].y + (*this)[1] * m.r[1].y + (*this)[2] * m.r[2].y;
+    r.z = (*this)[0] * m.r[0].z + (*this)[1] * m.r[1].z + (*this)[2] * m.r[2].z;
+    r.w = (*this)[3];
+    return r;
 }
 
 struct Pt_00191250 {
@@ -106,7 +128,8 @@ extern Pt_00191250 D_003E4540[];
 
 extern "C" float func_00191170(Body_00191250* self, Vec_00191250* dir, Vec_00191250* pos);
 extern "C" void func_00101890(Vec_00191250* v, const Vec_00191250* n);
-extern "C" void func_001235E8(Vec_00191250 a, Vec_00191250 b, unsigned int c0, unsigned int c1, int n);
+/* debug line (empty in this build); the rolling-line call passes c1 = -1 as addiu $a3,$zero,-0x1 */
+extern "C" void func_001235E8(Vec_00191250 a, Vec_00191250 b, unsigned int c0, int c1, int n);
 extern "C" float func_0010FAB8();
 extern "C" void* func_00184B30(int a, int b, int c, int d, int e);
 extern "C" void func_001EFDC0(void* p);
@@ -206,7 +229,7 @@ void Body_00191250::Solve()
         Vec_00191250* dir = &t;
         if (con->m_hasAxis) {
             Vec_00191250 axis = con->m_axis * m_orient;
-            axis = axis - p->normal * Dot_00191250(p->normal, axis);
+            axis -= p->normal * Dot_00191250(p->normal, axis);
             float len = axis.Length();
             if (len > 0.001f) {
                 axis *= 1.0f / len;
@@ -249,7 +272,7 @@ void Body_00191250::Solve()
         m_vel += imp;
         m_angVel += ang;
         if (D_0038C9AC) {
-            func_001235E8(p->pos + m_pos, p->pos + m_pos + imp * 60.0f, 0xFF00FFFF, 0xFFFFFFFF, 1);
+            func_001235E8(p->pos + m_pos, p->pos + m_pos + imp * 60.0f, 0xFF00FFFF, -1, 1);
         }
     }
 
@@ -257,12 +280,7 @@ void Body_00191250::Solve()
         if (m88)
             func_001EFDC0(func_00184B30(m0C, m88, m94, 0, 0));
         if (m9C && 0x2A - func_001DD708(D_0038E0A0) >= 0xD) {
-            float vol = maxApproach * 100.0f / m_impactMax;
-            if (vol > 100.0f)
-                vol = 100.0f;
-            if (vol < 0.0f)
-                vol = 0.0f;
-            func_001E72B0(m9C, 0x9E497FC6, vol);
+            func_001E72B0(m9C, 0x9E497FC6, Clamp_00191250(maxApproach * 100.0f / m_impactMax, 0.0f, 100.0f));
             func_001A3208(m16C, m9C);
         }
     }

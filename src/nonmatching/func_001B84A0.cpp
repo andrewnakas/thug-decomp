@@ -1,4 +1,4 @@
-/* fuzzy: 89.5 */
+/* fuzzy: 97.3 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -213,6 +213,9 @@ struct Phys_001B84A0 {
 
 extern "C" void* func_00185578(void* obj, unsigned int name);
 extern "C" float func_0010FAB8();
+
+// Frame time in 60 Hz frames.
+static inline float Frames_001B84A0() { return func_0010FAB8() * 60.0f; }
 extern "C" void func_001B80F8(void* cam);
 extern "C" Mat_001B84A0* func_001B80E8(void* cam);
 extern "C" void func_001B80D8(void* cam, Row_001B84A0* pos);
@@ -332,9 +335,11 @@ void Cam_001B84A0::Update()
         }
         m120 = tilt;
     }
-    Row_001B84A0 up = basis[1];
+    Row_001B84A0 up;
     if (mode == 0) {
         up = m16C->m160;
+    } else {
+        up = basis[1];
     }
     Row_001B84A0 vel(m168->mB0.x, 0.0f, m168->mB0.z, 1.0f);
     int still = func_001B9E30(this);
@@ -342,7 +347,7 @@ void Cam_001B84A0::Update()
     if (!m170 || !m170->m1C) {
         if (sqrtf(vel.Dot(vel)) > D_00387A0C || still || m16C->mAC) {
             if (still) {
-                basis.at.Set(0.0f, -1.0f, 0.0f, 1.0f);
+                basis[2].Set(0.0f, -1.0f, 0.0f, 1.0f);
                 Node_001B84A0* n = m160;
                 if (!n->m1C && !n->m20 && mode != 3) {
                     n->m28 = 0.0f;
@@ -365,12 +370,12 @@ void Cam_001B84A0::Update()
                         k = basis.at.Dot(n) * D_00387A10;
                     } else {
                         n.Set(0.0f, 1.0f, 0.0f, 1.0f);
-                        k = basis.at.y;
+                        k = basis[2].y;
                     }
-                    basis.up.Set(0.0f, 1.0f, 0.0f, 1.0f);
+                    basis[1].Set(0.0f, 1.0f, 0.0f, 1.0f);
                 } else if (mode == 2) {
                     n.Set(0.0f, 1.0f, 0.0f, 1.0f);
-                    k = basis.at.y;
+                    k = basis[2].y;
                 } else {
                     n = m16C->m170;
                     k = basis.at.Dot(n) * D_00387A14;
@@ -388,17 +393,17 @@ void Cam_001B84A0::Update()
     }
 
     if (mode == 1) {
-        m128 += func_0010FAB8() * 60.0f * D_00387A18;
+        m128 += Frames_001B84A0() * D_00387A18;
         if (m128 > D_00387A1C) {
             m128 = D_00387A1C;
         }
     } else if (m128 > 0.0f) {
-        m128 -= func_0010FAB8() * 60.0f * D_00387A20;
+        m128 -= Frames_001B84A0() * D_00387A20;
         if (m128 < 0.0f) {
             m128 = 0.0f;
         }
     } else if (m128 < 0.0f) {
-        m128 += func_0010FAB8() * 60.0f * D_00387A24;
+        m128 += Frames_001B84A0() * D_00387A24;
         if (m128 > 0.0f) {
             m128 = 0.0f;
         }
@@ -436,11 +441,11 @@ void Cam_001B84A0::Update()
                 end = start - dir * 72.0f;
                 if (!func_002099C0(&f, &start, &end, 1)) {
                     side = 2;
-                } else if (f.m90 < d1) {
-                    side = 2;
-                } else {
+                } else if (!(f.m90 < d1)) {
                     RotateY_001B84A0(basis, 2.0f * D_0038D3C0);
                     side = 1;
+                } else {
+                    side = 2;
                 }
             } else {
                 side = 1;
@@ -471,7 +476,10 @@ void Cam_001B84A0::Update()
     t.right.Set(-basis.right.x, -basis.right.y, -basis.right.z, 0.0f);
     t.up.Set(basis.up.x, basis.up.y, basis.up.z, 0.0f);
     t.at.Set(-basis.at.x, -basis.at.y, -basis.at.z, 0.0f);
-    t.trans.Set(0.0f, 0.0f, 0.0f, 1.0f);
+    t.trans.x = 0.0f;
+    t.trans.y = 0.0f;
+    t.trans.z = 0.0f;
+    t.trans.w = 1.0f;
     cm->trans.x = 0.0f;
     cm->trans.y = 0.0f;
     cm->trans.z = 0.0f;
@@ -482,7 +490,8 @@ void Cam_001B84A0::Update()
     float d0 = t.right.Dot(cm->right);
     float d1 = t.up.Dot(cm->up);
     float d2 = t.at.Dot(cm->at);
-    if (!(d0 > D_00387A2C && d1 > D_00387A2C && d2 > D_00387A2C)) {
+    bool aligned = d0 > D_00387A2C && d1 > D_00387A2C && d2 > D_00387A2C;
+    if (!aligned) {
         func_00103000(m164, cm, &t);
         Mat_001B84A0 old = *cm;
         *cm = t;
@@ -564,8 +573,9 @@ void Cam_001B84A0::Update()
         locked = 0;
     }
     if (!locked) {
-        Row_001B84A0 f = cm->at;
-        Row_001B84A0 from = pos - f * back;
+        // copy of cm->at as a temporary: the game copies it (lq 0x20($s1) -> 0xF0) above the product (0xE0)
+        // and from (0xD0), i.e. it is allocated after both
+        Row_001B84A0 from = pos - Row_001B84A0(cm->at) * back;
         func_0018B200(&pos, cm, &from, &target, 1, 1);
     }
     pos.w = 1.0f;

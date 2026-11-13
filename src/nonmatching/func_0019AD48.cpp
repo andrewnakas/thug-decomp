@@ -1,4 +1,4 @@
-/* fuzzy: 71.2 */
+/* fuzzy: 73.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0019AD48 {
@@ -104,7 +104,8 @@ void Obj_0019AD48::Move(const Vec_0019AD48& delta)
     if (func_002093E8(&f, 0, 0)) {
         func_00103F28(D_00362060, D_0036207F, 0xAF1, D_003620F0);
         m_pos = f.m_point + f.m_normal;
-        m_pos += Bounce_0019AD48(delta, f.m_dist, f.m_normal);
+        Vec_0019AD48 b = Bounce_0019AD48(delta, f.m_dist, f.m_normal);
+        m_pos += b;
         m_vel -= f.m_normal * (Dot_0019AD48(m_vel, f.m_normal) * 1.5f);
     } else {
         m_pos += delta;

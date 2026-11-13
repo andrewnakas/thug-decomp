@@ -1,4 +1,4 @@
-/* fuzzy: 62.0 */
+/* fuzzy: 92.0 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -8,14 +8,30 @@ struct Row_00199618 {
         struct { float x, y, z, w; };
         qword q;
     };
+    const float& operator[](int i) const { return (&x)[i]; }
     void Set(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
-    float Dot(const Row_00199618& o) const { return x * o.x + y * o.y + z * o.z; }
     Row_00199618& operator+=(const Row_00199618& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        x += o[0];
+        y += o[1];
+        z += o[2];
+        w += o[3];
+        return *this;
+    }
+    Row_00199618& operator*=(float s)
+    {
+        x *= s;
+        y *= s;
+        z *= s;
+        w *= s;
+        return *this;
+    }
+    Row_00199618& operator-=(const Row_00199618& o)
+    {
+        x -= o[0];
+        y -= o[1];
+        z -= o[2];
+        w -= o[3];
         return *this;
     }
 };
@@ -25,24 +41,29 @@ struct Vec_00199618 : Row_00199618 {
     Vec_00199618(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
 };
 
+static inline float Dot_00199618(const Row_00199618& a, const Row_00199618& b)
+{
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
 static inline Vec_00199618 Sub_00199618(const Row_00199618& a, const Row_00199618& b)
 {
-    return Vec_00199618(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_00199618(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_00199618 Add_00199618(const Row_00199618& a, const Row_00199618& b)
 {
-    return Vec_00199618(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_00199618(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_00199618 Scale_00199618(const Row_00199618& a, float s)
 {
-    return Vec_00199618(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_00199618(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 static inline Vec_00199618 Cross_00199618(const Row_00199618& a, const Row_00199618& b)
 {
-    return Vec_00199618(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0.0f);
+    return Vec_00199618(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f);
 }
 
 struct Mat3_00199618 {
@@ -50,10 +71,10 @@ struct Mat3_00199618 {
     Vec_00199618 Rotate(const Row_00199618& p) const
     {
         Vec_00199618 o;
-        o.x = p.x * r[0].x + p.y * r[1].x + p.z * r[2].x;
-        o.y = p.x * r[0].y + p.y * r[1].y + p.z * r[2].y;
-        o.z = p.x * r[0].z + p.y * r[1].z + p.z * r[2].z;
-        o.w = p.w;
+        o.x = p[0] * r[0].x + p[1] * r[1].x + p[2] * r[2].x;
+        o.y = p[0] * r[0].y + p[1] * r[1].y + p[2] * r[2].y;
+        o.z = p[0] * r[0].z + p[1] * r[1].z + p[2] * r[2].z;
+        o.w = p[3];
         return o;
     }
 };
@@ -94,6 +115,20 @@ struct TriQuery_00199618 {
     char pad2054[0xC];
 };
 
+extern "C" void func_00183CB8(void* p, void* slot);
+
+// Reference held by a feeler; released when the feeler goes away.
+struct Ref_00199618 {
+    void* p;
+    ~Ref_00199618()
+    {
+        if (p) {
+            func_00183CB8(p, this);
+            p = 0;
+        }
+    }
+};
+
 struct Feeler_00199618 {
     Row_00199618 start;
     Row_00199618 end;
@@ -102,7 +137,7 @@ struct Feeler_00199618 {
     char pad94[0xC];
     Row_00199618 mA0;
     Row_00199618 mB0;
-    void* mC0;
+    Ref_00199618 mC0;
     char padC4[0x10];
     void* mD4;
     char padD8[8];
@@ -130,7 +165,6 @@ extern "C" int func_002093E8(Feeler_00199618* f, int a, int b);
 extern "C" void func_00209A40(Feeler_00199618* f, int r, int g, int b, int a);
 extern "C" void func_001BB1E0(void* sfx, int kind, TriQuery_00199618* q);
 extern "C" void func_001BB080(void* sfx, int kind, Feeler_00199618* f);
-extern "C" void func_00183CB8(void* p, void** slot);
 extern "C" void func_001235E8(Row_00199618* a, Row_00199618* b, unsigned int c0, unsigned int c1, int a2);
 
 struct Car_00199618;
@@ -140,9 +174,9 @@ extern "C" int func_00199298(Car_00199618* self, Contact_00199618* c, TriQuery_0
                              int hit);
 extern "C" float func_0019B610(Car_00199618* self, Row_00199618* r, Row_00199618* dir);
 
-extern float D_00387824;
-extern float D_00387828;
-extern float D_0038782C;
+extern const float D_00387824;
+extern const float D_00387828;
+extern const float D_0038782C;
 
 struct Car_00199618 {
     char pad0[0xC];
@@ -213,27 +247,24 @@ struct Car_00199618 {
     void Collide();
 };
 
-// Casts one edge of the probe; returns true when the update must stop.
-static inline bool Probe_00199618(Car_00199618* self, Feeler_00199618* f)
-{
-    if (func_002093E8(f, 0, 0)) {
-        func_001BB080(self->m1394, 6, f);
-        if (self->Frozen())
-            return true;
-        D_003E49C0[self->m68].p = f->mA0;
-        D_003E49C0[self->m68].n = f->mB0;
-        if (!func_00199508(self, &D_003E49C0[self->m68])) {
-            Vec_00199618 d = Sub_00199618(f->start, f->end);
-            D_003E49C0[self->m68].m20 = (1.0f - f->m90) * f->mB0.Dot(d);
-            self->m68++;
-            D_003E49C0[self->m68].m28 = 1;
-        }
+// Casts one edge of the probe; leaves the update when the car is frozen.
+#define PROBE_00199618()                                                                   \
+    if (func_002093E8(&f, 0, 0)) {                                                         \
+        func_001BB080(m1394, 6, &f);                                                       \
+        if (Frozen())                                                                      \
+            return;                                                                        \
+        D_003E49C0[m68].p = f.mA0;                                                         \
+        D_003E49C0[m68].n = f.mB0;                                                         \
+        if (!func_00199508(this, &D_003E49C0[m68])) {                                      \
+            Vec_00199618 d = Sub_00199618(f.start, f.end);                                 \
+            D_003E49C0[m68].m20 = (1.0f - f.m90) * Dot_00199618(f.mB0, d);                 \
+            m68++;                                                                         \
+            D_003E49C0[m68].m28 = 1;                                                       \
+        }                                                                                  \
+    }                                                                                      \
+    if (m1380) {                                                                           \
+        func_00209A40(&f, 0xFF, 0xFF, 0xFF, 1);                                            \
     }
-    if (self->m1380) {
-        func_00209A40(f, 0xFF, 0xFF, 0xFF, 1);
-    }
-    return false;
-}
 
 void Car_00199618::Collide()
 {
@@ -256,7 +287,7 @@ void Car_00199618::Collide()
         if (func_00209B58(&q, 0)) {
             func_001BB1E0(m1394, 6, &q);
             if (Frozen())
-                goto done;
+                return;
             func_00209B80(&q);
             for (int i = q.m_count; i--;) {
                 TriFace_00199618* face = &q.face[i];
@@ -265,15 +296,14 @@ void Car_00199618::Collide()
                     c->p = face->hit[j].pos;
                     c->n = face->n;
                     c->m28 = 0;
-                    signed char edge = face->hit[j].m20;
                     if (!func_00199508(this, c)) {
-                        if (edge) {
+                        if (face->hit[j].m20) {
                             c->m20 = func_001990F0(this, c, tri);
                         } else {
                             c->m20 = 0.0f;
                         }
                         m68++;
-                    } else if (edge && func_00199298(this, c, &q, tri, i, j)) {
+                    } else if (face->hit[j].m20 && func_00199298(this, c, &q, tri, i, j)) {
                         m68++;
                     }
                 }
@@ -284,17 +314,13 @@ void Car_00199618::Collide()
         }
         f.start = m20;
         f.end = q.v[0];
-        if (Probe_00199618(this, &f))
-            goto done;
+        PROBE_00199618();
         f.end += q.v[1];
-        if (Probe_00199618(this, &f))
-            goto done;
+        PROBE_00199618();
         f.end += q.v[2];
-        if (Probe_00199618(this, &f))
-            goto done;
-        f.end = Sub_00199618(f.end, q.v[1]);
-        if (Probe_00199618(this, &f))
-            goto done;
+        PROBE_00199618();
+        f.end -= q.v[1];
+        PROBE_00199618();
         t--;
     } while (t != -1);
 
@@ -317,7 +343,7 @@ void Car_00199618::Collide()
                 Contact_00199618* c = &D_003E49C0[i];
                 Vec_00199618 r = Sub_00199618(c->p, m20);
                 Vec_00199618 v = Add_00199618(mB0, Cross_00199618(mC0, r));
-                float vn = v.Dot(c->n);
+                float vn = Dot_00199618(v, c->n);
                 if (vn > 0.0f)
                     continue;
                 done = 0;
@@ -328,7 +354,7 @@ void Car_00199618::Collide()
             }
         } while (iter < 6 && !done);
 
-        if (m1380 && m68) {
+        if (m1380) {
             // Debug display of the contacts (body compiled out in this build).
             for (int i = m68; i--;) {
             }
@@ -354,12 +380,12 @@ void Car_00199618::Collide()
                 continue;
             Vec_00199618 r = Sub_00199618(c->p, m20);
             Vec_00199618 v = Add_00199618(V, Cross_00199618(W, r));
-            float vn = v.Dot(c->n);
+            float vn = Dot_00199618(v, c->n);
             Vec_00199618 tan = Sub_00199618(v, Scale_00199618(c->n, vn));
-            float len = sqrtf(tan.Dot(tan));
+            float len = sqrtf(Dot_00199618(tan, tan));
             if (len < D_00387828)
                 continue;
-            tan = Scale_00199618(tan, 1.0f / len);
+            tan *= 1.0f / len;
             float j = len * func_0019B610(this, &r, &tan);
             float jmax = mu * c->m24;
             if (jmax < j)
@@ -373,8 +399,7 @@ void Car_00199618::Collide()
         }
         for (int i = m68; i--;) {
             float n = D_003E49C0[i].m24;
-            if (m1370 < n)
-                m1370 = n;
+            m1370 = (m1370 < n) ? n : m1370;
         }
 
         // Steering impulse along the ground.
@@ -384,19 +409,15 @@ void Car_00199618::Collide()
                 Vec_00199618 r = Sub_00199618(c->p, m20);
                 Row_00199618 dir;
                 dir.Set(-c->n.z, 0.0f, c->n.x, 1.0f);
-                float s = m34C * m1B0 * m90.Dot(c->n) * c->m24;
+                float s = m34C * m1B0 * Dot_00199618(m90, c->n) * c->m24;
                 ApplyImpulse(r, Scale_00199618(dir, s));
                 if (m1380) {
-                    Row_00199618 a = Add_00199618(c->p, c->n);
+                    Vec_00199618 a = Add_00199618(c->p, c->n);
                     Vec_00199618 b = Add_00199618(a, Scale_00199618(Scale_00199618(dir, s), D_0038782C));
                     func_001235E8(&a, &b, 0xFF6400FF, 0xFF6400FF, 1);
                 }
             }
         }
     }
-done:
-    if (f.mC0) {
-        func_00183CB8(f.mC0, &f.mC0);
-        f.mC0 = 0;
-    }
+
 }

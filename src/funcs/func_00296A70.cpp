@@ -1,4 +1,3 @@
-/* fuzzy: 99.6 */
 typedef int qword_00296A70 __attribute__((mode(TI)));
 struct Vec_00296A70 {
     union {
@@ -141,8 +140,8 @@ int Obj_00296A70::CallMember(unsigned int id, void* params, Script_00296A70* scr
         if (e) {
             int v = 0;
             func_001E7DE8(params, 0x3AC9AB5E, &v, 0);
-            if (func_00293998(e, v) == true)
-                break;
+            if (func_00293998(e, v))
+                return 1;
         }
         return 0;
     }

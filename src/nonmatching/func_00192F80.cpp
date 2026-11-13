@@ -1,4 +1,4 @@
-/* fuzzy: 90.4 */
+/* fuzzy: 92.0 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -88,22 +88,25 @@ struct Mat_00192F80 {
         r[2].Set(0.0f, 0.0f, 1.0f, 0.0f);
         r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
     }
-    void FromQuat(const Quat_00192F80& q)
+    void FromQuat(const Quat_00192F80& q, float n)
     {
-        float n = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-        float s = (n > 0.0f) ? 2.0f / n : 0.0f;
-        float xs = q.x * s;
-        float ys = q.y * s;
-        float zs = q.z * s;
-        float wx = q.w * xs;
-        float wy = q.w * ys;
-        float wz = q.w * zs;
-        float xx = q.x * xs;
-        float xy = q.x * ys;
-        float xz = q.x * zs;
-        float yy = q.y * ys;
-        float yz = q.y * zs;
-        float zz = q.z * zs;
+        n = (n > 0.0f) ? 2.0f / n : 0.0f;
+        float qx = q.x;
+        float qy = q.y;
+        float qz = q.z;
+        float qw = q.w;
+        float xs = qx * n;
+        float ys = qy * n;
+        float zs = qz * n;
+        float wx = qw * xs;
+        float wy = qw * ys;
+        float wz = qw * zs;
+        float xx = qx * xs;
+        float xy = qx * ys;
+        float xz = qx * zs;
+        float yy = qy * ys;
+        float yz = qy * zs;
+        float zz = qz * zs;
         r[0].x = 1.0f - (yy + zz);
         r[1].x = xy + wz;
         r[2].x = xz - wy;
@@ -436,7 +439,7 @@ void Car_00192F80::Init(void* params)
         m40.y = v.y;
         m40.z = v.z;
         m40.Normalize();
-        m70.FromQuat(m40);
+        m70.FromQuat(m40, m40.x * m40.x + m40.y * m40.y + m40.z * m40.z + m40.w * m40.w);
         m70.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
         Mat_00192F80* d = &mC->m70;
         *d = m70;

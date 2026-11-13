@@ -1,4 +1,4 @@
-/* fuzzy: 92.0 */
+/* fuzzy: 99.2 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -9,7 +9,7 @@ struct Row_00199618 {
         qword q;
     };
     const float& operator[](int i) const { return (&x)[i]; }
-    void Set(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    void Set(float ax, float ay, float az) { x = ax; y = ay; z = az; w = 1.0f; }
     Row_00199618& operator+=(const Row_00199618& o)
     {
         x += o[0];
@@ -174,9 +174,6 @@ extern "C" int func_00199298(Car_00199618* self, Contact_00199618* c, TriQuery_0
                              int hit);
 extern "C" float func_0019B610(Car_00199618* self, Row_00199618* r, Row_00199618* dir);
 
-extern const float D_00387824;
-extern const float D_00387828;
-extern const float D_0038782C;
 
 struct Car_00199618 {
     char pad0[0xC];
@@ -337,7 +334,6 @@ void Car_00199618::Collide()
         int iter = 0;
         int done;
         do {
-            iter++;
             done = 1;
             for (int i = m68; i--;) {
                 Contact_00199618* c = &D_003E49C0[i];
@@ -347,12 +343,12 @@ void Car_00199618::Collide()
                 if (vn > 0.0f)
                     continue;
                 done = 0;
-                float j = -m1A0 * vn;
-                j = (j - vn) * func_0019B610(this, &r, &c->n);
+                float target = -m1A0 * vn;
+                float j = (target - vn) * func_0019B610(this, &r, &c->n);
                 c->m24 += j;
                 ApplyImpulse(r, Scale_00199618(c->n, j));
             }
-        } while (iter < 6 && !done);
+        } while (++iter < 6 && !done);
 
         if (m1380) {
             // Debug display of the contacts (body compiled out in this build).
@@ -373,7 +369,7 @@ void Car_00199618::Collide()
         }
 
         // Friction.
-        float mu = (m84 > D_00387824) ? m1A4 : m1AC;
+        float mu = (m84 > 0.707f) ? m1A4 : m1AC;
         for (int i = m68; i--;) {
             Contact_00199618* c = &D_003E49C0[i];
             if (c->m24 == 0.0f)
@@ -383,7 +379,7 @@ void Car_00199618::Collide()
             float vn = Dot_00199618(v, c->n);
             Vec_00199618 tan = Sub_00199618(v, Scale_00199618(c->n, vn));
             float len = sqrtf(Dot_00199618(tan, tan));
-            if (len < D_00387828)
+            if (len < 0.001f)
                 continue;
             tan *= 1.0f / len;
             float j = len * func_0019B610(this, &r, &tan);
@@ -408,12 +404,12 @@ void Car_00199618::Collide()
                 Contact_00199618* c = &D_003E49C0[i];
                 Vec_00199618 r = Sub_00199618(c->p, m20);
                 Row_00199618 dir;
-                dir.Set(-c->n.z, 0.0f, c->n.x, 1.0f);
                 float s = m34C * m1B0 * Dot_00199618(m90, c->n) * c->m24;
+                dir.Set(-c->n.z, 0.0f, c->n.x);
                 ApplyImpulse(r, Scale_00199618(dir, s));
                 if (m1380) {
                     Vec_00199618 a = Add_00199618(c->p, c->n);
-                    Vec_00199618 b = Add_00199618(a, Scale_00199618(Scale_00199618(dir, s), D_0038782C));
+                    Vec_00199618 b = Add_00199618(Add_00199618(c->p, c->n), Scale_00199618(Scale_00199618(dir, s), 0.2f));
                     func_001235E8(&a, &b, 0xFF6400FF, 0xFF6400FF, 1);
                 }
             }

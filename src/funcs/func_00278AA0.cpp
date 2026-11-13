@@ -1,5 +1,3 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 78.2 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -43,7 +41,6 @@ struct Msg_00278AA0 {
     int m_C;
     unsigned char m_10;
     char pad11[0x0F];
-    void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
 };
 
 extern char D_00371C78[];
@@ -52,7 +49,7 @@ struct Iter_00278AA0 {
     void* m_node;
     int m_index;
     void* m_tag;
-    Iter_00278AA0() : m_index(0) { m_tag = D_00371C78; }
+    Iter_00278AA0() { m_tag = D_00371C78; m_index = 0; }
     ~Iter_00278AA0() { m_tag = D_00371C78; }
 };
 
@@ -69,10 +66,11 @@ struct StatsHolder_00278AA0 {
 
 struct Skater_00278AA0 {
     char pad0[0x18];
-    unsigned short m_id;
-    char pad1A[0x2D8 - 0x1A];
+    int m_id;
+    char pad1C[0x2D8 - 0x1C];
     StatsHolder_00278AA0* m_2D8;
     struct Bump_00278AA0* m_bump;
+    int GetID() const { return m_id; }
 };
 
 struct Driving_00278AA0 {
@@ -106,7 +104,7 @@ extern char D_00376A48[];
 
 extern "C" void* func_001FA800(void* self);
 extern "C" void func_001FF970(void* client, int conn, void* msg);
-extern "C" void func_00101F38(Line_00278AA0* l);
+extern "C" Line_00278AA0* func_00101F38(Line_00278AA0* l);
 extern "C" bool func_00101F60(Line_00278AA0* a, Line_00278AA0* b, Vec_00278AA0* pa, Vec_00278AA0* pb, float* mua,
                               float* mub, int clamp);
 extern "C" void* func_00185578(void* obj, unsigned int name);
@@ -137,6 +135,11 @@ extern "C" void func_002B2BC0(Conn_00278AA0* c, int v);
 extern "C" bool func_002B2F30(Conn_00278AA0* c);
 extern "C" int func_002B3080(Conn_00278AA0* c);
 
+static inline bool Near_00278AA0(const Vec_00278AA0& a, const Vec_00278AA0& b, float r)
+{
+    return (a - b).Length() < r;
+}
+
 struct Bump_00278AA0 {
     char pad0[0xC];
     Skater_00278AA0* m_skater;
@@ -147,11 +150,6 @@ extern "C" void func_00279D18(Vec_00278AA0* out, Bump_00278AA0* b);
 extern "C" void func_00279D88(Vec_00278AA0* out, Bump_00278AA0* b);
 extern "C" float func_00279DB0(Bump_00278AA0* b, int driving);
 extern "C" float func_00279E30(Bump_00278AA0* b, int driving, int otherDriving);
-
-static inline bool Near_00278AA0(const Vec_00278AA0& a, const Vec_00278AA0& b, float r)
-{
-    return (a - b).Length() < r;
-}
 
 void Bump_00278AA0::CheckCollisions(int first)
 {
@@ -204,6 +202,7 @@ void Bump_00278AA0::CheckCollisions(int first)
             continue;
 
         float radius = func_00279E30(this, driving, otherDriving);
+        bool hit = false;
         if (driving)
             func_001E5370(D_00376A48, 0);
         if (otherDriving)
@@ -217,23 +216,22 @@ void Bump_00278AA0::CheckCollisions(int first)
 
         // Closest approach of the two motion segments, or nearest endpoints.
         Vec_00278AA0 pa, pb;
-        float mu;
-        bool hit = false;
-        if (func_00101F60(&mine, &theirs, &pa, &pb, &mu, &mu, 1)) {
+        float mu[1];
+        if (func_00101F60(&mine, &theirs, &pa, &pb, mu, mu, 1)) {
             hit = Near_00278AA0(pa, pb, radius);
-        } else if (Near_00278AA0(theirs.start, mine.start, radius)) {
+        } else if ((theirs.start - mine.start).Length() < radius) {
             hit = true;
             pb = theirs.start;
             pa = mine.start;
-        } else if (Near_00278AA0(theirs.start, mine.end, radius)) {
+        } else if ((theirs.start - mine.end).Length() < radius) {
             hit = true;
             pb = theirs.start;
             pa = mine.end;
-        } else if (Near_00278AA0(theirs.end, mine.start, radius)) {
+        } else if ((theirs.end - mine.start).Length() < radius) {
             hit = true;
             pb = theirs.end;
             pa = mine.start;
-        } else if (Near_00278AA0(theirs.end, mine.end, radius)) {
+        } else if ((theirs.end - mine.end).Length() < radius) {
             hit = true;
             pb = theirs.end;
             pa = mine.end;
@@ -242,29 +240,33 @@ void Bump_00278AA0::CheckCollisions(int first)
             continue;
 
         // The faster (or driving) skater must be one we control.
-        if ((driving == otherDriving && ovel.Length() < vel.Length()) || (driving && !otherDriving)) {
+        if ((driving == otherDriving && vel.Length() > ovel.Length()) || (driving && !otherDriving)) {
             if (!func_002B2F30(myConn))
                 continue;
         }
 
         void* client = func_002A39D8(D_00392068);
         if (authority) {
-            Msg_00278AA0 msg;
             BumpInfo_00278AA0 info;
-            unsigned char from;
+            Msg_00278AA0 msg;
+            unsigned char from[1];
             func_001FA800(&msg);
-            info.m_id = other->m_id | (otherDriving << 7);
+            info.m_id = other->GetID() | (otherDriving << 7);
             info.m_sep = pa - pb;
             Flagged_00278AA0* f = (Flagged_00278AA0*)func_00185578(m_skater, 0x27D7CD28);
             if (f)
                 f->m_bumped = 1;
             func_002B2020(myConn);
-            msg.Set(&info, sizeof(info), 0x43);
+            msg.m_type = 0x43;
+            msg.m_data = &info;
+            msg.m_size = sizeof(info);
             msg.m_C = 2;
             msg.m_10 = 8;
             func_001FF970(client, func_002B3080(myConn), &msg);
-            from = m_skater->m_id | (driving << 7);
-            msg.Set(&from, 1, 0x44);
+            from[0] = m_skater->GetID() | (driving << 7);
+            msg.m_type = 0x44;
+            msg.m_data = from;
+            msg.m_size = 1;
             func_001FF970(client, func_002B3080(oconn), &msg);
             if (func_002166E8(0, 0)) {
                 Stats_00278AA0* s = other->m_2D8->m_stats;
@@ -284,10 +286,12 @@ void Bump_00278AA0::CheckCollisions(int first)
                 if (func_002B1FC8(c))
                     continue;
                 Msg_00278AA0 m;
-                unsigned char id;
+                unsigned char id[1];
                 func_001FA800(&m);
-                id = other->m_id;
-                m.Set(&id, 1, 0x55);
+                id[0] = other->GetID();
+                m.m_data = id;
+                m.m_type = 0x55;
+                m.m_size = 1;
                 m.m_C = 2;
                 m.m_10 = 8;
                 func_001FF970(client, func_002B3080(c), &m);
@@ -297,10 +301,10 @@ void Bump_00278AA0::CheckCollisions(int first)
                 return;
             if (!func_002B22B8(myConn))
                 continue;
-            Msg_00278AA0 m;
             Pair_00278AA0 pair;
+            Msg_00278AA0 m;
             func_001FA800(&m);
-            pair.m_id = other->m_id;
+            pair.m_id = other->GetID();
             pair.m_team = func_002B22C8(myConn);
             bool sameTeam = func_002B22C8(myConn) == oconn->m_team;
             Iter_00278AA0 it;
@@ -309,7 +313,9 @@ void Bump_00278AA0::CheckCollisions(int first)
                     if (func_002B1FC8(c)) {
                         func_002B2990(oconn);
                     } else {
-                        m.Set(&pair, 2, 0x73);
+                        m.m_data = &pair;
+                        m.m_size = 2;
+                        m.m_type = 0x73;
                         m.m_C = 2;
                         m.m_10 = 8;
                         func_001FF970(client, func_002B3080(c), &m);
@@ -318,7 +324,9 @@ void Bump_00278AA0::CheckCollisions(int first)
                     if (func_002B1FC8(c)) {
                         func_002B2518(oconn, func_002B22C8(myConn));
                     } else {
-                        m.Set(&pair, 2, 0x74);
+                        m.m_data = &pair;
+                        m.m_size = 2;
+                        m.m_type = 0x74;
                         m.m_C = 2;
                         m.m_10 = 8;
                         func_001FF970(client, func_002B3080(c), &m);

@@ -1,6 +1,5 @@
-/* fuzzy: 81.2 */
-/* nonmatch func_002DACC8: best earlier draft (thug-claude-lane3/work/nm68/wt2/func_002DACC8.nm.cpp), 300 of 377 words differ (size 0x5cc, want 0x5e4). */
-/* NEAR MISS func_002DACC8 (300/377 words differ, size 0x5cc want 0x5e4): structure right; game places the sorted-insert "found" block (InsertBefore(p)) after the first half of the following pi.Next() (between Valid ternary arms, so that ternary is not if-converted to movn) and reads list.mC via $s3 not 0x2C($sp); also s4/s5 reg swap for solo/&li. */
+/* fuzzy: 83.4 */
+/* NEAR MISS func_002DACC8 (size 0x5dc, want 0x5e4): the game moves InsertSorted's found block (loop.c exit-block motion) between the arms of the following PIt::Next Valid ternary, which then stays branchy; ours lands after Next's null-test barrier (Valid already a movn at loop time). list.mC is read via $s3 in the game, folded to 0x2C($sp) in ours. */
 /* sym: _vt$13Link_002DACC8 = 0x0037CA60 */
 /* sym: _vt$13Head_002DACC8 = 0x0037CA00 */
 extern char D_0037C9D0[];
@@ -122,7 +121,7 @@ struct Link_002DACC8 {
     }
     virtual void Key();
     Entry_002DACC8* GetData() { return m4; }
-    Link_002DACC8* Valid(unsigned k = 0) { return k < ~(unsigned)m4 ? this : 0; }
+    Link_002DACC8* Valid() { return (int)m4 != -1 ? this : 0; }
     void InsertBefore(Link_002DACC8* h) {
         mC = h;
         m10 = h->m10;
@@ -130,20 +129,14 @@ struct Link_002DACC8 {
         h->m10 = this;
     }
     void InsertSorted(Link_002DACC8* n) {
-        Link_002DACC8* p = mC->Valid();
         int pri = n->m8;
-        goto check;
-    loop:
-        if (pri >= p->m8)
-            goto found;
-        p = p->mC->Valid();
-    check:
-        if (p)
-            goto loop;
+        for (Link_002DACC8* p = mC->Valid(); p; p = p->mC->Valid()) {
+            if (pri >= p->m8) {
+                n->InsertBefore(p);
+                return;
+            }
+        }
         n->InsertBefore(this);
-        return;
-    found:
-        n->InsertBefore(p);
     }
 };
 

@@ -1,4 +1,3 @@
-/* fuzzy: 84.9 */
 typedef int qword __attribute__((mode(TI)));
 
 struct V_001B4A08 {
@@ -6,6 +5,7 @@ struct V_001B4A08 {
         qword q;
         struct { float x, y, z, w; };
     };
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 struct Vec_001B4A08 : V_001B4A08 {
@@ -18,7 +18,7 @@ struct Vec_001B4A08 : V_001B4A08 {
 
 static inline Vec_001B4A08 operator+(const V_001B4A08& a, const V_001B4A08& b)
 {
-    return Vec_001B4A08(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001B4A08(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001B4A08 operator-(const V_001B4A08& a)

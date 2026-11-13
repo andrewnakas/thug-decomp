@@ -1,5 +1,4 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 70.7 */
+/* fuzzy: 81.9 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001780F0 {
@@ -38,13 +37,17 @@ struct Mat_001780F0 {
     {
         return r[i];
     }
+    const Vec_001780F0& operator[](int i) const
+    {
+        return r[i];
+    }
     Mat_001780F0() {}
     Mat_001780F0(const Mat_001780F0& o)
     {
-        r[0] = o.r[0];
-        r[1] = o.r[1];
-        r[2] = o.r[2];
-        r[3] = o.r[3];
+        r[0] = o[0];
+        r[1] = o[1];
+        r[2] = o[2];
+        r[3] = o[3];
     }
     Mat_001780F0& operator=(const Mat_001780F0& o)
     {
@@ -74,18 +77,35 @@ struct Mesh_001780F0 {
     int m4C;
 };
 
+extern Vec_001780F0 D_003DD9F0[3];
+extern Vec_001780F0 D_003DDA20[4];
+
 struct Light_001780F0 {
     unsigned int m0;
     int m4[3];
     Vec_001780F0 m10[3];
     Vec_001780F0 m40[4];
     Vec_001780F0 m80[4];
+    /* light i's direction, or the default one unless flag bit 1+i is set */
+    Vec_001780F0* Dir(int i)
+    {
+        return (m0 & (2 << i)) ? &m10[i] : &D_003DD9F0[i];
+    }
+    /* colour i, or the default one unless one of the flag bits in mask is set */
+    Vec_001780F0& Colour(int i, unsigned int mask)
+    {
+        return (m0 & mask) ? m80[i] : D_003DDA20[i];
+    }
 };
 
 struct Inst_001780F0 {
     Mat_001780F0 m0;
     int m40[8];
     int m60;
+    bool Visible() const
+    {
+        return (m60 & 1) ? true : false;
+    }
     int m64;
     int m68;
     Inst_001780F0* m6C;
@@ -146,8 +166,6 @@ extern Words_001780F0 D_003E1590;
 extern Words_001780F0 D_003E15A0;
 extern Words_001780F0 D_003E15B0;
 extern Words_001780F0 D_003E1640;
-extern Vec_001780F0 D_003DD9F0[3];
-extern Vec_001780F0 D_003DDA20[4];
 extern char D_280[];
 extern char D_308[];
 extern char D_310[];
@@ -166,7 +184,7 @@ extern "C" void func_001646D0(int a);
 extern "C" void func_00164E48(int a, unsigned int b);
 extern "C" void func_00164EB8(int a);
 extern "C" void func_00164F48(Mat_001780F0* m);
-extern "C" unsigned int func_001726C0(Inst_001780F0* i, int a);
+extern "C" unsigned int func_001726C0(Inst_001780F0* i);
 extern "C" unsigned int func_00172778(Inst_001780F0* i);
 extern "C" unsigned int func_001727F8(Inst_001780F0* i, int a, int b);
 extern "C" unsigned int func_00172858(Inst_001780F0* i, int a);
@@ -226,7 +244,7 @@ static inline void Mscal(char* prog)
     D_00394294 = D_00394280;
 }
 
-static inline void Unpack(unsigned int num, unsigned int addr)
+static inline void Unpack(unsigned int num, unsigned short addr)
 {
     num &= 0xFF;
     Put((num << 16) | 0x6C000000 | (addr & 0x3FF));
@@ -280,7 +298,19 @@ static inline void SetVec(Vec_001780F0* v, float x, float y, float z, float w)
     v->w = w;
 }
 
-static inline Vec_001780F0 Scale(const Vec_001780F0& s, float k)
+/* a plain four-float vector: a Vec_001780F0 converts to it component by component */
+struct Raw_001780F0 {
+    float x, y, z, w;
+    Raw_001780F0(const Vec_001780F0& v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = v.w;
+    }
+};
+
+static inline VecInit_001780F0 Scale(const Raw_001780F0& s, float k)
 {
     return VecInit_001780F0(s.x * k, s.y * k, s.z * k, s.w * k);
 }
@@ -357,6 +387,7 @@ extern "C" void func_001780F0()
     Mat_001780F0 scale;
     Mat_001780F0 scaled;
     unsigned int colour;
+    float r;
 
     ZeroMat(&inst);
     ZeroMat(&view);
@@ -449,7 +480,7 @@ extern "C" void func_001780F0()
         /* Pass 1: unlit geometry. */
         if ((g->m10 & 1) && n->m30 && !(n->m30->m4 & 0x10)) {
             for (Inst_001780F0* s = g->m3C; s; s = s->m6C) {
-                if (!(s->m60 & 1))
+                if (!s->Visible())
                     continue;
                 inst = s->m0;
                 view = Mul(inst, D_003E1080);
@@ -471,20 +502,23 @@ extern "C" void func_001780F0()
                     ctr = m->m30;
                     ctr.w = 1.0f;
                     func_00323298(&ctr, &view, &ctr);
-                    float r = m->m30.w;
+                    r = m->m30.w;
+                    float x = ctr.x;
+                    float y = ctr.y;
+                    float z = ctr.z;
                     /* wholly outside one of the frustum planes */
-                    if (r < ctr.z - D_00394088 || r < D_0039408C - ctr.z
-                        || r < D_0039405C * ctr.z + D_00394064 * ctr.y
-                        || r < D_0039405C * ctr.z - D_00394064 * ctr.y
-                        || r < D_00394058 * ctr.z - D_00394060 * ctr.x
-                        || r < D_00394058 * ctr.z + D_00394060 * ctr.x)
+                    if (r < z - D_00394088 || r < D_0039408C - z
+                        || r < D_0039405C * z + D_00394064 * y
+                        || r < D_0039405C * z - D_00394064 * y
+                        || r < D_00394058 * z - D_00394060 * x
+                        || r < D_00394058 * z + D_00394060 * x)
                         continue;
                     /* wholly inside: no clipping needed */
-                    if (r < D_00394088 - ctr.z && r < ctr.z - D_0039408C
-                        && r < -D_00394074 * ctr.z - D_0039407C * ctr.y
-                        && r < -D_00394074 * ctr.z + D_0039407C * ctr.y
-                        && r < -D_00394070 * ctr.z + D_00394078 * ctr.x
-                        && r < -D_00394070 * ctr.z - D_00394078 * ctr.x) {
+                    if (r < D_00394088 - z && r < z - D_0039408C
+                        && r < -D_00394074 * z - D_0039407C * y
+                        && r < -D_00394074 * z + D_0039407C * y
+                        && r < -D_00394070 * z + D_00394078 * x
+                        && r < -D_00394070 * z - D_00394078 * x) {
                         func_00161090(m->mC, 0);
                     } else {
                         func_00161090(m->mC, 2);
@@ -495,11 +529,10 @@ extern "C" void func_001780F0()
         }
 
         /* Pass 2: lit geometry. */
-        g = n->m48;
-        if (!g || !(g->m10 & 1) || !n->m30 || !(n->m30->m4 & 0x10))
-            continue;
-        for (Inst_001780F0* s = g->m3C; s; s = s->m6C) {
-            if (!(s->m60 & 1))
+        Geom_001780F0* lit_g = n->m48;
+        if (lit_g && (lit_g->m10 & 1) && n->m30 && (n->m30->m4 & 0x10))
+        for (Inst_001780F0* s = lit_g->m3C; s; s = s->m6C) {
+            if (!s->Visible())
                 continue;
             if ((s->m60 >> 1) & 1) {
                 func_0017B5C8(s, n);
@@ -507,27 +540,30 @@ extern "C" void func_001780F0()
             inst2 = s->m0;
             view2 = Mul(inst2, D_003E1080);
             ctr = func_00172870(s);
-            float r = ctr.w;
+            r = ctr.w;
             ctr.w = 1.0f;
             func_00323298(&ctr, &view2, &ctr);
-            if (r < ctr.z - D_00394088 || r < D_0039408C - ctr.z
-                || r < D_0039405C * ctr.z + D_00394064 * ctr.y
-                || r < D_0039405C * ctr.z - D_00394064 * ctr.y
-                || r < D_00394058 * ctr.z - D_00394060 * ctr.x
-                || r < D_00394058 * ctr.z + D_00394060 * ctr.x)
+            float x = ctr.x;
+            float y = ctr.y;
+            float z = ctr.z;
+            if (r < z - D_00394088 || r < D_0039408C - z
+                || r < D_0039405C * z + D_00394064 * y
+                || r < D_0039405C * z - D_00394064 * y
+                || r < D_00394058 * z - D_00394060 * x
+                || r < D_00394058 * z + D_00394060 * x)
                 continue;
             int clip = 1;
-            if (r < D_00394088 - ctr.z && r < ctr.z - D_0039408C
-                && r < -D_00394074 * ctr.z - D_0039407C * ctr.y
-                && r < -D_00394074 * ctr.z + D_0039407C * ctr.y
-                && r < -D_00394070 * ctr.z + D_00394078 * ctr.x
-                && r < -D_00394070 * ctr.z - D_00394078 * ctr.x)
+            if (r < D_00394088 - z && r < z - D_0039408C
+                && r < -D_00394074 * z - D_0039407C * y
+                && r < -D_00394074 * z + D_0039407C * y
+                && r < -D_00394070 * z + D_00394078 * x
+                && r < -D_00394070 * z - D_00394078 * x)
                 clip = 0;
-            n->m28[D_00394094] = 1;
-            Tag(0x10000000, 0);
             if ((s->m60 >> 3) & 1) {
                 clip |= 0x20;
             }
+            n->m28[D_00394094] = 1;
+            Tag(0x10000000, 0);
             view2[0] *= 128.0f;
             view2[1] *= 128.0f;
             view2[2] *= 128.0f;
@@ -536,9 +572,9 @@ extern "C" void func_001780F0()
 
             Light_001780F0* l = s->m74;
             if (l) {
-                Vec_001780F0* d0 = (l->m0 & 2) ? &l->m10[0] : &D_003DD9F0[0];
-                Vec_001780F0* d1 = (l->m0 & 4) ? &l->m10[1] : &D_003DD9F0[1];
-                Vec_001780F0* d2 = (l->m0 & 8) ? &l->m10[2] : &D_003DD9F0[2];
+                Vec_001780F0* d0 = l->Dir(0);
+                Vec_001780F0* d1 = l->Dir(1);
+                Vec_001780F0* d2 = l->Dir(2);
                 dir.r[0].x = d0->x;
                 dir.r[1].x = d0->y;
                 dir.r[2].x = d0->z;
@@ -567,9 +603,9 @@ extern "C" void func_001780F0()
 
             if (l) {
                 col[0] = (l->m0 & 0x11) ? l->m80[3] : D_003DDA20[3];
-                col[1] = (l->m0 & 0x22) ? l->m80[0] : D_003DDA20[0];
-                col[2] = (l->m0 & 0x44) ? l->m80[1] : D_003DDA20[1];
-                col[3] = (l->m0 & 0x88) ? l->m80[2] : D_003DDA20[2];
+                col[1] = l->Colour(0, 0x22);
+                col[2] = l->Colour(1, 0x44);
+                col[3] = l->Colour(2, 0x88);
             } else {
                 col[0] = D_003DDA20[3];
                 col[1] = D_003DDA20[0];
@@ -608,8 +644,10 @@ extern "C" void func_001780F0()
             Put(0x13000000);
             Close();
 
+            unsigned int qwc = s->m68 * 4;
             D_00394280 = 0;
-            Tag((s->m68 * 4) | 0x30000000, func_001726C0(s, 3));
+            unsigned int src = func_001726C0(s);
+            Tag(qwc | 0x30000000, src);
             Put(0);
             Unpack(s->m68 * 4, D_00394280);
             Tag(0x10000000, 0);

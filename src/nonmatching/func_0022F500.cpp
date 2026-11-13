@@ -1,4 +1,4 @@
-/* fuzzy: 79.3 */
+/* fuzzy: 82.6 */
 /* sym: _vt$13Node_0022F500 = 0x00373000 */
 /* sym: _vt$14Score_0022F500 = 0x00372FE8 */
 /* sym: _vt$13Head_0022F500 = 0x00372F70 */
@@ -111,8 +111,8 @@ struct Node_0022F500 {
     Node_0022F500* Valid() { return (int)data != -1 ? this : 0; }
     void InsertBefore(Node_0022F500* n)
     {
-        n->next = this;
         n->prev = prev;
+        n->next = this;
         prev->next = n;
         prev = n;
     }
@@ -136,8 +136,7 @@ struct Head_0022F500 : Node_0022F500 {
     void Key();
     void InsertSorted(Score_0022F500* s)
     {
-        Node_0022F500* n = this;
-        while ((n = n->next->Valid()) != 0) {
+        for (Node_0022F500* n = next->Valid(); n; n = n->next->Valid()) {
             if (s->key >= n->key) {
                 n->InsertBefore(s);
                 return;

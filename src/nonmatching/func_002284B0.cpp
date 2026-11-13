@@ -1,5 +1,4 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 76.6 */
+/* fuzzy: 81.8 */
 /* sym: __9Prm_284B0 = 0x001E6978 */
 /* sym: _$_9Prm_284B0 = 0x001E6AE8 */
 /* sym: _vt$14ListHead_284B0 = 0x003724F8 */
@@ -96,10 +95,14 @@ public:
     ListNode_284B0* First() { return m_next->Valid(); }
     ListNode_284B0* Nth(unsigned int k)
     {
-        for (ListNode_284B0* n = First(); n; n = n->m_next->Valid()) {
+        ListNode_284B0* n = First();
+        if (!n)
+            return 0;
+        do {
             if (k-- == 0)
                 return n;
-        }
+            n = n->m_next->Valid();
+        } while (n);
         return 0;
     }
 };
@@ -186,9 +189,9 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
 
     int total = 0;
     for (int i = 0; i < numFiles; i++) {
+        int platform = D_00388814;
         CardFile_284B0* file = files.Nth(i)->m_data;
 
-        int platform = D_00388814;
         bool ours = true;
         if (platform != 4) {
             for (int j = 0; j < prefixLen; j++) {
@@ -234,8 +237,12 @@ bool ScriptGetMemCardDirectoryListing_284B0(Prm_284B0* params, Script_284B0* scr
             if (hdr->m_size <= 100)
                 corrupt = func_001053C8(hdr->m_data, hdr->m_size) != hdr->m_checksum;
             func_001E7268(entry, D_00372228, func_00225D90(type, func_001139D8(f, 0, 2)));
-            if (corrupt || func_00225EC0(type) != hdr->m_version) {
-                MarkDamaged_284B0(entry, D_00388814 == 5 ? D_003723F8 : D_00372408);
+            if (corrupt) {
+                func_001E7360(entry, 0, func_001F0D78(D_0038FA20));
+                func_001E7138(entry, D_003722E0, func_001E54B8(D_00388814 == 5 ? D_003723F8 : D_00372408, 0));
+            } else if (func_00225EC0(type) != hdr->m_version) {
+                func_001E7360(entry, 0, func_001F0D78(D_0038FA20));
+                func_001E7138(entry, D_003722E0, func_001E54B8(D_00388814 == 5 ? D_003723F8 : D_00372408, 0));
             } else {
                 Prm_284B0* data = new Prm_284B0;
                 func_001E9D70(data, hdr->m_data);

@@ -1,4 +1,4 @@
-/* fuzzy: 86.4 */
+/* fuzzy: 92.1 */
 extern "C" float sqrtf(float);
 extern "C" int func_0010FC30();
 
@@ -7,7 +7,7 @@ union Vec_0027CD28 {
     qword q;
     float c[4];
     float& operator[](int i) { return c[i]; }
-    float operator[](int i) const { return c[i]; }
+    const float& operator[](int i) const { return c[i]; }
     Vec_0027CD28() {}
     Vec_0027CD28(float a, float b, float x, float d)
     {
@@ -29,6 +29,13 @@ union Vec_0027CD28 {
         c[1] += o[1];
         c[2] += o[2];
         c[3] += o[3];
+    }
+    void operator*=(float k)
+    {
+        c[0] *= k;
+        c[1] *= k;
+        c[2] *= k;
+        c[3] *= k;
     }
     float Length() const { return sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]); }
 };
@@ -263,11 +270,13 @@ void Skater_0027CD28::DoAirPhysics()
         func_00101730(&m_body->m_vel, &m_normal);
 
     Vec_0027CD28 gravity(0.0f, func_002032A0(0x6618A713, 0), 0.0f, 1.0f);
-    if (m_3B4 != 0.0f && m_body->m_vel[1] > 0.0f)
+    if (m_3B4 != 0.0f && m_body->m_vel[1] > 0.0f) {
+        // the game re-stores z here (swc1 0x8(sp) at 0027CED8)
+        gravity[2] = 0.0f;
         gravity[1] = m_3C4;
+    }
     func_001016A8(&gravity, &m_normal);
-    Vec_0027CD28 step = gravity * m_dt;
-    m_body->m_vel += step;
+    m_body->m_vel += gravity * m_dt;
 
     switch (m_trick->m_mode) {
     case 0:
@@ -309,7 +318,7 @@ void Skater_0027CD28::DoAirPhysics()
     func_0027DC30(this);
     func_0027E0C8(this);
     Body_0027CD28* body = m_body;
-    step = body->m_vel * m_dt;
+    Vec_0027CD28 step = body->m_vel * m_dt;
 
     if (m_state->m_onRail) {
         Contact_0027CD28* c = m_ground->m_contact;
@@ -364,7 +373,8 @@ void Skater_0027CD28::DoAirPhysics()
             retried = 1;
             step = m_body->m_vel;
             func_003233B8(&step, &step);
-            step = step * want * (1.0f - got / want);
+            step *= want;
+            step *= 1.0f - got / want;
         }
     } while (again);
 

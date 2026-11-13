@@ -1,4 +1,4 @@
-/* fuzzy: 91.9 */
+/* fuzzy: 97.3 */
 /* Vehicle component script member functions (assert path: gel/components/vehiclecomponent.cpp).
    Returns 0/1 for handled queries and commands, 2 for "not mine". */
 extern "C" float sqrtf(float);
@@ -33,12 +33,13 @@ struct Vec_001948C0 {
 struct Mat_001948C0 {
     Vec_001948C0 r[4];
     Vec_001948C0& operator[](int i) { return r[i]; }
+    const Vec_001948C0& operator[](int i) const { return r[i]; }
     Mat_001948C0& operator=(const Mat_001948C0& m)
     {
-        r[0] = m.r[0];
-        r[1] = m.r[1];
-        r[2] = m.r[2];
-        r[3] = m.r[3];
+        r[0] = m[0];
+        r[1] = m[1];
+        r[2] = m[2];
+        r[3] = m[3];
         return *this;
     }
     /* row vector times the 3x3 part, w passed through */
@@ -101,14 +102,17 @@ inline void Vec_001948C0::Normalize()
 }
 
 /* unit quaternion -> rotation matrix */
-static inline void QuatToMatrix_001948C0(Mat_001948C0& m, const Vec_001948C0& q)
+static inline void QuatToMatrix_001948C0(Mat_001948C0& m, const Vec_001948C0& q, float n)
 {
-    float n = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-    float s = (n > 0.0f) ? 2.0f / n : 0.0f;
-    float xs = q.x * s, ys = q.y * s, zs = q.z * s;
-    float wx = q.w * xs, wy = q.w * ys, wz = q.w * zs;
-    float xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
-    float yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
+    n = (n > 0.0f) ? 2.0f / n : 0.0f;
+    float qx = q.x;
+    float qy = q.y;
+    float qz = q.z;
+    float qw = q.w;
+    float xs = qx * n, ys = qy * n, zs = qz * n;
+    float wx = qw * xs, wy = qw * ys, wz = qw * zs;
+    float xx = qx * xs, xy = qx * ys, xz = qx * zs;
+    float yy = qy * ys, yz = qy * zs, zz = qz * zs;
     m.r[0].x = 1.0f - (yy + zz);
     m.r[1].x = xy + wz;
     m.r[2].x = xz - wy;
@@ -215,7 +219,7 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
         vel = Scale(mom, mass);
         vel.w = 0.0f;
         rotVel = invInertia.Rotate(angMom);
-        return 1;
+        break;
     }
 
     case 0xA80A0D36:
@@ -227,7 +231,7 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
         unsigned int id;
         if (func_001E8398(params, 0, &id, 0)) {
             func_001953A8(this, func_00229DF0(func_00229668(id, 1)));
-            return 1;
+            break;
         }
         void* group = script->object;
         int n = func_00229EB0(group);
@@ -240,7 +244,7 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
         }
         if (D_00392808->mode != 0xD443A2BC)
             func_001953A8(this, func_00229DF0(func_0022CBF8(D_0038FC78, 0)));
-        return 1;
+        break;
     }
 
     case 0xC33608E4: {
@@ -285,12 +289,13 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
             orient = q;
 
             orient.Normalize();
-            QuatToMatrix_001948C0(matrix, orient);
+            QuatToMatrix_001948C0(matrix, orient, orient.x * orient.x + orient.y * orient.y + orient.z * orient.z + orient.w * orient.w);
             matrix.r[3].Set(0.0f, 0.0f, 0.0f, 1.0f);
             model->matrix = matrix;
             func_00196BE0(this);
+            return 1;
         }
-        return 1;
+        break;
     }
 
     case 0xDB35AAD8:
@@ -315,6 +320,9 @@ int VehicleComponent_001948C0::CallMemberFunction(unsigned int name, void* param
 
     case 0x81FAAC21:
         return onGround != 0;
+
+    default:
+        return 2;
     }
-    return 2;
+    return 1;
 }

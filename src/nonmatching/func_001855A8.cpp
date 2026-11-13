@@ -1,8 +1,8 @@
-/* fuzzy: 93.1 */
+/* fuzzy: 98.4 */
 /* Model/motion component script member functions: position, orientation, velocity queries, plus the
    "ask every sub-component, then the base class" fallback. */
-extern float D_00387710; /* deg->rad, the game loads its .lit4 constants in a different order than the literals would compile */
-extern float D_00387714;
+ /* deg->rad, the game loads its .lit4 constants in a different order than the literals would compile */
+
 extern float D_00387718;
 extern float D_0038771C;
 extern "C" float sqrtf(float);
@@ -97,7 +97,7 @@ struct Coll_001855A8 {
     char pad20[0xC0 - 0x20];
     struct Ref {
         void* p;
-        void Release()
+        ~Ref()
         {
             if (p) {
                 func_00183CB8(p, this);
@@ -106,7 +106,6 @@ struct Coll_001855A8 {
         }
     } mC0;
     char padC4[0xE0 - 0xC4];
-    ~Coll_001855A8() { mC0.Release(); }
 };
 
 struct Script_001855A8 {
@@ -221,9 +220,9 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
             func_001E7EB0(params, 0x7323E97C, &rx, 0);
             func_001E7EB0(params, 0x0424D9EA, &ry, 0);
             func_001E7EB0(params, 0x9D2D8850, &rz, 0);
-            rx *= D_00387710;
-            ry *= D_00387710;
-            rz *= D_00387710;
+            rx *= 0.0174532942f;
+            ry *= 0.0174532942f;
+            rz *= 0.0174532942f;
             func_00100200(&m, rx, ry, rz);
             SetMatrix(m);
         }
@@ -294,9 +293,7 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         float height = 3.0f;
         func_001E7EB0(params, 0x0AB21AF0, &height, 0);
         height *= 12.0f;
-        Vec_001855A8 p = pos + matrix.up * height;
-        col.end = p;
-        col.start = p;
+        col.end = col.start = pos + matrix.up * height;
         if (func_001E8708(params, 0xDC7EE44A))
             col.end += matrix.right * dist;
         else
@@ -332,7 +329,7 @@ int ModelComponent_001855A8::CallMemberFunction(unsigned int name, void* params,
         float feet = 0.0f;
         if (other) {
             Vec_001855A8 d = pos - other->pos;
-            feet = d.Length() * D_00387714;
+            feet = d.Length() * 0.0833333358f;
         }
         func_001E7318(script->params, D_00361A38, feet);
         return 1;

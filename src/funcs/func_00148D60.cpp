@@ -1,4 +1,3 @@
-/* fuzzy: 80.5 */
 struct Heap_00148D60 {
     char pad[0xD8];
     void* mD8;
@@ -38,40 +37,40 @@ extern "C" int func_00148D60(Tex_00148D60* tex, unsigned short pos, int vertical
         if (pos + amount >= tex->m_width)
             amount = tex->m_width - pos - 1;
         if (amount < 0) {
+            org[0] = 0;
+            org[1] = 0;
             sh = tex->m_height;
             sw = pos + 1;
             dw = pos - amount + 1;
             off = -amount;
-            org[0] = 0;
-            org[1] = 0;
             dh = sh;
         } else {
+            org[0] = pos;
+            org[1] = 0;
             off = 0;
             sh = tex->m_height;
             sw = tex->m_width - pos;
             dw = tex->m_width - pos + amount;
-            org[0] = pos;
-            org[1] = 0;
             dh = sh;
         }
     } else {
         if (pos + amount >= tex->m_height)
             amount = tex->m_height - pos - 1;
         if (amount < 0) {
+            org[0] = 0;
+            org[1] = 0;
             sw = tex->m_width;
             sh = pos + 1;
             dh = pos - amount + 1;
             off = -amount * sw;
-            org[0] = 0;
-            org[1] = 0;
             dw = sw;
         } else {
+            org[0] = 0;
+            org[1] = pos;
             off = 0;
             sw = tex->m_width;
             sh = tex->m_height - pos;
             dh = tex->m_height - pos + amount;
-            org[0] = 0;
-            org[1] = pos;
             dw = sw;
         }
     }

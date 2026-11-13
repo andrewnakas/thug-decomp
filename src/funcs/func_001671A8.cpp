@@ -1,4 +1,3 @@
-/* fuzzy: 79.6 */
 typedef int qword_001671A8 __attribute__((mode(TI)));
 
 struct R_001671A8 {
@@ -68,13 +67,13 @@ struct M_001671A8 {
         float dx = t.x * r[0].x + t.y * r[0].y + t.z * r[0].z;
         float dy = t.x * r[1].x + t.y * r[1].y + t.z * r[1].z;
         float dz = t.x * r[2].x + t.y * r[2].y + t.z * r[2].z;
+        r[3].x = -dx;
+        r[3].y = -dy;
+        r[3].z = -dz;
         float f;
         f = r[0].y; r[0].y = r[1].x; r[1].x = f;
         f = r[0].z; r[0].z = r[2].x; r[2].x = f;
         f = r[1].z; r[1].z = r[2].y; r[2].y = f;
-        r[3].x = -dx;
-        r[3].y = -dy;
-        r[3].z = -dz;
     }
 };
 

@@ -1,4 +1,3 @@
-/* fuzzy: 90.0 */
 extern "C" int func_00326618(int);
 extern "C" int func_003267F8();
 extern "C" unsigned int func_0010FC30();
@@ -40,11 +39,10 @@ int func_001F88B0(void* n)
         if (state >= 0)
             return 1;
     }
-    if (err == 0) {
+    if (err == 0)
         func_001FA658(n, 2);
-        return 0;
-    }
-    func_001FA658(n, 5);
+    else
+        func_001FA658(n, 5);
     return 0;
 fail:
     func_001FA658(n, 1);

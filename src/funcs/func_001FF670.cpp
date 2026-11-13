@@ -1,4 +1,3 @@
-/* fuzzy: 93.8 */
 extern "C" void func_001FA8C0(void* self, int chrg);
 extern "C" void func_001FA9B0(void* self, int chrg);
 extern char D_00366AA8[];
@@ -52,6 +51,7 @@ struct Node_001FF670 {
     int m14;
     T* GetData() { return data; }
     Node_001FF670* Valid() { return (int)data != -1 ? this : 0; }
+    Node_001FF670* ValidK(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }
 };
 
 template <class T, char* VT>
@@ -62,9 +62,9 @@ struct It_001FF670 {
     It_001FF670() { vt = VT; cur = 0; }
     ~It_001FF670() { vt = VT; }
     T* Next() {
-        cur = cur->next->Valid();
-        if (cur) return cur->GetData();
-        return 0;
+        cur = cur->next->ValidK();
+        if (!cur) return 0;
+        return cur->GetData();
     }
     T* Advance(Node_001FF670<T>* c) {
         cur = c->next->Valid();

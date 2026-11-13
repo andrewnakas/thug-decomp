@@ -1,4 +1,3 @@
-/* fuzzy: 93.1 */
 typedef int qword_001D4880 __attribute__((mode(TI)));
 
 struct Vec_001D4880 {
@@ -71,8 +70,14 @@ struct It_001D4880 {
     }
     Child_001D4880* First(Node_001D4880* h)
     {
-        cur = h;
-        return Next();
+        Node_001D4880* n = h->m_next;
+        if (~(int)n->m_data == 0)
+            cur = 0;
+        else
+            cur = n;
+        if (!cur)
+            return 0;
+        return cur->m_data;
     }
 };
 

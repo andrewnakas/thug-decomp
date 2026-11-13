@@ -1,4 +1,3 @@
-/* fuzzy: 87.5 */
 struct Conn_00202788 {
     char pad[0x68];
     int m_flags;
@@ -18,7 +17,9 @@ static inline unsigned int HasFlag_00202788(Conn_00202788* c, int flag)
 
 static inline int Max_00202788(int a, int b)
 {
-    return a > b ? a : b;
+    int r = b;
+    if (a >= b) r = a;
+    return r;
 }
 
 extern "C" int func_00202768(Conn_00202788* c);

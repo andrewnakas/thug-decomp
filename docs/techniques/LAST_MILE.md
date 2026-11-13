@@ -387,3 +387,12 @@ What this means for us:
 - Mizuchi: [Can LLMs Really Do Matching Decompilation?](https://gambiconf.substack.com/p/can-llms-really-do-matching-decompilation), [github.com/macabeus/mizuchi](https://github.com/macabeus/mizuchi)
 - gcc 2.95.3 source (`gcc-mirror/gcc`, tag `releases/gcc-2.95.3`): loop.c (thresholds), cse.c `canon_hash`, gcse.c `hash_expr_1`, stmt.c `preserve_subexpressions_p`, haifa-sched.c `too_large`
 - PS2 Linux Kit gcc sources (lead only): [tensioncore HOWTO](https://ps2-linux.tensioncore.com/docs/howto/display_docff02.html?docid=78)
+
+## Measured: per-function compiler build (2026-11-13) — dead end
+
+All 434 src/nonmatching units were compiled with every other EE build we have (2.95.3-114, 2.95.3-107,
+2.95.2-274, 2.95.2-273a; without SN-only `-fopt-stack`). None matched. 11 had fewer differing words on another
+build, but every one checked scored lower by fuzzy (func_00103000 95.6 -> 84.6, func_0020FD98 97.4 -> 75.7,
+func_001D6800 98.9 -> 97.7 on 2.95.3-107): alignment artefacts. The game was built with SN 2.95.3 v1.36
+throughout; the remaining differences are source shape and per-file flags, not the compiler build.
+Script: work/csweep/one.sh (git-ignored).

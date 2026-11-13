@@ -1,4 +1,4 @@
-/* fuzzy: 97.1 */
+/* fuzzy: 99.3 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -102,22 +102,25 @@ struct Mat_0018E4C8 {
         r[3].w = 1.0f;
     }
     Mat_0018E4C8& operator*=(const Mat_0018E4C8& o);
-    void FromQuat(const Quat_0018E4C8& q)
+    void FromQuat(const Quat_0018E4C8& q, float n)
     {
-        float n = q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3];
-        float s = (n > 0.0f) ? 2.0f / n : 0.0f;
-        float xs = q.x * s;
-        float ys = q.y * s;
-        float zs = q.z * s;
-        float wx = q.w * xs;
-        float wy = q.w * ys;
-        float wz = q.w * zs;
-        float xx = q.x * xs;
-        float xy = q.x * ys;
-        float xz = q.x * zs;
-        float yy = q.y * ys;
-        float yz = q.y * zs;
-        float zz = q.z * zs;
+        n = (n > 0.0f) ? 2.0f / n : 0.0f;
+        float qx = q.x;
+        float qy = q.y;
+        float qz = q.z;
+        float qw = q.w;
+        float xs = qx * n;
+        float ys = qy * n;
+        float zs = qz * n;
+        float wx = qw * xs;
+        float wy = qw * ys;
+        float wz = qw * zs;
+        float xx = qx * xs;
+        float xy = qx * ys;
+        float xz = qx * zs;
+        float yy = qy * ys;
+        float yz = qy * zs;
+        float zz = qz * zs;
         r[0].x = 1.0f - (yy + zz);
         r[1].x = xy + wz;
         r[2].x = xz - wy;
@@ -293,7 +296,7 @@ void Body_0018E4C8::Init(void* params)
         }
         m100 = r;
         m100.Normalize();
-        m120.FromQuat(m100);
+        m120.FromQuat(m100, m100.x * m100.x + m100.y * m100.y + m100.z * m100.z + m100.w * m100.w);
     }
 
     func_001E7FA8(params, 0x0C4C809E, &mF0, 0);
@@ -360,7 +363,8 @@ void Body_0018E4C8::Init(void* params)
         func_001E8248(params, 0xCCBFEA8C, &verts, 0);
         func_00192258(this, verts);
     }
-    if (shape == 0) {
+    switch (shape) {
+    case 0: {
         Vec_0018E4C8 top(32.0f, 32.0f, 16.0f, 1.0f);
         func_001E8038(params, D_00361F00, &top, 0);
         Vec_0018E4C8 bottom = top;
@@ -369,7 +373,9 @@ void Body_0018E4C8::Init(void* params)
         top *= 0.5f;
         bottom *= 0.5f;
         func_00192380(this, &top, &bottom);
-    } else if (shape == 1) {
+        break;
+    }
+    case 1: {
         float w = 42.0f;
         float h = 32.0f;
         func_001E7EB0(params, 0x0AB21AF0, &w, 0);
@@ -377,7 +383,9 @@ void Body_0018E4C8::Init(void* params)
         w *= 0.5f;
         h *= 0.5f;
         func_00192520(this, w, h);
-    } else if (shape == 2) {
+        break;
+    }
+    case 2: {
         float rx = 12.0f;
         float rz;
         float h = 60.0f;
@@ -390,11 +398,17 @@ void Body_0018E4C8::Init(void* params)
         func_001E7DE8(params, 0x4055F24A, &n, 0);
         h *= 0.5f;
         func_001926A8(this, n, rx, rz, h);
-    } else if (shape == 3) {
+        break;
+    }
+    case 3: {
         Vec_0018E4C8 dims(32.0f, 32.0f, 16.0f, 1.0f);
         func_001E7FA8(params, 0x1D82745A, &dims, 0);
         dims *= 0.5f;
         func_001928A8(this, &dims);
+        break;
+    }
+    case 4:
+        break;
     }
 
     if (func_001E8618(params, 0xC35CAC0D)) {

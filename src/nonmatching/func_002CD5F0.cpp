@@ -1,4 +1,4 @@
-/* fuzzy: 78.1 */
+/* fuzzy: 94.2 */
 struct Color_002CD5F0 {
     unsigned char m0;
     signed char m1;
@@ -6,7 +6,12 @@ struct Color_002CD5F0 {
     unsigned char m3;
     unsigned char m4;
     unsigned char m5;
-    void Set(unsigned char a, signed char b, unsigned char d)
+    int GetY() const { return m1; }
+    int GetX() const { return m0; }
+    int GetZ() const { return m2; }
+    int GetW() const { return m3; }
+    int GetD() const { return m5; }
+    void Set(int a, signed char b, int d)
     {
         m0 = a;
         m1 = b;
@@ -57,7 +62,7 @@ struct Obj_002CD5F0 {
 bool Obj_002CD5F0::Add(Def_002CD5F0* def, int delta)
 {
     Color_002CD5F0 c = def->m0;
-    c.Set(c.m0, c.m1 + delta, c.m2);
+    c.Set(c.m0, c.GetY() + delta, c.m2);
     if ((def->m8 >> 3) & 1) {
         c.Set(c.m0, c.m1 + 1, c.m2);
         if (c.m1) {
@@ -67,8 +72,8 @@ bool Obj_002CD5F0::Add(Def_002CD5F0* def, int delta)
     }
     int id = func_002BE5F0(func_002C0368(), def->m34, 0);
     for (Node_002CD5F0* n = mC; n; n = n->m18) {
-        if (n->m4 == id && n->m8 == c.m0 && n->m9 == c.m1 && n->mA == c.m2 && n->m10 == c.m3 &&
-            n->m11 == c.m5 && def->mC == n->mC)
+        if (n->m4 == id && n->m8 == c.GetX() && n->m9 == c.m1 && n->mA == c.GetZ() && n->m10 == c.GetW() &&
+            n->m11 == c.GetD() && def->mC == n->mC)
             return true;
     }
     if (func_002C4750() == func_002C4770())

@@ -1,4 +1,4 @@
-/* fuzzy: 70.9 */
+/* fuzzy: 72.1 */
 /* sym: _vt$11It_001FF970 = 0x00366B58 */
 
 struct LNode_001FF970 {
@@ -126,6 +126,9 @@ struct CNode_001FF970 {
         if (~(int)n->m4 == 0) return 0;
         return n;
     }
+    CNode_001FF970* Self() { return this; }
+    CNode_001FF970* Live() { if (~(int)m4 == 0) return 0; return Self(); }
+    CNode_001FF970* Nx() { return mC->Live(); }
     CNode_001FF970* GetNextK(unsigned k = 0) { return mC->Valid(k); }
 };
 
@@ -137,11 +140,7 @@ struct It_001FF970 {
     virtual ~It_001FF970() {}
     Conn_001FF970* Next()
     {
-        CNode_001FF970* n = m_cur->mC;
-        if (~(int)n->m4 == 0)
-            m_cur = 0;
-        else
-            m_cur = n;
+        m_cur = m_cur->Nx();
         if (!m_cur) return 0;
         return m_cur->m4;
     }

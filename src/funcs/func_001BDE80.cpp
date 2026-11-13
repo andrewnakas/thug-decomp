@@ -1,4 +1,3 @@
-/* fuzzy: 97.6 */
 /* sym: __15Feeler_001BDE80 = 0x00209240 */
 /* sym: SetStart__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209360 */
 /* sym: SetEnd__15Feeler_001BDE80RC12Vec_001BDE80 = 0x00209370 */
@@ -88,7 +87,9 @@ struct C_001BDE80 {
 void C_001BDE80::Update()
 {
     if (!func_002A19A8(D_00392068) && func_001A9E60(m1C)) return;
-    if (func_0010FC30() - m28 > 10000) {
+    unsigned int elapsed = func_0010FC30() - m28;
+    unsigned int timeout = 10000;
+    if (elapsed > timeout) {
         func_00184950(mC);
     } else if (m34) {
         if (m30 < func_0010FC30()) func_00184950(mC);

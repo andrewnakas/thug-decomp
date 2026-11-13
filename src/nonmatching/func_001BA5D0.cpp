@@ -1,4 +1,4 @@
-/* fuzzy: 85.2 */
+/* fuzzy: 98.1 */
 typedef int qword_001BA5D0 __attribute__((mode(TI)));
 
 struct Vec_001BA5D0 {
@@ -38,8 +38,8 @@ Vec_001BA5D0 Rotate_001BA5D0(const Quat_001BA5D0& q, const Vec_001BA5D0& v)
     c.x = -q.x;
     c.y = -q.y;
     c.z = -q.z;
-    c.w = q.w;
     Quat_001BA5D0 r = q;
+    c.w = q.w;
     func_001BA6A8(&r, &p);
     func_001BA6A8(&r, &c);
     return Vec_001BA5D0(r.x, r.y, r.z, r.w);

@@ -24,6 +24,10 @@ void C_001B3A48::Handle(void* params)
     unsigned int id;
     if (!func_001E8398(params, 0x963DC198, &id, 0))
         return;
+    /* Not matching: the game's compare tree for this switch (root 0xBA1D1E94; the 0xD5B4F014 node's right side
+       jumping straight to the end) is what g++ builds when the original had one more case key strictly between
+       0xD5B4F014 and 0xE41199AF whose body did nothing. That key's value is not recoverable from the binary, so it is
+       left out rather than invented. */
     switch (id) {
     case 0x255ED86F:
     case 0xE6DFAEC7:

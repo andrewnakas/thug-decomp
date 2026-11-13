@@ -1,4 +1,4 @@
-/* fuzzy: 61.8 */
+/* fuzzy: 83.3 */
 /* Rigid-body contact solver for the points in D_003E4540 (0x30 each: position, normal, cached effective mass,
    accumulated normal impulse, rolling factor, in-contact and mass-cached flags). Up to 20 passes of normal
    impulses (restitution m24) until no contact point approaches; on failure it fires the m90 event or zeroes
@@ -15,14 +15,15 @@ struct Vec_00191250 {
         qword q;
     };
     Vec_00191250() {}
+    const float& operator[](int i) const { return (&x)[i]; }
     Vec_00191250(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     Vec_00191250(float ax, float ay, float az) { x = ax; y = ay; z = az; w = 1.0f; }
     Vec_00191250& operator+=(const Vec_00191250& o)
     {
-        x += o.x;
-        y += o.y;
-        z += o.z;
-        w += o.w;
+        x += o[0];
+        y += o[1];
+        z += o[2];
+        w += o[3];
         return *this;
     }
     Vec_00191250& operator*=(float s)
@@ -45,27 +46,27 @@ struct Vec_00191250 {
 
 static inline Vec_00191250 operator+(const Vec_00191250& a, const Vec_00191250& b)
 {
-    return Vec_00191250(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_00191250(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_00191250 operator-(const Vec_00191250& a, const Vec_00191250& b)
 {
-    return Vec_00191250(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_00191250(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_00191250 operator*(const Vec_00191250& a, float s)
 {
-    return Vec_00191250(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_00191250(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 static inline Vec_00191250 Cross_00191250(const Vec_00191250& a, const Vec_00191250& b)
 {
-    return Vec_00191250(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0.0f);
+    return Vec_00191250(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f);
 }
 
 static inline float Dot_00191250(const Vec_00191250& a, const Vec_00191250& b)
 {
-    return a.x * b.x + a.y * b.y + a.z * b.z;
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
 struct Mat_00191250 {
@@ -155,7 +156,7 @@ void Body_00191250::Solve()
 
     for (;;) {
         bool done = true;
-        for (int i = m_numPts - 1; i != -1; i--) {
+        for (int i = m_numPts; --i != -1;) {
             Pt_00191250* p = &D_003E4540[i];
             if (!p->m_contact)
                 continue;
@@ -192,7 +193,7 @@ void Body_00191250::Solve()
             break;
     }
 
-    for (int i = m_numPts - 1; i != -1; i--) {
+    for (int i = m_numPts; --i != -1;) {
         Pt_00191250* p = &D_003E4540[i];
         Contact_00191250* con = &m_contacts[i];
         if (!p->m_contact)
@@ -239,7 +240,7 @@ void Body_00191250::Solve()
     }
 
     float dt = func_0010FAB8();
-    for (int i = m_numPts - 1; i != -1; i--) {
+    for (int i = m_numPts; --i != -1;) {
         Pt_00191250* p = &D_003E4540[i];
         if (!p->m_contact)
             continue;
@@ -248,8 +249,7 @@ void Body_00191250::Solve()
         m_vel += imp;
         m_angVel += ang;
         if (D_0038C9AC) {
-            Vec_00191250 a = p->pos + m_pos;
-            func_001235E8(a, a + imp * 60.0f, 0xFF00FFFF, 0xFFFFFFFF, 1);
+            func_001235E8(p->pos + m_pos, p->pos + m_pos + imp * 60.0f, 0xFF00FFFF, 0xFFFFFFFF, 1);
         }
     }
 

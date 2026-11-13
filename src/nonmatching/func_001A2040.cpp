@@ -1,4 +1,4 @@
-/* fuzzy: 62.4 */
+/* fuzzy: 64.0 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -37,7 +37,7 @@ struct Quat_001A2040 {
     Quat_001A2040() {}
     Quat_001A2040(const Quat_001A2040& v) { q = v.q; }
     Quat_001A2040(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
-    Quat_001A2040 operator-() const { return Quat_001A2040(-x, -y, -z, -w); }
+    Quat_001A2040 operator-() const { Quat_001A2040 r(-x, -y, -z, -w); return r; }
     Quat_001A2040 Normalize()
     {
         float s = 1.0f / sqrtf(x * x + y * y + z * z + w * w);

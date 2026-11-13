@@ -1,4 +1,3 @@
-/* fuzzy: 99.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001CFB18 {
@@ -85,21 +84,21 @@ void Obj_001CFB18::SetupBones()
     void* comp = func_00185578(mC, 0x222756D5);
     Mat_001CFB18* out = func_0011D9E0(func_0019EBD0(comp));
     for (int j = 0; j < func_0011D9E8(func_0019EBD0(comp)); j++) {
+        Mat_001CFB18* o = &out[j];
         if (j == 0) {
-            out->Zero();
+            o->Zero();
         } else if (j == 1) {
-            out->Zero();
-            out->r[0].x = 1.0f;
-            out->r[1].z = -1.0f;
-            out->r[2].y = 1.0f;
-            out->r[3] = root;
+            o->Zero();
+            o->r[0].x = 1.0f;
+            o->r[1].z = -1.0f;
+            o->r[2].y = 1.0f;
+            o->r[3] = root;
         } else {
-            out->Zero();
-            out->r[0].x = -1.0f;
-            out->r[1].z = 1.0f;
-            out->r[2].y = 1.0f;
-            out->r[3] = pts[j - 2];
+            o->Zero();
+            o->r[0].x = -1.0f;
+            o->r[1].z = 1.0f;
+            o->r[2].y = 1.0f;
+            o->r[3] = pts[j - 2];
         }
-        out++;
     }
 }

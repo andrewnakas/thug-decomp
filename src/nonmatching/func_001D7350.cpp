@@ -1,4 +1,5 @@
 /* fuzzy: 88.8 */
+/* blocked: game issues all 3 sq before the transpose loads (lq regs v1/v0/v1). Tried a 48-byte rot struct copy, a plain aligned Vec, inline SetRot/Transpose (order right but an extra this+0x20 pointer, +1 insn). */
 typedef int qword_001D7350 __attribute__((mode(TI)));
 
 struct Vec_001D7350 {

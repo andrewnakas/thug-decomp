@@ -1,4 +1,5 @@
 /* fuzzy: 98.9 */
+/* blocked: lwc1 mB0 fills the lq->sq stall here; the game keeps it after the stack-copy loads. Tried a named temp + Length(), the free Length(v) inline, both together: no change or worse. */
 typedef int qword_001D6800 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);

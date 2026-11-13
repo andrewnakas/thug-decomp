@@ -1,4 +1,4 @@
-/* fuzzy: 83.0 */
+/* fuzzy: 83.6 */
 /* sym: __14Slerp_00276958 = 0x00102FD0 */
 typedef int qword_00276958 __attribute__((mode(TI)));
 
@@ -275,11 +275,10 @@ void Remote_00276958::Update()
                 model->vel = Vec_00276958(0.0f, 0.0f, 0.0f, 1.0f);
                 func_00186398(model, 1);
             } else {
-                Vec_00276958 sum;
+                Vec_00276958 sum; /* uninitialised in the original; the value is the stale e1-e0 temporary: the inlined operator- writes it to 0x180..0x18C(sp) at 0x00276D98-0x00276DAC, and 0x00277078 lwc1 $f7..$f4 reads that slot. Our build uses the same slot for both. */
                 model->pos = snaps[p].pos + d * t;
                 model->vel = (model->pos - prevPos) * (1.0f / dt);
                 hist[histCount % 20] = model->vel;
-                sum = r; /* the game reads sum from the stack slot that still holds r */
                 int k;
                 for (k = 0; k < 20 && k < GetHistCount(); k++)
                     sum += hist[k];

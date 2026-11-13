@@ -1,4 +1,4 @@
-/* fuzzy: 93.9 */
+/* fuzzy: 95.6 */
 extern char D_00371C78[];
 extern char D_003781B8[];
 extern char D_003781C8[];
@@ -312,8 +312,8 @@ void Obj_002A09F8::Run()
                 msg.m_Queue = 8;
                 func_001FF970(m->m14, func_002B3080(p), &msg);
             }
-            int mode = func_002A58C0(m);
-            if (!func_002B1FC8(p) && mode == (int)0xB664035D) {
+            int r = func_002A58C0(m);
+            if (!func_002B1FC8(p) && r == (int)0xB664035D) {
                 func_002BCDF8(func_002C0368());
                 int conn = func_002B3080(p);
                 func_00200998(m->m14, conn, 0x6C, 15000, func_002BCE20(func_002C0368(), 0), D_003781B8, 8, 0, 1);
@@ -324,6 +324,7 @@ void Obj_002A09F8::Run()
             msg.m_Length = 4;
             msg.m_Id = 0x53;
             msg.m8 = 0x80;
+            int mode = r;
             msg.m_Data = &mode;
             msg.m_Priority = 2;
             msg.m_Queue = 8;

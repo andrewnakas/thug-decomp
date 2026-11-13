@@ -1,4 +1,4 @@
-/* fuzzy: 81.6 */
+/* fuzzy: 84.8 */
 typedef int qword_0020A760 __attribute__((mode(TI)));
 
 struct Vec_0020A760 {
@@ -33,6 +33,7 @@ static inline Vec_0020A760 operator-(const Vec_0020A760& a, const Vec_0020A760& 
 
 struct Mat_0020A760 {
     Vec_0020A760 r[4];
+    const Vec_0020A760& operator[](int i) const { return r[i]; }
     Mat_0020A760& operator=(const Mat_0020A760& o)
     {
         r[0] = o.r[0];
@@ -54,15 +55,15 @@ struct Mat_0020A760 {
         r[3][0] = -(t[0] * r[0][0] + t[1] * r[0][1] + t[2] * r[0][2]);
         r[3][1] = -(t[0] * r[1][0] + t[1] * r[1][1] + t[2] * r[1][2]);
         r[3][2] = -(t[0] * r[2][0] + t[1] * r[2][1] + t[2] * r[2][2]);
-        float a01 = r[0][1];
-        float a02 = r[0][2];
-        float a12 = r[1][2];
+        float s = r[0][1];
         r[0][1] = r[1][0];
+        r[1][0] = s;
+        s = r[0][2];
         r[0][2] = r[2][0];
-        r[1][0] = a01;
+        r[2][0] = s;
+        s = r[1][2];
         r[1][2] = r[2][1];
-        r[2][0] = a02;
-        r[2][1] = a12;
+        r[2][1] = s;
     }
 };
 
@@ -70,7 +71,7 @@ static inline bool operator==(const Mat_0020A760& a, const Mat_0020A760& b)
 {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            if (a.r[i][j] != b.r[i][j]) {
+            if (a.r[i][j] != b[i][j]) {
                 return false;
             }
         }

@@ -1,4 +1,4 @@
-/* fuzzy: 68.8 */
+/* fuzzy: 70.6 */
 extern void* D_0038FC78;
 extern char D_00390688[];
 extern char D_00374B88[];
@@ -104,8 +104,8 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
     }
 
     // Random starting positions 1..7 for the opponents.
-    for (i = 6; i >= 0; i--)
-        order[i] = i + 1;
+    for (int k = 0; k < 7; k++)
+        order[k] = k + 1;
     for (i = 0; i < 7; i++) {
         int j = func_00100080(7);
         int t = order[i];
@@ -114,8 +114,8 @@ void Obj_00250CA0::Init(float low, float mid, float high, float a, float b, floa
     }
 
     m_ent[0].m_pos = 0;
-    for (i = 2; i >= 0; i--)
-        m_ent[0].m_score[i] = 0;
+    for (int k = 0; k < 3; k++)
+        m_ent[0].m_score[k] = 0;
 
     low += func_001000D0(2.0f);
     mid += func_001000D0(2.0f);

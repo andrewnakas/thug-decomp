@@ -1,4 +1,4 @@
-/* fuzzy: 76.1 */
+/* fuzzy: 84.9 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00373720[];
@@ -87,12 +87,13 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
     void* net = D_00392068;
     unsigned int i;
     int team;
+    Conn_002394C8* c;
 
     if (broadcast) {
         void* client = func_002A39D8(net);
         void* target = func_00239358(obj);
         int g;
-        for (g = 7; g >= 0; g--)
+        for (g = 0; g < 8; g++)
             flags[g] = 0;
         n = func_002657A0(func_0022E048(game), n, ids, flags, owner, time);
         if (n == 0)
@@ -135,7 +136,7 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
         msg.Set(&list3B, size + 0x10, 0x3B);
         msg.m_C = 2;
         msg.m_10 = 8;
-        for (Conn_002394C8* c = func_002A53F8(net, &it, 0); c; c = func_002A5490(net, &it, 0))
+        for (c = func_002A53F8(net, &it, 0); c; c = func_002A5490(net, &it, 0))
             func_00200998(client, func_002B3080(c), msg.m_type, msg.m_size, msg.m_data, D_00373720, 8, 1, 0);
 
         list5B.m_owner = owner;
@@ -144,7 +145,7 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
         size = list5B.m_count * sizeof(unsigned int);
         func_00331404(list5B.m_ids, ids, size);
         msg.Set(&list5B, size + 0xC, 0x5B);
-        for (Conn_002394C8* c = func_002A53F8(net, &it, 1); c; c = func_002A5490(net, &it, 1)) {
+        for (c = func_002A53F8(net, &it, 1); c; c = func_002A5490(net, &it, 1)) {
             if (func_002B1FE8(c))
                 func_00200998(client, func_002B3080(c), msg.m_type, msg.m_size, msg.m_data, D_00373720, 8, 1, 0);
         }

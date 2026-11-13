@@ -1,4 +1,4 @@
-/* fuzzy: 77.9 */
+/* fuzzy: 90.7 */
 typedef int qword_001D1EF0 __attribute__((mode(TI)));
 
 struct Vec_001D1EF0 {
@@ -51,12 +51,6 @@ struct Hit_001D1EF0 {
     Vec_001D1EF0 normal;
     Vec_001D1EF0 point;
     int m20;
-    void SetPoint(const Vec_001D1EF0& v)
-    {
-        Vec_001D1EF0 p(v);
-        p[3] = 1.0f;
-        point = p;
-    }
 };
 
 class Obj_001D1EF0 {
@@ -119,7 +113,10 @@ extern "C" bool func_001D1EF0(Seg_001D1EF0* line, Obj_001D1EF0* obj, Hit_001D1EF
         info->m59 = flags & 0x40;
         info->m40 = obj;
         info->m44 = obj->m0;
-        info->hit.SetPoint(line->p0 + (line->p1 - line->p0) * t);
+        Vec_001D1EF0 d = (line->p1 - line->p0) * t;
+        d = line->p0 + d;
+        d[3] = 1.0f;
+        info->hit.point = d;
         if (info->m4C) {
             info->m4C(info);
         }

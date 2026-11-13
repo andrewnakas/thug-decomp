@@ -1,4 +1,4 @@
-/* fuzzy: 81.3 */
+/* fuzzy: 86.9 */
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
 
@@ -101,16 +101,18 @@ int Graph_0026A270::Find(Vec_0026A270* a, Vec_0026A270* b, Vec_0026A270* outPos,
     seg.p1 = *b;
     Vec_0026A270 mn;
     Vec_0026A270 mx;
-    func_002682E0(&seg.p0, &seg.p1, &mn, &mx);
+    Vec_0026A270* pmn = &mn;
+    Vec_0026A270* pmx = &mx;
+    func_002682E0(&seg.p0, &seg.p1, pmn, pmx);
     float pad = func_001E5318(0xF840753E, 0);
     mn.x -= pad;
     mn.y -= pad;
     mn.z -= pad;
-    mn.w = 1.0f;
+    pmn->w = 1.0f;
     mx.x += pad;
     mx.y += pad;
     mx.z += pad;
-    mx.w = 1.0f;
+    pmx->w = 1.0f;
     Vec_0026A270 bestPos;
     for (int i = 0; i < m_count; i++) {
         Node_0026A270* n = &m_nodes[i];

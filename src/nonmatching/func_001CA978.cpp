@@ -1,4 +1,4 @@
-/* fuzzy: 71.2 */
+/* fuzzy: 92.0 */
 typedef int qword_001CA978 __attribute__((mode(TI)));
 
 struct Vec_001CA978 {
@@ -86,18 +86,20 @@ struct Obj_001CA978 {
     float mBF0;
     float mBF4;
     float mBF8;
+    Vec_001CA978 RailPoint()
+    {
+        Vec_001CA978 a;
+        Vec_001CA978 b;
+        func_0026B1B0(&a, mA24, mA1C);
+        func_0026B1B0(&b, mA24, mA20);
+        return a + (b - a) * mBF0;
+    }
     void UpdateRailPos();
 };
 
 void Obj_001CA978::UpdateRailPos()
 {
-    Vec_001CA978 n;
-    Vec_001CA978 a;
-    Vec_001CA978 b;
-    func_0026B1B0(&a, mA24, mA1C);
-    func_0026B1B0(&b, mA24, mA20);
-    Vec_001CA978 d = b - a;
-    m30 = a + d * mBF0;
+    m30 = RailPoint();
     m30[1] += mBF4;
     m30 += m60 * mBF8;
     if (!mA3C->Valid()) {
@@ -106,26 +108,31 @@ void Obj_001CA978::UpdateRailPos()
     if (!mA3C->m1C->mB0) {
         return;
     }
-    func_0026B1B0(&a, mA24, mA1C);
-    func_0026B1B0(&b, mA24, mA20);
-    n[0] = a[0] - b[0];
-    n[1] = 0.0f;
-    n[2] = a[2] - b[2];
-    n[3] = a[3] - b[3];
+    Vec_001CA978 n;
+    {
+        Vec_001CA978 a;
+        Vec_001CA978 b;
+        func_0026B1B0(&a, mA24, mA1C);
+        func_0026B1B0(&b, mA24, mA20);
+        n[0] = a[0] - b[0];
+        n[1] = 0.0f;
+        n[2] = a[2] - b[2];
+        n[3] = a[3] - b[3];
+    }
     func_003233B8(&n, &n);
-    Vec_001CA978 p;
-    p[0] = -n[2];
-    p[1] = 0.0f;
-    p[2] = n[0];
-    p[3] = 1.0f;
-    if (p[0] * m60[0] + p[2] * m60[2] > p[1]) {
-        m60 = p;
+    float x = n[0];
+    n[0] = -n[2];
+    n[1] = 0.0f;
+    n[2] = x;
+    n[3] = 1.0f;
+    if (n[0] * m60[0] + n[2] * m60[2] > n[1]) {
+        m60 = n;
     } else {
         Vec_001CA978 q;
-        q[0] = -p[0];
-        q[1] = -p[1];
-        q[2] = -p[2];
-        q[3] = -p[3];
+        q[0] = -n[0];
+        q[1] = -n[1];
+        q[2] = -n[2];
+        q[3] = -n[3];
         m60 = q;
     }
 }

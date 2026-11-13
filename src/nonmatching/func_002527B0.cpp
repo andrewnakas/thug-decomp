@@ -1,4 +1,4 @@
-/* fuzzy: 91.3 */
+/* fuzzy: 93.3 */
 /* sym: __12Str_002527B0PCc = 0x00104028 */
 /* sym: _$_12Str_002527B0 = 0x001040A8 */
 /* sym: __12Str_002527B0RC12Str_002527B0 = 0x00104068 */
@@ -75,9 +75,8 @@ Str_002527B0 GetText_002527B0(Obj_002527B0* o, unsigned int key)
     case 0x2523853D: {
         char c = *func_002526B8(o);
         bool vowel = false;
-        unsigned char d = c - 'a';
-        if (d < 26)
-            c = d + 'A';
+        if ((unsigned char)(c - 'a') < 26)
+            c = (unsigned char)(c - 'a') + 'A';
         if (c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')
             vowel = true;
         func_003331D0(buf, D_00390748, GetText_002527B0(o, func_001F0D78(D_00374E50)).Get(),

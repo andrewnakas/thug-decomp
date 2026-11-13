@@ -1,5 +1,4 @@
-/* fuzzy: 83.4 */
-/* NEAR MISS func_002DACC8 (size 0x5dc, want 0x5e4): the game moves InsertSorted's found block (loop.c exit-block motion) between the arms of the following PIt::Next Valid ternary, which then stays branchy; ours lands after Next's null-test barrier (Valid already a movn at loop time). list.mC is read via $s3 in the game, folded to 0x2C($sp) in ours. */
+/* fuzzy: 97.5 */
 /* sym: _vt$13Link_002DACC8 = 0x0037CA60 */
 /* sym: _vt$13Head_002DACC8 = 0x0037CA00 */
 extern char D_0037C9D0[];
@@ -41,7 +40,13 @@ struct PNode_002DACC8 {
     int m8;
     PNode_002DACC8* next;
     Player_002DACC8* GetData() { return data; }
-    PNode_002DACC8* Valid(unsigned k = 0) { return k < ~(unsigned)data ? this : 0; }
+    bool IsEnd() { return (int)data == -1; }
+    PNode_002DACC8* NextItem()
+    {
+        if (next->IsEnd())
+            return 0;
+        return next;
+    }
 };
 
 struct Team_002DACC8 {
@@ -87,7 +92,7 @@ struct PIt_002DACC8 {
     ~PIt_002DACC8() { vt = D_0037C9E8; }
     Player_002DACC8* Next()
     {
-        cur = cur->next->Valid();
+        cur = cur->NextItem();
         if (!cur)
             return 0;
         return cur->GetData();
@@ -123,8 +128,8 @@ struct Link_002DACC8 {
     Entry_002DACC8* GetData() { return m4; }
     Link_002DACC8* Valid() { return (int)m4 != -1 ? this : 0; }
     void InsertBefore(Link_002DACC8* h) {
-        mC = h;
         m10 = h->m10;
+        mC = h;
         h->m10->mC = this;
         h->m10 = this;
     }
@@ -209,9 +214,8 @@ extern "C" void func_002DACC8(Obj_002DACC8* obj, int solo)
             }
         }
     }
-    LIt_002DACC8* q = &li;
     int k = 0;
-    for (e = q->First(&list); e && e->m3C && k != 50; e = li.Next()) {
+    for (e = li.First(&list); e && e->m3C && k != 50; e = li.Next()) {
         Params_002DACC8* s = func_001E6978(func_001190D0(8));
         func_001E7268(s, D_00392ED8, e->m40);
         func_001E7268(s, D_00392E90, e->m3C);
@@ -227,7 +231,7 @@ extern "C" void func_002DACC8(Obj_002DACC8* obj, int solo)
             func_001E6AE8(s, 3);
         k++;
     }
-    e = q->First(&list);
+    e = li.First(&list);
     while (e) {
         Entry_002DACC8* n = li.Next();
         delete e;

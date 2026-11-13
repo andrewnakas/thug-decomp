@@ -1,17 +1,13 @@
-/* fuzzy: 69.3 */
+/* fuzzy: 73.4 */
 struct Heap_00171690 {
     char pad[0xD8];
     void* m_D8;
 };
 
-/* A vertex slot: filled with fixed-point integers by func_00161D50, converted to floats in place. */
-struct IVec_00171690 {
-    int x, y, z, w;
-};
-
 /* A vertex slot: filled with fixed-point integers (1/16 units) by func_00161D50, converted to floats in place. */
-struct Vec_00171690 {
-    float x, y, z, w;
+union Vec_00171690 {
+    int i[4];
+    float f[4];
 };
 
 struct Node_00171690 {
@@ -40,19 +36,19 @@ void func_00171690(Node_00171690* node, Vec_00171690* out, int reset)
     if (func_00170518(node)) {
         int count = func_00161860(node->m_child);
         func_0010A950(D_00388A70, D_00388A70->m_D8);
-        int* src = (int*)&out[D_00393F48];
-        func_00161D50(node->m_child, (Vec_00171690*)src);
-        IVec_00171690 ofs;
-        ofs.z = (int)(node->m_pos[2] * 16.0f);
-        ofs.x = (int)(node->m_pos[0] * 16.0f);
-        ofs.y = (int)(node->m_pos[1] * 16.0f);
-        for (int i = count; i > 0; i--) {
-            float* d = (float*)&out[D_00393F48];
-            d[0] = (float)(src[0] + ofs.x) * 0.0625f;
-            d[1] = (float)(src[1] + ofs.y) * 0.0625f;
-            d[3] = 1.0f;
-            d[2] = (float)(src[2] + ofs.z) * 0.0625f;
-            src += 4;
+        Vec_00171690* src = &out[D_00393F48];
+        func_00161D50(node->m_child, src);
+        int ofs[3];
+        ofs[2] = (int)(node->m_pos[2] * 16.0f);
+        ofs[0] = (int)(node->m_pos[0] * 16.0f);
+        ofs[1] = (int)(node->m_pos[1] * 16.0f);
+        for (int i = 0; i < count; i++) {
+            Vec_00171690* d = &out[D_00393F48];
+            d->f[0] = (float)(src->i[0] + ofs[0]) * 0.0625f;
+            d->f[1] = (float)(src->i[1] + ofs[1]) * 0.0625f;
+            d->f[3] = 1.0f;
+            d->f[2] = (float)(src->i[2] + ofs[2]) * 0.0625f;
+            src++;
             D_00393F48 = D_00393F48 + 1;
         }
         func_0010A9B0(D_00388A70);

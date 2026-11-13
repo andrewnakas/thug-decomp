@@ -1,4 +1,4 @@
-/* fuzzy: 66.9 */
+/* fuzzy: 68.5 */
 extern "C" void* func_00331404(void* dst, const void* src, unsigned int n);
 
 extern "C" void func_00147860(unsigned char* img, unsigned short x, unsigned short y, unsigned short imgW,
@@ -8,7 +8,7 @@ extern "C" void func_00147860(unsigned char* img, unsigned short x, unsigned sho
     int cw = imgW - x;
     int ch = imgH - y;
     int bytes = bpp >> 3;
-    int rowBytes, srcPitch, dstPitch;
+    int dstPitch, srcPitch, rowBytes;
     int rows;
     cw = (cw < w) ? cw : w;
     rows = (ch < h) ? ch : h;

@@ -1,12 +1,12 @@
-/* fuzzy: 58.0 */
+/* fuzzy: 58.9 */
 struct C_00128078 {
     int GetWord(char* word, const char** p);
 };
 
 int C_00128078::GetWord(char* word, const char** p)
 {
-    int ret = 0;
     int more = 1;
+    int ret = 0;
     do {
         const char* s = *p;
         switch (*s) {

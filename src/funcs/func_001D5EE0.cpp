@@ -1,5 +1,3 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 94.2 */
 typedef int qword_001D5EE0 __attribute__((mode(TI)));
 
 struct Vec_001D5EE0 {
@@ -11,6 +9,7 @@ struct Vec_001D5EE0 {
     };
     Vec_001D5EE0() {}
     float LengthSqr() const { return x * x + y * y + z * z; }
+    inline void Normalize();
 };
 
 struct Face8_001D5EE0 {
@@ -98,6 +97,7 @@ extern "C" unsigned short* func_001D8118(Geom_001D5EE0* g, Box_001D5EE0* box, un
 extern "C" int func_001D2530(void* sphere, Vec_001D5EE0* v0, Vec_001D5EE0* v1, Vec_001D5EE0* v2,
                              Vec_001D5EE0* hit, int* edges);
 extern "C" void func_003233B8(Vec_001D5EE0* out, Vec_001D5EE0* in);
+inline void Vec_001D5EE0::Normalize() { func_003233B8(this, this); }
 
 static inline void Dir_001D5EE0(Vec_001D5EE0& r, const Vec_001D5EE0& a, const Vec_001D5EE0& b)
 {
@@ -147,15 +147,16 @@ bool Coll_001D5EE0::Collect(void* sphere, Box_001D5EE0* box, Out_001D5EE0* out)
                 nrm.z = e1.x * e2.y - e1.y * e2.x;
                 nrm.w = 0.0f;
             }
-            func_003233B8(&nrm, &nrm);
+            nrm.Normalize();
             c->normal = nrm;
         }
         if (c->normal.LengthSqr() <= 0.0f) continue;
         c->flag = flags & 0x40;
-        c->pt[0].p = hit[0];
         c->id = m0;
+        c->pt[0].p = hit[0];
         c->pt[1].p = hit[1];
-        for (int k = 1; k >= 0; k--) {
+        int k = 2;
+        while (k--) {
             int e = edges[k];
             Point_001D5EE0* pt = &c->pt[k];
             pt->edge = e != 0;
@@ -172,17 +173,17 @@ bool Coll_001D5EE0::Collect(void* sphere, Box_001D5EE0* box, Out_001D5EE0* out)
                 break;
             case 1:
                 Dir_001D5EE0(d, v1, v0);
-                func_003233B8(&d, &d);
+                d.Normalize();
                 pt->dir = d;
                 break;
             case 2:
                 Dir_001D5EE0(d, v2, v1);
-                func_003233B8(&d, &d);
+                d.Normalize();
                 pt->dir = d;
                 break;
             case 3:
                 Dir_001D5EE0(d, v0, v2);
-                func_003233B8(&d, &d);
+                d.Normalize();
                 pt->dir = d;
                 break;
             }

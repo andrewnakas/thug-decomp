@@ -1,4 +1,5 @@
-/* fuzzy: 98.8 */
+/* force: {"kind": "sched", "pass": 2, "block": 25, "clock": 7, "first": [1575, 936]} */
+/* force: {"kind": "sched", "pass": 2, "block": 43, "clock": 1, "first": [1232, 1230]} */
 extern "C" float sqrtf(float);
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C0F20 {

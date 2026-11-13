@@ -1,4 +1,11 @@
-/* fuzzy: 89.8 */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 1, "first": [68, 51]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 2, "first": [181, 47]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 3, "first": [182, 72]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 4, "first": [74, 96]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 9, "first": [183, 85]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 10, "first": [184, 89]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 13, "first": [185, 102]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 14, "first": [186, 106]} */
 extern "C" int func_001E8398(void* params, unsigned int id, unsigned int* out, int req);
 extern "C" int func_001E7DE8(void* params, unsigned int id, int* out, int req);
 extern "C" int func_001E7EB0(void* params, unsigned int id, float* out, int req);

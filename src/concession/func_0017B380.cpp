@@ -1,4 +1,4 @@
-/* fuzzy: 97.5 */
+/* force: {"kind": "sched", "pass": 2, "block": 7, "clock": 1, "first": [154, 150]} */
 struct Pkt_0017B380 {
     Pkt_0017B380* next;
     int m4;

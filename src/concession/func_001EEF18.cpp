@@ -1,4 +1,6 @@
-/* fuzzy: 84.0 */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 3, "first": [65, 5]} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 9, "first": [27, 29]} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 10, "first": [35, 25]} */
 extern void* D_0038E8A4;
 extern "C" void* func_001F2F88(void* mgr, unsigned int id);
 

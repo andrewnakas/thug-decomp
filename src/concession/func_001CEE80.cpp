@@ -1,4 +1,5 @@
-/* fuzzy: 98.1 */
+/* force: {"kind": "ga", "before": [203, 298]} */
+/* force: {"kind": "ga", "before": [202, 298]} */
 extern "C" float fabsf(float);
 extern "C" float func_0010FAB8();
 extern "C" unsigned int func_0010FC30();

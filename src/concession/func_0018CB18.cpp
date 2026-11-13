@@ -1,4 +1,6 @@
-/* fuzzy: 99.7 */
+/* force: {"kind": "sched", "pass": 2, "block": 92, "clock": 10, "first": [806, 3191]} */
+/* force: {"kind": "sched", "pass": 2, "block": 92, "clock": 22, "first": [846, 844]} */
+/* force: {"kind": "sched", "pass": 2, "block": 100, "clock": 26, "first": [1168, 1170]} */
 /* Script member-function dispatcher of the component whose scene object lives at 0x260: one case per command
    checksum; returns 2 for an unknown command, otherwise the command's result as 0/1. */
 /* sym: __12Msg_0018CB18 = 0x001FA800 */

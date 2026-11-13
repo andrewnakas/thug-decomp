@@ -1,4 +1,4 @@
-/* fuzzy: 83.3 */
+/* fuzzy: 92.9 */
 struct Model_0017D6D8 {
     int m0[4];
     unsigned int m_flags;
@@ -40,7 +40,10 @@ extern "C" int func_0017D6D8(unsigned char* p, int size, Model_0017D6D8* m, int 
     m->m44 = 0;
     func_003312D8(0, 0);
     int alloc = size / 10 + 2000;
-    p = Read(&D_00394314, p, 4);
+    unsigned char* d = (unsigned char*)&D_00394314;
+    for (int n = 4; n > 0; n--) {
+        *d++ = *p++;
+    }
     p = Read(&D_00394318, p, 4);
     p = Read(&header, p, 4);
     p = func_00174818(p, m, c);

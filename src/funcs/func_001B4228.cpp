@@ -1,4 +1,3 @@
-/* fuzzy: 82.1 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001B4228;
@@ -9,7 +8,8 @@ struct V4_001B4228 {
         struct { float x, y, z, w; };
         qword q;
     };
-    bool operator==(const V4_001B4228& o) const { return x == o.x && y == o.y && z == o.z && w == o.w; }
+    const float& operator[](int i) const { return (&x)[i]; }
+    bool operator==(const V4_001B4228& o) const { return x == o[0] && y == o[1] && z == o[2] && w == o[3]; }
     bool operator!=(const V4_001B4228& o) const { return !(*this == o); }
 };
 
@@ -17,8 +17,8 @@ struct Vec_001B4228 : V4_001B4228 {
     Vec_001B4228() {}
     Vec_001B4228(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
     Vec_001B4228(const Vec_001B4228& o) { q = o.q; }
-    Vec_001B4228 operator-(const Vec_001B4228& o) const { return Vec_001B4228(x - o.x, y - o.y, z - o.z, w - o.w); }
-    Vec_001B4228 operator+(const Vec_001B4228& o) const { return Vec_001B4228(x + o.x, y + o.y, z + o.z, w + o.w); }
+    Vec_001B4228 operator-(const Vec_001B4228& o) const { return Vec_001B4228((*this)[0] - o[0], (*this)[1] - o[1], (*this)[2] - o[2], (*this)[3] - o[3]); }
+    Vec_001B4228 operator+(const Vec_001B4228& o) const { return Vec_001B4228((*this)[0] + o[0], (*this)[1] + o[1], (*this)[2] + o[2], (*this)[3] + o[3]); }
     Vec_001B4228 operator*(float s) const { return Vec_001B4228(x * s, y * s, z * s, w * s); }
     Vec_001B4228 operator-() const { return Vec_001B4228(-x, -y, -z, -w); }
     Vec_001B4228& Normalize()
@@ -39,6 +39,7 @@ struct Tri_001B4228 {
 
 struct Mat_001B4228 {
     V4_001B4228 r[4];
+    V4_001B4228& operator[](int i) { return r[i]; }
     Mat_001B4228& operator=(const Mat_001B4228& o)
     {
         r[0] = o.r[0];
@@ -106,8 +107,8 @@ void C_001B4228::UpdateUp()
         }
     }
     Mat_001B4228 m = m_body->m_mat;
-    if (m.r[1] != m_up) {
-        m.r[1] = m_up;
+    if (m[1] != m_up) {
+        m[1] = m_up;
         func_00100DC0(&m, 1);
         m_body->m_mat = m;
         m_mat = m;

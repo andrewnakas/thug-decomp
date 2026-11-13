@@ -1,4 +1,3 @@
-/* fuzzy: 66.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001976A8 {
@@ -6,6 +5,7 @@ struct Vec_001976A8 {
         struct { float x, y, z, w; };
         qword q;
     };
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 struct Mat_001976A8 {
@@ -62,10 +62,10 @@ inline void Mat_001976A8::Transpose(Mat_001976A8& d)
         d.r[1].w = a31; d.r[3].y = a13;
         d.r[2].w = a32; d.r[3].z = a23;
     } else {
-        float b00 = r[0].x; float b01 = r[0].y; float b02 = r[0].z; float b03 = r[0].w;
-        float b10 = r[1].x; float b11 = r[1].y; float b12 = r[1].z; float b13 = r[1].w;
-        float b20 = r[2].x; float b21 = r[2].y; float b22 = r[2].z; float b23 = r[2].w;
-        float b30 = r[3].x; float b31 = r[3].y; float b32 = r[3].z; float b33 = r[3].w;
+        float b00 = (*this)[0][0]; float b10 = (*this)[1][0]; float b20 = (*this)[2][0]; float b30 = (*this)[3][0];
+        float b01 = (*this)[0][1]; float b11 = (*this)[1][1]; float b21 = (*this)[2][1]; float b31 = (*this)[3][1];
+        float b02 = (*this)[0][2]; float b12 = (*this)[1][2]; float b22 = (*this)[2][2]; float b32 = (*this)[3][2];
+        float b03 = (*this)[0][3]; float b13 = (*this)[1][3]; float b23 = (*this)[2][3]; float b33 = (*this)[3][3];
         d.r[0].x = b00; d.r[0].y = b10; d.r[0].z = b20; d.r[0].w = b30;
         d.r[1].x = b01; d.r[1].y = b11; d.r[1].z = b21; d.r[1].w = b31;
         d.r[2].x = b02; d.r[2].y = b12; d.r[2].z = b22; d.r[2].w = b32;
@@ -87,15 +87,15 @@ public:
 
 void Obj_001976A8::Update()
 {
-    mD0.r[2].x = m190.x * m70.r[2].x;
-    mD0.r[2].y = m190.y * m70.r[2].y;
-    mD0.r[2].z = m190.z * m70.r[2].z;
     mD0.r[0].x = m190.x * m70.r[0].x;
     mD0.r[0].y = m190.y * m70.r[0].y;
     mD0.r[0].z = m190.z * m70.r[0].z;
     mD0.r[1].x = m190.x * m70.r[1].x;
     mD0.r[1].y = m190.y * m70.r[1].y;
     mD0.r[1].z = m190.z * m70.r[1].z;
+    mD0.r[2].x = m190.x * m70.r[2].x;
+    mD0.r[2].y = m190.y * m70.r[2].y;
+    mD0.r[2].z = m190.z * m70.r[2].z;
     Mat_001976A8 t;
     m70.Transpose(t);
     mD0 *= t;

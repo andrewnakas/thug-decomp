@@ -25,6 +25,8 @@ struct L_00188620 {
     E_00188620* m_items;
     int m_count;
     int m_alive;
+    /* Equivalence fix, proven by the game's instructions: a 32-bit store, `addiu $v0, $zero, 0x1` (0x00188690) /
+       `sw $v0, 0xC($s0)` (0x0018869C), so m_changed is int, not bool (the old unit's sb left 0xD-0xF untouched). */
     int m_changed;
     void Compact();
 };

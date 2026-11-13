@@ -1,4 +1,4 @@
-/* fuzzy: 70.3 */
+/* fuzzy: 70.6 */
 /* Texture dictionary loader: reads a texture file image from the D_00394320 stream (format version in
    D_00394324), inserts the dictionary into the priority-sorted list D_003942F4/D_003942F8, then for every texture
    computes the GS memory layout of its mip levels (VRAM double-buffered through D_00394304), swizzles 8/4-bit
@@ -153,9 +153,9 @@ extern "C" void func_001804E8(void* self, Sector_001804E8* sector, Dict_001804E8
     unsigned char* end = (unsigned char*)(((int)p + 15) & -16);
     dict->m30 = 0;
     dict->m34 = 0;
-    while (p < end) {
-        *p++ = 0;
-        D_00394274 = p;
+    for (; p < end; p++) {
+        *p = 0;
+        D_00394274 = p + 1;
     }
     dict->m14 = D_00394274;
     dict->m10 = D_00394274;

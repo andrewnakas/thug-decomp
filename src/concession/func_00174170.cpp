@@ -1,4 +1,5 @@
-/* fuzzy: 88.2 */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 1, "first": [126, 33]} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 5, "first": [128, 53]} */
 /* const: 0x149960 */
 struct Heap_00174170 {
     char pad[0xDC];

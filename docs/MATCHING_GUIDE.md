@@ -391,3 +391,10 @@ rule. Where an exactly-matched unit already declares the same symbol, its qualif
 declaration and win: the vsync handler func_001F77B0 (matched) declares D_0038EAA4/EAA8 volatile but the counter
 D_00394118 plain even though the handler increments it, so func_001F79B0 uses the same split. Never add `volatile`
 to a variable no handler or thread touches just to force a reload.
+
+## `-fno-gcse` is usually wrong (2026-11-13)
+
+The game seems to have been built with gcse on almost everywhere: func_001AC030 and func_002B9A28 matched exactly
+only after dropping `-fno-gcse` and reworking the source under default flags. A unit's source tuned around a wrong
+flag scores worse when the flag is simply removed (all 15 remaining flagged units did), so the test is the
+neighbour test: if the matched same-file neighbours break with the flag, rework the unit under defaults.

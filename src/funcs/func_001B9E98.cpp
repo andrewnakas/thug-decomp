@@ -1,21 +1,21 @@
-/* fuzzy: 85.8 */
 struct Vec_001B9E98 {
     float x, y, z, w;
     Vec_001B9E98() {}
     Vec_001B9E98(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    const float& operator[](int i) const { return (&x)[i]; }
     Vec_001B9E98& operator+=(const Vec_001B9E98& b)
     {
-        x += b.x;
-        y += b.y;
-        z += b.z;
-        w += b.w;
+        x += b[0];
+        y += b[1];
+        z += b[2];
+        w += b[3];
         return *this;
     }
 };
 
 static inline Vec_001B9E98 operator*(const Vec_001B9E98& a, float s)
 {
-    return Vec_001B9E98(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001B9E98(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 struct Mat_001B9E98 {

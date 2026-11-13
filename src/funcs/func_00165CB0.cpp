@@ -1,4 +1,4 @@
-/* fuzzy: 95.5 */
+/* cflags: -mvu0-use-vf0-vf2 */
 extern int D_0034D870[];
 extern int D_0034D8F0[2][128];
 extern int D_0034DCF0[];

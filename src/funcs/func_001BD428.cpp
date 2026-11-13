@@ -1,13 +1,13 @@
-/* fuzzy: 79.3 */
 struct Vec_001BD428 {
     float x, y, z, w;
     Vec_001BD428() {}
     Vec_001BD428(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 static inline Vec_001BD428 operator+(const Vec_001BD428& a, const Vec_001BD428& b)
 {
-    return Vec_001BD428(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001BD428(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 struct Pos_001BD428 {

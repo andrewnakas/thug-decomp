@@ -1,5 +1,7 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 90.6 */
+/* force: {"kind": "ga", "before": [122, 117]} */
+/* force: {"kind": "ga", "before": [141, 116]} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 4, "first": [404, 23]} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 5, "first": [7, 392]} */
 struct Sub_001DD7C8 {
     char m_pad[0x1C];
     float m_vol;

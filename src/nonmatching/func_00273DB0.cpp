@@ -1,4 +1,5 @@
 /* fuzzy: 97.4 */
+/* blocked: stack-slot order of 4 spilled pseudos (&m_28, &b, flags&0x40, flags&0x100) and m_board in a0 not v1. Tried moving the m_28 store, swapping a/b, BoardId as a local / ternary: no gain. */
 /* sym: _vt$11Cb_00200C00 = 0x00366B58 */
 /* sym: __12Msg_00273DB0 = 0x001FA800 */
 typedef int qword_00273DB0 __attribute__((mode(TI)));

@@ -1,5 +1,3 @@
-/* fuzzy: 85.7 */
-// nm: 6 words: register choice of the first loads (D_00392068 in v1/m160 in v0 in game; swapped here); loop/structure match
 struct Node_00215840 {
     int m0;
     int m4;
@@ -24,8 +22,9 @@ extern "C" int func_00215778(int a, int b);
 
 bool Cmd_00215840(void* params, void* script)
 {
+    Mgr_00215840* mgr = D_0038FC78;
     if (D_00392068->m160) {
-        Node_00215840* p = D_0038FC78->m3C;
+        Node_00215840* p = mgr->m3C;
         int n = 0;
         Node_00215840* q;
         while ((q = p->Valid()) != 0) {

@@ -1,4 +1,5 @@
 /* fuzzy: 97.3 */
+/* blocked: Upper(): game keeps x = c-'a' unmasked and returns (char)(x+'A'); 9 char/int/unsigned-char/ternary/range forms either fold to c-0x20 or reuse the masked value. */
 /* sym: __12Str_002527B0PCc = 0x00104028 */
 /* sym: _$_12Str_002527B0 = 0x001040A8 */
 /* sym: __12Str_002527B0RC12Str_002527B0 = 0x00104068 */

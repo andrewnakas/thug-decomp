@@ -1,4 +1,5 @@
 /* fuzzy: 94.4 */
+/* blocked: game hoists the constant 1 (m60->m1C == 1 test) into a2 in the bnez delay slot. Tried reordering the cases and an if-chain on a local: no gain. */
 /* near miss: 13 lines differ. (1) case 0: gcc threads first m58->m1C!=0 test directly into the 0x40 block (game re-tests); (2) else-branch: game loads const 1 into $a2 in the bnez delay slot and switch index in $a0. */
 extern void* D_0038C608;
 extern "C" void* func_00187B48(void* mgr, unsigned int id);

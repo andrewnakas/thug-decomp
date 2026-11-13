@@ -1,4 +1,5 @@
 /* fuzzy: 97.0 */
+/* blocked: last block: game stores z,x,y,w in source order and copies m_box.mn from v on the stack. m_box.mn = v fixes the copy but swaps pv/v (s7/fp); dropping pv rebuilds the frame (190 words). */
 typedef int qword __attribute__((mode(TI)));
 
 struct Heap_001D84E0 {

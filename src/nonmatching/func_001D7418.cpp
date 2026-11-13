@@ -1,4 +1,5 @@
 /* fuzzy: 88.8 */
+/* blocked: same residue as func_001D7350 (all 3 sq before the loads). Tried the rot struct copy (m_mat.rot = m->rot): identical code. */
 typedef int qword_001D7418 __attribute__((mode(TI)));
 
 struct Vec_001D7418 {

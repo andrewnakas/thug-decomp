@@ -1,10 +1,10 @@
-/* fuzzy: 98.5 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_001C9C38 {
     qword q;
     float c[4];
     float& operator[](int i) { return c[i]; }
     float operator[](int i) const { return c[i]; }
+    inline void Normalize();
 };
 
 extern "C" float sqrtf(float);
@@ -40,6 +40,7 @@ struct Coll_001C9C38 {
 
 extern "C" void func_0026B1B0(Vec_001C9C38* out, void* rail, int idx);
 extern "C" void func_003233B8(Vec_001C9C38* out, Vec_001C9C38* in);
+inline void Vec_001C9C38::Normalize() { func_003233B8(this, this); }
 
 static inline void Add_001C9C38(Vec_001C9C38& r, const Vec_001C9C38& a, const Vec_001C9C38& b)
 {
@@ -111,7 +112,7 @@ int Obj_001C9C38::Probe(Vec_001C9C38* dir, Vec_001C9C38* pos, bool fwd, Vec_001C
             Sub_001C9C38(diff, pa, pb);
             Mul_001C9C38(tmp, diff, s);
             tmp.c[1] = 0.0f;
-            func_003233B8(&tmp, &tmp);
+            tmp.Normalize();
             float dot = (*dir)[0] * tmp[0] + (*dir)[1] * tmp[1] + (*dir)[2] * tmp[2];
             if (dot < 0.0f) {
                 if (-0.87f < dot) {
@@ -168,10 +169,10 @@ int Obj_001C9C38::Probe(Vec_001C9C38* dir, Vec_001C9C38* pos, bool fwd, Vec_001C
     Mul_001C9C38(tmp, v, Param_001C9C38(0x3344A6D0));
     Add_001C9C38(c.m10, c.m10, tmp);
     if (same) {
-        func_003233B8(d, d);
+        d->Normalize();
         Neg_001C9C38(tmp, *d);
     } else {
-        func_003233B8(d, d);
+        d->Normalize();
         tmp = *d;
     }
     Add_001C9C38(c.m10, c.m10, tmp);

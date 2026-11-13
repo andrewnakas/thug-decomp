@@ -1,4 +1,4 @@
-/* fuzzy: 96.4 */
+/* fuzzy: 99.6 */
 extern unsigned char* D_00394274;
 extern unsigned char* D_00394278;
 extern float D_003E1200[];
@@ -122,7 +122,7 @@ void C_0015A270::Draw()
     if (m168) {
         V4_0015A270 yax(0.0f, 1.0f, 0.0f, 0.0f);
         V4_0015A270 up(D_003E1200[8], D_003E1200[9], D_003E1200[10], 0.0f);
-        V4_0015A270 right = Cross(up, yax);
+        V4_0015A270 right(up.y * yax.z - up.z * yax.y, up.z * yax.x - up.x * yax.z, up.x * yax.y - up.y * yax.x, 0.0f);
         V4_0015A270 fwd = Cross(right, up);
         func_003233B8(&right, &right);
         func_003233B8(&fwd, &fwd);

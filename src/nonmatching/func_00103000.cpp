@@ -1,10 +1,10 @@
-/* fuzzy: 95.6 */
+/* fuzzy: 98.3 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00103000 {
     qword q;
     float c[4];
     float& operator[](int i) { return c[i]; }
-    float operator[](int i) const { return c[i]; }
+    const float& operator[](int i) const { return c[i]; }
     void operator*=(float k)
     {
         c[0] *= k;

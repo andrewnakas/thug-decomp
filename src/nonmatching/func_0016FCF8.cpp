@@ -1,4 +1,4 @@
-/* fuzzy: 92.6 */
+/* fuzzy: 92.8 */
 typedef int qword_0016FCF8 __attribute__((mode(TI)));
 
 struct V_0016FCF8 {
@@ -265,7 +265,9 @@ extern "C" void func_0016FCF8(Node_0016FCF8* node, Mat_0016FCF8* m)
     }
     Tag(node->m24, node->m20);
     Put((unsigned short)D_00394280 | 0x03000000);
-    if (D_0038C02C && D_0038C020 < node->pos.w - depth.f) {
+    // game reads the depth unconditionally (lwc1 $f1, 0($sp) in the beqz delay slot at 0x0016FF18)
+    float d = depth.f;
+    if (D_0038C02C && D_0038C020 < node->pos.w - d) {
         Put(0x04000010);
     } else {
         Put(0x04000000);

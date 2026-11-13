@@ -1,8 +1,9 @@
-/* fuzzy: 85.9 */
+/* sym: __15Feeler_001BF5A0 = 0x00209240 */
 /* Walk component: turns the facing (m_60) toward the control direction (m_A0) and adjusts the walking speed.
    A sharp turn at low speed rotates by a fixed rate (slowed when a wall feeler hits), small turns blend toward
-   the target, a near-reverse at speed skids to a stop; the speed then accelerates toward the target speed or
-   decelerates. m_90 receives the matching animation checksum. */
+   the target, a near-reverse at speed skids to a stop; then a speed above the target eases down toward it
+   (skid animation when stopping), otherwise it grows by a fixed rate capped at the target.
+   m_90 receives the matching animation checksum. */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001BF5A0 {
@@ -20,38 +21,46 @@ struct Vec_001BF5A0 {
         z = az;
         w = aw;
     }
+    const float& operator[](int i) const { return (&x)[i]; }
 };
 
 static inline Vec_001BF5A0 operator+(const Vec_001BF5A0& a, const Vec_001BF5A0& b)
 {
-    return Vec_001BF5A0(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_001BF5A0(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 static inline Vec_001BF5A0 operator-(const Vec_001BF5A0& a, const Vec_001BF5A0& b)
 {
-    return Vec_001BF5A0(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_001BF5A0(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_001BF5A0 operator*(const Vec_001BF5A0& a, float s)
 {
-    return Vec_001BF5A0(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_001BF5A0(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
-extern "C" void func_00183CB8(int obj, int* ref);
+extern "C" void func_00183CB8(void* obj, void* ref);
+
+struct Ref_001BF5A0 {
+    void* m_p;
+    void* m_prev;
+    void* m_next;
+    ~Ref_001BF5A0()
+    {
+        if (m_p) {
+            func_00183CB8(m_p, this);
+            m_p = 0;
+        }
+    }
+};
 
 struct Feeler_001BF5A0 {
+    Feeler_001BF5A0();
     Vec_001BF5A0 m_start;
     Vec_001BF5A0 m_end;
     char pad20[0xC0 - 0x20];
-    int m_ref;
-    char padC4[0xE0 - 0xC4];
-    ~Feeler_001BF5A0()
-    {
-        if (m_ref) {
-            func_00183CB8(m_ref, &m_ref);
-            m_ref = 0;
-        }
-    }
+    Ref_001BF5A0 m_ref;
+    char padCC[0xE0 - 0xCC];
 };
 
 struct Walk_001BF5A0 {
@@ -85,9 +94,24 @@ extern "C" float func_001C6218(Walk_001BF5A0* self);
 extern "C" float func_001C0E30(Walk_001BF5A0* self, float v);
 extern "C" float func_00340F60(float x);
 extern "C" float func_00341068(float x);
-extern "C" void func_00209240(Feeler_001BF5A0* f);
 extern "C" int func_002093E8(Feeler_001BF5A0* f, int a, int b);
 extern "C" void func_003233B8(Vec_001BF5A0* d, Vec_001BF5A0* s);
+
+static inline float Max_001BF5A0(float a, float b)
+{
+    if (a < b)
+        return b;
+    return a;
+}
+
+static inline float Clamp_001BF5A0(float v, float lo, float hi)
+{
+    if (hi < v)
+        v = hi;
+    if (v < lo)
+        return lo;
+    return v;
+}
 
 static inline float Param(unsigned int name)
 {
@@ -106,17 +130,19 @@ void Walk_001BF5A0::Update(float* speed)
     m_B60 = m_B4;
 
     float target = func_001C6218(this);
-    m_anim = target <= 0.0f ? 0x9B46E749 : 0xAF895B3F;
+    if (target <= 0.0f)
+        m_anim = 0x9B46E749;
+    else
+        m_anim = 0xAF895B3F;
 
     int done = 0;
     if (0.0f < m_input) {
         float d = m_facing.x * m_control.x + m_facing.y * m_control.y + m_facing.z * m_control.z;
         if ((*speed < Param(0x52582D5B) && d < func_00340F60(Param(0x5DFF96A4) * 0.017453294f)) ||
             (*speed < Param(0xF1E97E45) && d < -func_00340F60(Param(0x2D571C0F) * 0.017453294f))) {
-            int left = 1;
-            float ang = Param(0xB557804B) * 0.017453294f * m_input * m_dt;
-            if (!(-m_facing.z * m_control.x + m_facing.x * m_control.z < 0.0f))
-                left = 0;
+            float rad = Param(0xB557804B) * 0.017453294f;
+            float ang = rad * m_input * m_dt;
+            int left = -m_facing.z * m_control.x + m_facing.x * m_control.z < 0.0f;
             if (!m_A60 || m_B58) {
                 ang *= Param(0x7B446C98);
             } else {
@@ -127,7 +153,6 @@ void Walk_001BF5A0::Update(float* speed)
                 dir.y = 0.0f;
                 dir.z = -s * m_facing.x + c * m_facing.z;
                 Feeler_001BF5A0 f;
-                func_00209240(&f);
                 f.m_start = m_pos;
                 f.m_start.y += Param(0x6DA7F696);
                 f.m_end = f.m_start + dir * Param(0x99978D2B);
@@ -148,17 +173,17 @@ void Walk_001BF5A0::Update(float* speed)
         } else if (-func_00340F60(Param(0x2D571C0F) * 0.017453294f) < d) {
             float lo = m_B8 ? Param(0xA26760F5) : Param(0xAB9015BC);
             float hi = m_B8 ? Param(0x6CB2E5DE) : Param(0x911F29D7);
-            float t = (1.0f - (m_control.x * m_facing.x + m_control.y * m_facing.y + m_control.z * m_facing.z)) * 2.0f;
-            if (1.0f < t)
-                t = 1.0f;
-            if (t < 0.0f)
-                t = 0.0f;
-            float rate = lo + (hi - lo) * t;
+            float t = Clamp_001BF5A0((1.0f - (m_control.x * m_facing.x + m_control.y * m_facing.y + m_control.z * m_facing.z)) * 2.0f, 0.0f, 1.0f);
+            float base = lo + (hi - lo) * t;
+            float rate;
             if (*speed < Param(0x27815F69)) {
                 float slow = Param(0xB278405D);
-                rate = slow + (rate - slow) * (*speed / Param(0x27815F69));
+                rate = slow + (base - slow) * (*speed / Param(0x27815F69));
+            } else {
+                rate = base;
             }
-            rate = rate * m_input * m_dt;
+            rate *= m_input;
+            rate *= m_dt;
             if (1.0f <= rate) {
                 m_facing = m_control;
             } else {
@@ -167,10 +192,8 @@ void Walk_001BF5A0::Update(float* speed)
             }
         } else if (Param(0xF1E97E45) < *speed) {
             done = 1;
-            float s = *speed - Param(0x09661ED7) * m_dt;
-            if (s < 0.0f)
-                s = 0.0f;
-            *speed = s;
+            *speed = *speed - Param(0x09661ED7) * m_dt;
+            *speed = Max_001BF5A0(*speed, 0.0f);
             m_anim = 0x1D537EFF;
         } else {
             m_facing = m_control;
@@ -181,20 +204,22 @@ void Walk_001BF5A0::Update(float* speed)
 
     m_targetSpeed = target;
     target = func_001C0E30(this, target);
-    if (*speed < target) {
-        float accel = Param(0xACFA4E0C);
+    if (target < *speed) {
+        float ease = Param(0xACFA4E0C);
         if (target == 0.0f) {
             if (Param(0x79D182AD) < *speed)
                 m_anim = 0x1D537EFF;
             else if (m_lastAnim == 0x1D537EFF && Param(0x311D02B2) < *speed)
-                m_anim = m_lastAnim;
+                m_anim = 0x1D537EFF;
             else
-                accel = Param(0x0A2AA811);
+                ease = Param(0x0A2AA811);
         }
-        *speed = *speed + (target - *speed) * (accel * m_dt);
+        *speed = *speed + (target - *speed) * (ease * m_dt);
     } else {
-        float decel = m_A60 ? Param(0x4F47C998) : Param(0x6590A49B);
-        *speed = *speed + decel * m_dt;
+        if (m_A60)
+            *speed = *speed + Param(0x4F47C998) * m_dt;
+        else
+            *speed = *speed + Param(0x6590A49B) * m_dt;
         if (target < *speed)
             *speed = target;
     }

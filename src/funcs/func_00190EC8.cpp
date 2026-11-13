@@ -1,4 +1,3 @@
-/* fuzzy: 72.1 */
 /* sym: __13BBox_00190EC8RC12Vec_00190EC8T1 = 0x00102340 */
 /* sym: __15Feeler_001A8940 = 0x00209240 */
 typedef int qword __attribute__((mode(TI)));
@@ -10,6 +9,7 @@ struct Vec_00190EC8 {
     };
     Vec_00190EC8() {}
     Vec_00190EC8(float ax, float ay, float az, float aw) { x = ax; y = ay; z = az; w = aw; }
+    const float& operator[](int i) const { return (&x)[i]; }
     Vec_00190EC8& operator+=(const Vec_00190EC8& o)
     {
         x += o.x;
@@ -22,17 +22,17 @@ struct Vec_00190EC8 {
 
 inline Vec_00190EC8 operator-(const Vec_00190EC8& a, const Vec_00190EC8& b)
 {
-    return Vec_00190EC8(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_00190EC8(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 inline Vec_00190EC8 operator+(const Vec_00190EC8& a, const Vec_00190EC8& b)
 {
-    return Vec_00190EC8(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return Vec_00190EC8(a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]);
 }
 
 inline Vec_00190EC8 operator*(const Vec_00190EC8& a, float s)
 {
-    return Vec_00190EC8(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_00190EC8(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 extern "C" void func_00183CB8(void* obj, void* ref);
@@ -98,9 +98,8 @@ extern "C" char func_002093E8(Feeler_001A8940* f, int a, int b);
 bool Obj_00190EC8::Probe()
 {
     Feeler_001A8940 f;
-    Vec_00190EC8 r1(m_radius, m_radius, m_radius, 1.0f);
-    Vec_00190EC8 r2(m_radius, m_radius, m_radius, 1.0f);
-    BBox_00190EC8 box(m_pos - r1, m_pos + r2);
+    BBox_00190EC8 box(m_pos - Vec_00190EC8(m_radius, m_radius, m_radius, 1.0f),
+                      m_pos + Vec_00190EC8(m_radius, m_radius, m_radius, 1.0f));
     func_001DA948(D_003E3570, &box);
     f.mD4 = D_003E3570;
     m_hits = 0;
@@ -112,12 +111,11 @@ bool Obj_00190EC8::Probe()
         f.m_end += it->m_off;
         it->m_hit = func_002093E8(&f, 0, 0);
         if (it->m_hit) {
+            it->m_flag = 0;
             float t = 1.0f - f.m_frac;
-            Vec_00190EC8 d = f.m_end - f.m_start;
-            Vec_00190EC8 v = d * t;
+            Vec_00190EC8 v = (f.m_end - f.m_start) * t;
             it->m_normal = f.m_normal;
             it->m_dist = 0.0f;
-            it->m_flag = 0;
             it->m_dot = it->m_normal.x * v.x + it->m_normal.y * v.y + it->m_normal.z * v.z;
             it->m_hit = it->m_dot <= it->m_dist;
             if (it->m_hit) {

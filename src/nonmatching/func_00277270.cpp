@@ -1,4 +1,5 @@
 /* fuzzy: 87.2 */
+/* blocked: code shape (not a tie; no flip helps) (oracle) */
 extern void* D_00392068;
 
 struct Entry_00277270 {

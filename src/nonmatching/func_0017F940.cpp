@@ -1,4 +1,5 @@
 /* fuzzy: 94.5 */
+/* blocked: reload hard-register choice plus sched1 picks; no single flip below 36 words (oracle) */
 struct Pos_0017F940 {
     unsigned long x : 11;
     unsigned long px : 21;

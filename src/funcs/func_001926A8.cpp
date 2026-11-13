@@ -1,20 +1,21 @@
-/* cflags: -fno-gcse -fno-rerun-loop-opt */
-/* fuzzy: 87.4 */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);
 extern "C" float func_00340F60(float a);
 extern "C" float func_00341068(float a);
 extern void* D_00388A70;
 
+struct Vec_001926A8 {
+    float x, y, z, w;
+    float& operator[](int i) { return (&x)[i]; }
+};
+
 struct Vert_001926A8 {
-    float x;
-    float y;
-    float z;
-    float w;
+    Vec_001926A8 pos;
     int m10[4];
     unsigned char m_flag;
     char m21[15];
     Vert_001926A8() {}
+    Vec_001926A8& Pos() { return pos; }
     static void* operator new[](unsigned int size) { return func_0010A638(D_00388A70, size, 1, 0); }
     static void operator delete[](void* p) { func_0010A8D8(D_00388A70, p); }
 };
@@ -36,15 +37,22 @@ void Ring_001926A8::Build(int n, float rx, float rz, float h)
     int idx = 0;
     int side = 0;
     do {
-        for (int i = n - 1; i != -1; i--) {
+        int i = n;
+        while (--i != -1) {
             float fi = i;
-            m_verts[idx].x = (side ? rx : rz) * func_00340F60(2.0f * fi * 3.1415f / n);
-            m_verts[idx].y = side ? h : -h;
-            m_verts[idx].z = (side ? rx : rz) * func_00341068(2.0f * fi * 3.1415f / n);
-            m_verts[idx].w = 1.0f;
+            {
+                float a = 2.0f * fi * 3.1415f / n;
+                m_verts[idx].Pos()[0] = (side ? rx : rz) * func_00340F60(a);
+            }
+            m_verts[idx].Pos()[1] = side ? h : -h;
+            {
+                float a = 2.0f * fi * 3.1415f / n;
+                m_verts[idx].Pos()[2] = (side ? rx : rz) * func_00341068(a);
+            }
+            m_verts[idx].Pos()[3] = 1.0f;
             m_verts[idx].m_flag = 0;
             idx++;
         }
-        side = 1 - side;
+        side ^= 1;
     } while (side);
 }

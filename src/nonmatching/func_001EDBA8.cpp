@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 92.1 */
+/* fuzzy: 91.0 */
 struct Heap_001EDBA8 {
     char pad[0xEC];
     int mEC;

@@ -1,4 +1,4 @@
-/* fuzzy: 86.9 */
+/* fuzzy: 90.6 */
 extern "C" float sqrtf(float);
 extern "C" float fabsf(float);
 
@@ -7,8 +7,10 @@ typedef int qword_0026A270 __attribute__((mode(TI)));
 struct Vec_0026A270 {
     union {
         struct { float x, y, z, w; };
+        float c[4];
         qword_0026A270 q;
     };
+    const float& operator[](int i) const { return c[i]; }
     Vec_0026A270() {}
     void operator-=(const Vec_0026A270& o)
     {
@@ -28,12 +30,12 @@ struct Vec_0026A270 {
 
 static inline Vec_0026A270 operator-(const Vec_0026A270& a, const Vec_0026A270& b)
 {
-    return Vec_0026A270(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return Vec_0026A270(a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] - b[3]);
 }
 
 static inline Vec_0026A270 operator*(const Vec_0026A270& a, float s)
 {
-    return Vec_0026A270(a.x * s, a.y * s, a.z * s, a.w * s);
+    return Vec_0026A270(a[0] * s, a[1] * s, a[2] * s, a[3] * s);
 }
 
 extern "C" void func_003233B8(Vec_0026A270* d, Vec_0026A270* s);
@@ -46,7 +48,7 @@ static inline Vec_0026A270 Normalized_0026A270(Vec_0026A270 v)
 
 static inline float Dot_0026A270(const Vec_0026A270& a, const Vec_0026A270& b)
 {
-    return a.x * b.x + a.y * b.y + a.z * b.z;
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
 struct Seg_0026A270 {
@@ -118,8 +120,8 @@ int Graph_0026A270::Find(Vec_0026A270* a, Vec_0026A270* b, Vec_0026A270* outPos,
         Node_0026A270* n = &m_nodes[i];
         if (!(n->m58 & 0x10) && n != skip && func_001CB7B8(n, 2)) {
             if (n->m50) {
-                Vec_0026A270& hi = n->m_max;
                 Vec_0026A270& lo = n->m_min;
+                Vec_0026A270& hi = n->m_max;
                 if (mn.x <= hi.x && mx.x >= lo.x && mn.z <= hi.z && mx.z >= lo.z && mn.y <= hi.y && mx.y >= lo.y) {
                     Seg_0026A270 s2;
                     func_00101F38(&s2);
@@ -169,8 +171,8 @@ int Graph_0026A270::Find(Vec_0026A270* a, Vec_0026A270* b, Vec_0026A270* outPos,
                     }
                 }
             } else if (!n->m54) {
-                Vec_0026A270& hi = n->m_max;
                 Vec_0026A270& lo = n->m_min;
+                Vec_0026A270& hi = n->m_max;
                 if (mn.x <= hi.x && mx.x >= lo.x && mn.z <= hi.z && mx.z >= lo.z && mn.y <= hi.y && mx.y >= lo.y) {
                     Vec_0026A270 p = n->m_pos - *a;
                     Vec_0026A270 u = Normalized_0026A270(*b - *a);

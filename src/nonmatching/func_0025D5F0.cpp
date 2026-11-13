@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 93.7 */
+/* fuzzy: 88.4 */
 struct Heap_0025D5F0 {
     char pad[0xD8];
     int mD8;

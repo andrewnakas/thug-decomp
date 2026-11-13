@@ -1,5 +1,4 @@
-/* fuzzy: 86.4 */
-/* NEAR MISS: op sequence identical except game has an extra dead `addiu $v1,$zero,0x14` after the %20 div-check (then a loop-alignment nop), size 0x4c8 vs 0x4d0; registers shift (game: entry ptr in s1, Time* in a1). */
+/* fuzzy: 87.2 */
 extern void* D_00392068;
 
 struct Entry_00277270 {
@@ -118,6 +117,9 @@ void Player_00277270::Update()
     if (m2AC->m_count < 20)
         return;
     unsigned int end = m20 + (t->m_now - m1C);
+    /* m_head / 20 is never read, but the binary keeps its divisor: a second orphaned 'li $v1, 20' right after
+       the %20 divide-by-zero trap (0x002772DC), i.e. a divide-and-modulo pair */
+    int lap = m2AC->m_head / 20;
     int start = m2AC->m_head % 20;
     int i = start;
     do {

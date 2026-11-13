@@ -1,5 +1,4 @@
-/* fuzzy: 73.7 */
-/* NEAR MISS (r102 w1): B992 return fixed to (A && !B) ? 1 : 0. Left: A745 c must sit at 0x20 (game v@0, c@0x20, 0x10 unused there; C8C4 c@0x10). */
+/* fuzzy: 85.8 */
 /* sym: __14Range_00278008 = 0x001E4C80 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -8,7 +7,9 @@ union Vec_00278008 {
     struct {
         float x, y, z, w;
     };
+    float c[4];
     Vec_00278008() {}
+    const float& operator[](int i) const { return c[i]; }
     Vec_00278008& operator=(const Vec_00278008& o)
     {
         x = o.x;
@@ -29,9 +30,9 @@ union Vec_00278008 {
 static inline Vec_00278008 Cross_00278008(const Vec_00278008& a, const Vec_00278008& b)
 {
     Vec_00278008 r;
-    r.x = a.y * b.z - a.z * b.y;
-    r.y = a.z * b.x - a.x * b.z;
-    r.z = a.x * b.y - a.y * b.x;
+    r.x = a[1] * b[2] - a[2] * b[1];
+    r.y = a[2] * b[0] - a[0] * b[2];
+    r.z = a[0] * b[1] - a[1] * b[0];
     r.w = 0.0f;
     return r;
 }
@@ -103,11 +104,7 @@ int Comp_00278008::CallMember(unsigned int name, void* params, Script_00278008* 
         Vec_00278008 v;
         v.q = m_obj->mB0.q;
         func_00101730(&v, &m30);
-        Vec_00278008 c;
-        c.x = v.y * m40.z - v.z * m40.y;
-        c.y = v.z * m40.x - v.x * m40.z;
-        c.z = v.x * m40.y - v.y * m40.x;
-        c.w = 0.0f;
+        const Vec_00278008& c = Cross_00278008(v, m40);
         return c.w < c.y;
     }
     case 0xC8C4D2F4: {

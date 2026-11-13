@@ -1,5 +1,4 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 78.8 */
+/* fuzzy: 87.5 */
 /* sym: _vt$11It_001FD9C8 = 0x00366AA8 */
 
 struct Obj_001FD9C8;
@@ -79,6 +78,7 @@ struct Mgr_001FD9C8 {
     int m_seq[256];
     char pad880[4];
     Node_001FD9C8 m_lists[256];
+    int& Seq(int i) { return m_seq[i]; }
 };
 
 struct Req_001FD9C8 {
@@ -106,13 +106,12 @@ void Sys_001FD9C8::Flush(Mgr_001FD9C8* mgr)
     It_001FD9C8* p = &it;
     for (int i = 0; i < 256; i++) {
         Node_001FD9C8* h = &mgr->m_lists[i];
-        it.m_cur = h;
-        Obj_001FD9C8* o = p->Advance(h);
+        Obj_001FD9C8* o = p->First(h);
         if (o) {
             It_001FD9C8* q = &it;
             do {
                 Obj_001FD9C8* next = q->Advance(it.m_cur);
-                if (o->m_seq != mgr->m_seq[o->m_slot]) {
+                if (o->m_seq != mgr->Seq(o->m_slot)) {
                     break;
                 }
                 Req_001FD9C8 r;
@@ -125,7 +124,7 @@ void Sys_001FD9C8::Flush(Mgr_001FD9C8* mgr)
                 r.m_18 = 0;
                 r.m_4 = o->m_info->m_0;
                 r.m_8 = o->m_info->m_2;
-                mgr->m_seq[o->m_slot]++;
+                mgr->Seq(o->m_slot)++;
                 int res = func_001FC488(m_queue, &r);
                 if (res != 4) {
                     if (o->m_info) {

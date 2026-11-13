@@ -1,4 +1,4 @@
-/* fuzzy: 87.7 */
+/* fuzzy: 98.4 */
 struct Msg_001FB948 {
     unsigned char m_type;
     char pad1;
@@ -67,6 +67,7 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
         return;
     unsigned int interval = D_0038EC64;
     bool stop = false;
+    int n;
     while (!stop && func_001FF410(mgr, conn) && !func_00201488(mgr, conn)) {
         if (func_001FF268(mgr, conn)) {
             Msg_001FB948 msg;
@@ -84,10 +85,10 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
         if (func_00202778(conn) && !func_00202758(conn) && (mgr->m227C & 4)) {
             Msg_001FB948 msg;
             func_001FA800(&msg);
-            unsigned int t = mgr->m0;
-            unsigned int now = t;
+            n = mgr->m0;
+            unsigned int now = n;
             unsigned int last = conn->m20E4;
-            if (!last || t - last > interval) {
+            if (!last || n - last > interval) {
                 if (conn->m20E8 < last) {
                     unsigned int v;
                     if (func_00202768(conn))
@@ -97,7 +98,7 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
                     v += 100;
                     func_001FE388(&conn->m20B4, interval < v ? interval : v);
                 }
-                conn->m20E4 = t;
+                conn->m20E4 = n;
                 func_0031BCC0(mgr->m429C);
                 msg.m_data = &now;
                 msg.m_type = 1;
@@ -116,7 +117,7 @@ void Call_001FB948(Mgr_001FB948* mgr, Conn_001FB948* conn)
             stop = true;
         if (!func_001FEC38(mgr, conn, 1, 0))
             stop = true;
-        int n = conn->m58 - conn->m54;
+        n = conn->m58 - conn->m54;
         if (n > 0 && func_00202778(conn)) {
             if (mgr->m1834) {
                 if (!func_00200E28(mgr, conn->m54, n, 0))

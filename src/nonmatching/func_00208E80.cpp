@@ -1,4 +1,4 @@
-/* fuzzy: 85.3 */
+/* fuzzy: 98.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00208E80 {
@@ -53,7 +53,8 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
     Box_00208E80 b;
     func_00101F38(&b);
     Vec_00208E80 d;
-    d = Vec_00208E80(box->mx.x - box->mn.x, box->mx.y - box->mn.y, box->mx.z - box->mn.z, 1.0f);
+    float lx = box->mn.x;
+    d = Vec_00208E80(box->mx.x - lx, box->mx.y - box->mn.y, box->mx.z - box->mn.z, 1.0f);
     func_003233B8(&d, &d);
     d.x *= 0.5f;
     d.y *= 0.5f;
@@ -65,14 +66,18 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
     b.mx.x = box->mx.x + d.x;
     b.mx.y = box->mx.y + d.y;
     b.mx.z = box->mx.z + d.z;
-    int x0 = (int)((b.mn.x - m_origin.x) / m_cellW);
-    int z0 = (int)((b.mn.z - m_origin.z) / m_cellH);
+    float fx = b.mn.x - m_origin.x;
+    float fz = b.mn.z - m_origin.z;
+    int x0 = (int)(fx / m_cellW);
+    int z0 = (int)(fz / m_cellH);
     if (x0 < 0) x0 = 0;
     else if (x0 >= m_w) x0 = m_w - 1;
     if (z0 < 0) z0 = 0;
     else if (z0 >= m_h) z0 = m_h - 1;
-    int x1 = (int)((b.mx.x - m_origin.x) / m_cellW);
-    int z1 = (int)((b.mx.z - m_origin.z) / m_cellH);
+    fx = b.mx.x - m_origin.x;
+    fz = b.mx.z - m_origin.z;
+    int x1 = (int)(fx / m_cellW);
+    int z1 = (int)(fz / m_cellH);
     if (x1 < 0) x1 = 0;
     else if (x1 >= m_w) x1 = m_w - 1;
     if (z1 < 0) z1 = 0;
@@ -91,8 +96,7 @@ Item_00208E80** Grid_00208E80::Query(Box_00208E80* box)
         Cell_00208E80* c = &m_cells[x1][z1];
         Item_00208E80** out = D_003F3F70;
         Item_00208E80** in = c->m_items;
-        int cnt = c->m_count;
-        for (int k = 0; k < cnt; k++) {
+        for (int k = c->m_count; k > 0; k--) {
             Item_00208E80* it = *in++;
             if (!(it->m4 & 6)) {
                 *out++ = it;

@@ -1,4 +1,4 @@
-/* fuzzy: 74.5 */
+/* fuzzy: 83.0 */
 /* sym: __14Slerp_00276958 = 0x00102FD0 */
 typedef int qword_00276958 __attribute__((mode(TI)));
 
@@ -149,6 +149,7 @@ struct Remote_00276958 {
     char pad50[0x160 - 0x50];
     Vec_00276958 hist[20];
     int histCount;
+    int GetHistCount() { return histCount; }
     float dt;
     char pad2A8[4];
     Ring_00276958* ring;
@@ -239,7 +240,9 @@ void Remote_00276958::Update()
     do {
         if (func_00279F48(&snaps[j]) >= now) {
             index = j;
-            D_00391870 = (next + 20 - j) % 20;
+            int lag = next + 20;
+            lag -= j;
+            D_00391870 = lag % 20;
             if (D_00391870 >= 10)
                 playTime += 1000 / (unsigned int)D_00388830 * 10;
             else if (D_00391870 == 0)
@@ -272,12 +275,13 @@ void Remote_00276958::Update()
                 model->vel = Vec_00276958(0.0f, 0.0f, 0.0f, 1.0f);
                 func_00186398(model, 1);
             } else {
+                Vec_00276958 sum;
                 model->pos = snaps[p].pos + d * t;
                 model->vel = (model->pos - prevPos) * (1.0f / dt);
                 hist[histCount % 20] = model->vel;
-                Vec_00276958 sum = r;
+                sum = r; /* the game reads sum from the stack slot that still holds r */
                 int k;
-                for (k = 0; k < 20 && k < histCount; k++)
+                for (k = 0; k < 20 && k < GetHistCount(); k++)
                     sum += hist[k];
                 if (k > 0)
                     model->vel = sum * (1.0f / (float)k);
@@ -291,7 +295,7 @@ void Remote_00276958::Update()
             state->m180 = s->m7E != 0;
             func_00290890(comp, s->m74);
             for (int b = 0; b < 23; b++)
-                state->flags[b].Set((s->mask & (1 << b)) != 0);
+                state->flags[b].Set((snaps[j].mask & (1 << b)) != 0);
             if (state->flags[11].value)
                 state->m140 = model->vel;
             else

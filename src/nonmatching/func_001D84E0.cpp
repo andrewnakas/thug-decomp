@@ -1,4 +1,4 @@
-/* fuzzy: 87.9 */
+/* fuzzy: 94.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Heap_001D84E0 {
@@ -56,12 +56,11 @@ void Mesh_001D84E0::Transform(Vec_001D84E0* pos, void* mat)
     Vec_001D84E0 a;
     Vec_001D84E0 b;
     Vec_001D84E0 v;
-    Vec_001D84E0* pv = &v;
     v.x = -pos->x;
     v.y = -pos->y;
     v.z = -pos->z;
     v.w = -pos->w;
-    func_001D83A0(this, pv);
+    func_001D83A0(this, &v);
     if (m_sub) {
         func_001D7B18(m_sub, pos, mat, 0);
     }
@@ -72,6 +71,7 @@ void Mesh_001D84E0::Transform(Vec_001D84E0* pos, void* mat)
         func_0010A9B0(D_00388A70);
         func_001D8C20(this, tmp);
     }
+    Vec_001D84E0* pv = &v;
     for (int i = 0; i < m_count; i++) {
         if (tmp) {
             func_00101630(&tmp[i], mat);
@@ -98,10 +98,10 @@ void Mesh_001D84E0::Transform(Vec_001D84E0* pos, void* mat)
     b = m_box.mx;
     func_00101630(&a, mat);
     func_00101630(&b, mat);
-    v.x = pv->y = pv->z = 10000000.0f;
+    pv->y = v.x = pv->z = 10000000.0f;
     pv->w = 1.0f;
-    m_box.mn = v;
-    v.x = pv->y = pv->z = -10000000.0f;
+    m_box.mn = *pv;
+    v.x = pv->z = pv->y = -10000000.0f;
     m_box.mx = v;
     func_00102358(&m_box, &a);
     func_00102358(&m_box, &b);

@@ -1,4 +1,3 @@
-/* fuzzy: 85.2 */
 typedef int qword_001CA670 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -97,6 +96,7 @@ void Obj_001CA670::SetOnRail(int neg, Vec_001CA670* d, float dist)
         Vec_001CA670 b;
         func_0026B1B0(&a, mA24, mA1C);
         func_0026B1B0(&b, mA24, mA20);
+        float& by = b[1];
         Sub_001CA670(v, a, b);
         float len = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
         float m;
@@ -120,7 +120,7 @@ void Obj_001CA670::SetOnRail(int neg, Vec_001CA670* d, float dist)
             w = v;
         }
         Cross_001CA670(e, w, a);
-        if (b[1] * e[1] < e[3]) {
+        if (by * e[1] < e[3]) {
             a[0] = -a[0];
             a[1] = -a[1];
             a[2] = -a[2];

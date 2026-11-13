@@ -27,3 +27,4 @@ func_001F7970  interrupt handler (sync.l; ei)
 func_00267538  VU0 macro mode
 func_002CE628  interrupt control (di/ei) and syscall
 func_002CE778  exit syscall
+func_00181E38  DMA kick (sync after D1_CHCR writes at 0x001820AC, 0x00182168)

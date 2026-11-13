@@ -17,6 +17,9 @@
    no label, no branch or jump, no register pinning. All the logic (loops, branches, address arithmetic, loads,
    stores, calls) is ordinary C++ around the helpers. The reason: we publish our own C++, never transcriptions of
    the game's compiled code or its bytes; a helper names one hardware operation C++ has no spelling for.
+   New entries (maintainer-reviewed, ruling of 2026-11-13): a function may be added to the allowlist only when
+   its asm contains a hardware-only instruction with no C++ spelling (sync, ei/di, syscall, cache, COP0/COP2/VU0
+   ops); the same helper rules apply, and the entry names the instruction and its address.
 5. Provenance (PROVENANCE.md): every PR ticks every box. **Never use the leaked THUG source.**
 6. Claim before you work (`/claim 0xADDR` on the Active claims issue). Someone else's claim wins. Claims lapse
    after 7 days without activity (reminder after 5). Touching someone's merged function: Steward asks them;

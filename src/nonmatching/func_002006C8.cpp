@@ -1,4 +1,4 @@
-/* fuzzy: 78.4 */
+/* fuzzy: 83.6 */
 struct MsgDesc_002006C8 {
     unsigned char m_id;
     unsigned char m1;
@@ -136,15 +136,14 @@ void func_002006C8(void* conn, Mgr_002006C8* mgr, unsigned char type, unsigned s
             p->m_queue = queue;
             p->m_buf = buf;
             p->m_cur = data;
-            int* cnt = &mgr->m_count[queue];
-            p->m_count = *cnt;
+            p->m_count = mgr->m_count[queue];
             p->m_flag = keep;
             Node_002006C8* head = &mgr->m_list;
             node->m_prev = head->m_prev;
             node->m_next = head;
             head->m_prev->m_next = node;
             head->m_prev = node;
-            *cnt += blocks;
+            mgr->m_count[queue] += blocks;
             func_0010A9B0(D_00388A70);
         }
     }

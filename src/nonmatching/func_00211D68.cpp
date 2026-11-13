@@ -1,4 +1,8 @@
 /* fuzzy: 96.5 */
+// Held (ruling 2026-11-13): the game's compare tree is rooted at 0x8E6B02AD and sends type < 0x8E6B02AD to
+// default, so a fourth, empty case below 0x8E6B02AD existed (its compare was pruned). One such key gives an
+// exact match, but several candidates (0x08470F2E, 0x30C19600, 0x19B1E241, 0x5B8AB877) are tested on this key
+// and fit the tree, so the value is not pinned and the case stays out.
 typedef int qword_00211D68 __attribute__((mode(TI)));
 
 struct Array_00211D68 {

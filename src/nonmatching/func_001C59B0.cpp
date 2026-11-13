@@ -1,4 +1,4 @@
-/* fuzzy: 93.0 */
+/* fuzzy: 97.2 */
 struct Vec_001C59B0 {
     float x, y, z, w;
     Vec_001C59B0() {}
@@ -62,10 +62,8 @@ void func_001C59B0(Skater_001C59B0* sk)
     if (-GetPhysics_001C59B0(0xA20C43B7) < dist) {
         *p -= sk->ScaledNormal(GetPhysics_001C59B0(0x4D16F37D) * sk->m98);
         float dot = sk->m_vel.x * sk->m_normal.x + sk->m_vel.y * sk->m_normal.y + sk->m_vel.z * sk->m_normal.z;
+        p = &sk->m_vel;
         if (dot != 0.0f)
-        {
-            p = &sk->m_vel;
             *p -= sk->ScaledNormal(dot);
-        }
     }
 }

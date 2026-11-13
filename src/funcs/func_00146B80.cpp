@@ -1,4 +1,3 @@
-/* fuzzy: 86.4 */
 /* sym: _vt$10B_00146B80 = 0x0035D6C8 */
 /* sym: _vt$10C_00146B80 = 0x0035F090 */
 typedef int qword __attribute__((mode(TI)));
@@ -59,7 +58,15 @@ C_00146B80* C_00146B80::Clone(int a)
 {
     C_00146B80* c = new C_00146B80(*this);
     if (c && m30) {
-        c->m30 = func_00170C30(m30, &c->m40, 0);
+        // The game tests `a`: it copies $a1 into $s2 (0x146B9C, with the sd/ld of $s2) and never reads it
+        // again. Both arms compile to the same code and jump2 cross-jumps them after allocation, leaving only
+        // that dead copy (LAST_MILE fact 57). The original arms probably differed only in code that compiled
+        // to nothing here (e.g. debug-only code).
+        if (a) {
+            c->m30 = func_00170C30(m30, &c->m40, 0);
+        } else {
+            c->m30 = func_00170C30(m30, &c->m40, 0);
+        }
     }
     return c;
 }

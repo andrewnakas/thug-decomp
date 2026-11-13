@@ -1,4 +1,3 @@
-/* fuzzy: 98.1 */
 struct SemaParam_001FD510 {
     int current_count;
     int max_count;
@@ -48,7 +47,8 @@ extern "C" int func_00201288(Net_001FD510* net);
 extern "C" int func_00326980(int a, int b, int c);
 extern "C" int func_00326308(int s, int level, int name, int* value, int len);
 extern "C" void func_00200F78(Net_001FD510* net);
-extern "C" int func_001F9698(void* p, char* buf);
+/* func_001F9698 is a one-argument getter (jr $ra; lw $v0, 0x2A0($a0)): it never reads $a1. */
+extern "C" int func_001F9698(void* p);
 extern "C" void func_00106038(char* p);
 extern "C" int func_0031BCA0(SemaParam_001FD510* p);
 extern "C" void func_002E26E0(int a, int b);
@@ -90,10 +90,10 @@ int Net_001FD510::Init()
 ok:
     m42D4 = 0;
     m42CC = 10;
+    m42C0 = (void*)func_001FE100;
     m42C4 = m_buffer;
     m42C8 = 0x2000;
-    m42C0 = (void*)func_001FE100;
-    m42B8 = func_001F9698(m1838, m42C4) + 0x110;
+    m42B8 = func_001F9698(m1838) + 0x110;
     func_00106038(m_thread);
     m_thread_id = m42BC;
     param.init_count = 1;

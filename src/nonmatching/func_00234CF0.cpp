@@ -1,4 +1,4 @@
-/* fuzzy: 85.7 */
+/* fuzzy: 86.8 */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00234CF0 {
     qword q;
@@ -208,15 +208,15 @@ extern "C" int func_00234CF0(Msg_00234CF0* msg)
                 ang = frames[cur].m_posF - frames[prev].m_posF;
 
                 if (!(flags & 0x40)) {
-                    f7E = frames[prev].m_7E;
                     f78 = frames[prev].m_78;
                     f7C = frames[prev].m_7C;
                     f84 = frames[prev].m_84;
                     f7D = frames[prev].m_7D;
+                    f7E = frames[prev].m_7E;
                 }
                 if (!(flags & 0x80)) {
-                    f70 = frames[prev].m_70;
                     f74 = frames[prev].m_74;
+                    f70 = frames[prev].m_70;
                 }
                 if (!(flags & 0x100))
                     f88 = frames[prev].m_88;

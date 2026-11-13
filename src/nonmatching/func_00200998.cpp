@@ -1,4 +1,4 @@
-/* fuzzy: 79.9 */
+/* fuzzy: 82.4 */
 struct Link_00200998 {
     int m0;
     void* m_data;
@@ -52,7 +52,7 @@ void Mgr_00200998::Send(int target, unsigned char msg, unsigned short size, void
     Node104D78_002016D8 iter;
     Node104D78_002016D8* it = &iter;
     if (target == 0xFF) {
-        for (void* conn = it->First(&m_conns); conn; conn = it->Next()) {
+        for (void* conn = it->First(&m_conns); conn; conn = iter.Next()) {
             if (func_00202738(conn)) {
                 func_002006C8(this, conn, msg, size, data, a, b, c, d);
             }

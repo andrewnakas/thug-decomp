@@ -1,4 +1,5 @@
-/* fuzzy: 82.4 */
+/* fuzzy: 92.3 */
+/* sym: __12Msg_002313E0 = 0x001FA800 */
 extern "C" void* memcpy(void*, const void*, unsigned int);
 
 extern char D_00371C78[];
@@ -23,7 +24,7 @@ struct Msg_002313E0 {
     int mC;
     unsigned char m10;
     char pad11[0xF];
-    void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
+    Msg_002313E0();
 };
 
 struct Packet_002313E0 {
@@ -70,10 +71,11 @@ void func_002313E0(void* self, int flag)
     It_002313E0 it;
     It_002313E0 it2;
     Packet_002313E0 pkt;
-    Msg_002313E0 msg;
-    int k;
     int val;
-    for (Conn_002313E0* c = func_002A53F8(net, &it, 1); c; c = func_002A5490(net, &it, 1)) {
+    Conn_002313E0* c = func_002A53F8(net, &it, 1);
+    if (!c) goto done;
+next:
+    {
         pkt.m_key = 0;
         pkt.m_flag = flag;
         if (flag)
@@ -98,24 +100,33 @@ void func_002313E0(void* self, int flag)
             }
         }
         if (count > 0) {
-            func_001FA800(&msg);
+            Msg_002313E0 msg;
             int key = func_00236248(self);
-            msg.Set(&pkt, count * 5 + 10, 0x40);
+            msg.m_data = &pkt;
             pkt.m_key = key;
             pkt.m_count = count;
+            msg.m_size = count * 5 + 10;
+            msg.m_type = 0x40;
+            Msg_002313E0* pm = &msg;
             if (flag || key) {
                 msg.mC = 2;
                 msg.m10 = 8;
             }
-            func_001FF970(func_002A39D8(net), func_002B3080(c), &msg);
+            func_001FF970(func_002A39D8(net), func_002B3080(c), pm);
             if (!func_002B1FC8(c) && func_002B2280(c)) {
-                k = func_00236248(self) ^ 0xDEADFACE;
-                msg.Set(&k, 8, 0x80);
-                msg.mC = 2;
+                unsigned int k[2];
+                k[0] = func_00236248(self) ^ 0xDEADFACE;
+                msg.m_size = 8;
                 msg.m10 = 8;
-                func_001FF970(func_002A39D8(net), func_002B3080(c), &msg);
+                msg.mC = 2;
+                msg.m_type = 0x80;
+                msg.m_data = k;
+                func_001FF970(func_002A39D8(net), func_002B3080(c), pm);
             }
         }
     }
+    c = func_002A5490(net, &it, 1);
+    if (c) goto next;
+done:
     func_002A7EC8(net, *func_002A39D8(net));
 }

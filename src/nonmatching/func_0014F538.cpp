@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse -fno-rerun-loop-opt */
-/* fuzzy: 40.0 */
+/* fuzzy: 48.2 */
 /* Projects a textured decal/shadow along a ray (start -> end) onto the collision geometry: every collision
    face the projection volume touches is clipped against the unit square in projector space, subdivided,
    and the surviving triangles are stored with projector UVs and per-vertex intensities in a decal block. */
@@ -283,10 +283,12 @@ int func_0014F538(void* self, SectorRef_0014F538** sectors, Vec_0014F538* start,
 
             Vec_0014F538 w[3];
             Vec_0014F538 s[3];
-            for (int k = 0; k < 3; k++) {
-                w[k] = sector->Vertex(sector->VertIndex(*face, k));
-                w[k].w = 1.0f;
-            }
+            w[0] = sector->Vertex(sector->VertIndex(*face, 0));
+            w[0].w = 1.0f;
+            w[1] = sector->Vertex(sector->VertIndex(*face, 1));
+            w[1].w = 1.0f;
+            w[2] = sector->Vertex(sector->VertIndex(*face, 2));
+            w[2].w = 1.0f;
             for (int k = 0; k < 3; k++)
                 func_00323298(&s[k], &viewProj, &w[k]);
 
@@ -326,13 +328,18 @@ int func_0014F538(void* self, SectorRef_0014F538** sectors, Vec_0014F538* start,
             unsigned int slot = func_00142F08(block);
             block[slot] = (int)(depth * 1000.0f);
             Tri_0014F538* t = &tris[slot];
-            for (int k = 0; k < 3; k++) {
-                t->v[k].pos = w[k];
-                t->v[k].u = (s[k].x * 0.5f + 0.5f) * su;
-                t->v[k].v = (s[k].y * 0.5f + 0.5f) * sv;
-            }
-            for (int k = 0; k < 3; k++)
-                SetGrey(t->v[k].col, sector->intensity[sector->VertIndex(*face, k)]);
+            t->v[0].pos = w[0];
+            t->v[0].u = (s[0].x * 0.5f + 0.5f) * su;
+            t->v[0].v = (s[0].y * 0.5f + 0.5f) * sv;
+            t->v[1].pos = w[1];
+            t->v[1].u = (s[1].x * 0.5f + 0.5f) * su;
+            t->v[1].v = (s[1].y * 0.5f + 0.5f) * sv;
+            t->v[2].pos = w[2];
+            t->v[2].u = (s[2].x * 0.5f + 0.5f) * su;
+            t->v[2].v = (s[2].y * 0.5f + 0.5f) * sv;
+            SetGrey(t->v[0].col, sector->intensity[sector->VertIndex(*face, 0)]);
+            SetGrey(t->v[1].col, sector->intensity[sector->VertIndex(*face, 1)]);
+            SetGrey(t->v[2].col, sector->intensity[sector->VertIndex(*face, 2)]);
 
             Vec_0014F538 e1, e2, n;
             e1.x = t->v[1].pos.x - t->v[0].pos.x;
@@ -378,17 +385,27 @@ int func_0014F538(void* self, SectorRef_0014F538** sectors, Vec_0014F538* start,
                 block[slot] = (int)(depth * 1000.0f);
                 empty = 0;
                 Tri_0014F538* d = &tris[slot];
-                for (int k = 0; k < 3; k++) {
-                    d->v[k].pos = p->v[k].pos;
-                    d->v[k].u = p->v[k].u;
-                    d->v[k].v = p->v[k].v;
-                }
-                for (int k = 0; k < 3; k++) {
-                    d->v[k].col[0] = p->v[k].col[0];
-                    d->v[k].col[1] = p->v[k].col[1];
-                    d->v[k].col[2] = p->v[k].col[2];
-                    d->v[k].col[3] = p->v[k].col[3];
-                }
+                d->v[0].pos = p->v[0].pos;
+                d->v[0].u = p->v[0].u;
+                d->v[0].v = p->v[0].v;
+                d->v[1].pos = p->v[1].pos;
+                d->v[1].u = p->v[1].u;
+                d->v[1].v = p->v[1].v;
+                d->v[2].pos = p->v[2].pos;
+                d->v[2].u = p->v[2].u;
+                d->v[2].v = p->v[2].v;
+                d->v[0].col[0] = p->v[0].col[0];
+                d->v[0].col[1] = p->v[0].col[1];
+                d->v[0].col[2] = p->v[0].col[2];
+                d->v[0].col[3] = p->v[0].col[3];
+                d->v[1].col[0] = p->v[1].col[0];
+                d->v[1].col[1] = p->v[1].col[1];
+                d->v[1].col[2] = p->v[1].col[2];
+                d->v[1].col[3] = p->v[1].col[3];
+                d->v[2].col[0] = p->v[2].col[0];
+                d->v[2].col[1] = p->v[2].col[1];
+                d->v[2].col[2] = p->v[2].col[2];
+                d->v[2].col[3] = p->v[2].col[3];
                 slot = func_00142F08(block);
             }
             if (list)

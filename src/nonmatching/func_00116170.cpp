@@ -1,4 +1,4 @@
-/* fuzzy: 69.7 */
+/* fuzzy: 96.0 */
 extern "C" float sqrtf(float);
 
 typedef int qword_00116170 __attribute__((mode(TI)));
@@ -43,7 +43,13 @@ struct Quat_00116170 {
         w = aw;
     }
     Quat_00116170 operator-() const { return Quat_00116170(-x, -y, -z, -w); }
+    float& operator[](int i) { return (&x)[i]; }
 };
+
+static inline float TransScale_00116170()
+{
+    return 32.0f;
+}
 
 struct Vec_00116170 {
     union {
@@ -53,6 +59,7 @@ struct Vec_00116170 {
         qword_00116170 q;
     };
     Vec_00116170() {}
+    float& operator[](int i) { return (&x)[i]; }
     Vec_00116170(float ax, float ay, float az, float aw)
     {
         x = ax;
@@ -60,25 +67,22 @@ struct Vec_00116170 {
         z = az;
         w = aw;
     }
-    void Decode(TransKey_00116170* k, int raw, float scale)
-    {
-        if (raw) {
-            x = k->x;
-            y = k->y;
-            z = k->z;
-            w = 1.0f;
-        } else {
-            CKey_00116170* c = (CKey_00116170*)k;
-            x = (float)c->x / scale;
-            y = (float)c->y / scale;
-            z = (float)c->z / scale;
-            w = 1.0f;
-        }
-    }
-    Vec_00116170 operator-(const Vec_00116170& o) const { return Vec_00116170(x - o.x, y - o.y, z - o.z, w - o.w); }
-    Vec_00116170 operator+(const Vec_00116170& o) const { return Vec_00116170(x + o.x, y + o.y, z + o.z, w + o.w); }
-    Vec_00116170 operator*(float s) const { return Vec_00116170(x * s, y * s, z * s, w * s); }
 };
+
+static inline Vec_00116170 operator-(const Vec_00116170& a, const Vec_00116170& b)
+{
+    return Vec_00116170(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+}
+
+static inline Vec_00116170 operator+(const Vec_00116170& a, const Vec_00116170& b)
+{
+    return Vec_00116170(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+}
+
+static inline Vec_00116170 operator*(const Vec_00116170& a, float s)
+{
+    return Vec_00116170(a.x * s, a.y * s, a.z * s, a.w * s);
+}
 
 struct Anim_00116170 {
     int m0;
@@ -111,9 +115,9 @@ static inline void GetRot(Quat_00116170& q, RotKey_00116170* k, int raw)
         q.y = (float)c->y * 0.00006103515625f;
         q.z = (float)c->z * 0.00006103515625f;
     }
-    q.w = sqrtf(Max_00116170(1.0f - q.x * q.x - q.y * q.y - q.z * q.z, 0.0f));
+    q.w = sqrtf(Max_00116170(0.0f, 1.0f - q.x * q.x - q.y * q.y - q.z * q.z));
     if (((CKey_00116170*)k)->m_time & 0x8000) {
-        q.w = -q.w;
+        q[3] = -q[3];
     }
 }
 
@@ -149,17 +153,33 @@ static inline void SampleRot(Quat_00116170* rot, RotKey_00116170* r0, RotKey_001
     }
 }
 
-static inline void SampleTrans(Vec_00116170* trans, TransKey_00116170* t0, TransKey_00116170* t1, float tfrac, int raw, float scale)
+static inline void GetTrans(Vec_00116170& v, TransKey_00116170* k, int raw)
+{
+    if (raw) {
+        v[0] = k->x;
+        v[1] = k->y;
+        v[2] = k->z;
+        v[3] = 1.0f;
+    } else {
+        CKey_00116170* c = (CKey_00116170*)k;
+        v[0] = (float)c->x / TransScale_00116170();
+        v[1] = (float)c->y / TransScale_00116170();
+        v[2] = (float)c->z / TransScale_00116170();
+        v[3] = 1.0f;
+    }
+}
+
+static inline void SampleTrans(Vec_00116170* trans, TransKey_00116170* t0, TransKey_00116170* t1, float tfrac, int raw)
 {
     if (tfrac == 0.0f) {
-        trans->Decode(t0, raw, scale);
+        GetTrans(*trans, t0, raw);
     } else if (tfrac == 1.0f) {
-        trans->Decode(t1, raw, scale);
+        GetTrans(*trans, t1, raw);
     } else {
         Vec_00116170 a;
         Vec_00116170 b;
-        a.Decode(t0, raw, scale);
-        b.Decode(t1, raw, scale);
+        GetTrans(a, t0, raw);
+        GetTrans(b, t1, raw);
         *trans = (b - a) * tfrac + a;
     }
 }
@@ -169,50 +189,45 @@ extern "C" int func_00116170(Anim_00116170* anim, Quat_00116170* rot, Vec_001161
     float t = time * 60.0f;
     float tfrac = 0.0f;
     float rfrac = tfrac;
-    TransKey_00116170* tkeys = anim->m_trans;
-    RotKey_00116170* rkeys = anim->m_rot;
+    TransKey_00116170* t0;
+    TransKey_00116170* t1;
+    RotKey_00116170* r0;
+    RotKey_00116170* r1;
+    RotKey_00116170* rkeys = r0 = r1 = anim->m_rot;
+    TransKey_00116170* tkeys = t0 = t1 = anim->m_trans;
     int id = anim->m20;
-    RotKey_00116170* r0 = rkeys;
-    RotKey_00116170* r1 = rkeys;
-    TransKey_00116170* t0 = tkeys;
-    TransKey_00116170* t1 = tkeys;
     for (int i = 0; i < anim->m_numBones; i++) {
-        float scale = 32.0f;
         int nrot = func_00115C68(anim, id, i);
         int ntrans = func_00115C98(anim, id, i);
         int j;
         for (j = 0; j < nrot; j++) {
             if (j == nrot - 1) {
-                r0 = r1 = &rkeys[j];
+                r1 = r0 = &rkeys[j];
                 rfrac = 0.0f;
                 break;
             }
-            RotKey_00116170* k = &rkeys[j];
-            RotKey_00116170* n = k + 1;
-            if (k->m_time <= t && t <= n->m_time) {
-                rfrac = (t - (float)k->m_time) / ((float)n->m_time - (float)k->m_time);
-                r0 = k;
-                r1 = n;
+            if (rkeys[j].m_time <= t && t <= rkeys[j + 1].m_time) {
+                rfrac = (t - (float)rkeys[j].m_time) / ((float)rkeys[j + 1].m_time - (float)rkeys[j].m_time);
+                r0 = &rkeys[j];
+                r1 = r0 + 1;
                 break;
             }
         }
         SampleRot(rot, r0, r1, rfrac, func_00115CC8(anim));
         for (j = 0; j < ntrans; j++) {
             if (j == ntrans - 1) {
-                t0 = t1 = &tkeys[j];
+                t1 = t0 = &tkeys[j];
                 tfrac = 0.0f;
                 break;
             }
-            TransKey_00116170* k = &tkeys[j];
-            TransKey_00116170* n = k + 1;
-            if (k->m_time <= t && t <= n->m_time) {
-                tfrac = (t - (float)k->m_time) / ((float)n->m_time - (float)k->m_time);
-                t0 = k;
-                t1 = n;
+            if (tkeys[j].m_time <= t && t <= tkeys[j + 1].m_time) {
+                tfrac = (t - (float)tkeys[j].m_time) / ((float)tkeys[j + 1].m_time - (float)tkeys[j].m_time);
+                t0 = &tkeys[j];
+                t1 = t0 + 1;
                 break;
             }
         }
-        SampleTrans(trans, t0, t1, tfrac, func_00115CC8(anim), scale);
+        SampleTrans(trans, t0, t1, tfrac, func_00115CC8(anim));
         rkeys += nrot;
         tkeys += ntrans;
         rot++;

@@ -1,5 +1,4 @@
-/* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 63.8 */
+/* fuzzy: 94.1 */
 /* Text draw: walks the string, handles the \C (colour), \S (special glyph), \B (button-font glyph) and \\ escapes,
    and emits one sprite (two UV/XY vertex pairs) per glyph into the VU1 batch, restarting the batch when the
    packet buffer fills up. */
@@ -75,6 +74,11 @@ extern "C" void func_00334148(int a);
 extern "C" void func_00164490(int a);
 extern "C" void func_00164408(int a, int b, int c, int d, int e, unsigned int f);
 
+static inline bool IsPal_001735F8()
+{
+    return D_0038882C == 1;
+}
+
 static inline void Put(unsigned int v)
 {
     unsigned int* p = (unsigned int*)D_00394274;
@@ -93,14 +97,13 @@ static inline void PutQ(unsigned int a, unsigned int b, unsigned int c, unsigned
 
 void Text_001735F8::Draw()
 {
-    float sx = D_0038C0FC;
-    int x = ((int)(m_x * sx * 16.0f) + (D_0038882C != 1 ? 0x7000 : 0x6C00)) + ((*m_xyoffset & 0x7FF) << 4);
-    int y0 = ((int)(m_y * D_0038C100 * 16.0f) + (D_0038882C != 1 ? 0x7000 : 0x7200)) +
+    int x = ((int)(m_x * D_0038C0FC * 16.0f) + (IsPal_001735F8() ? 0x6C00 : 0x7000)) + ((*m_xyoffset & 0x7FF) << 4);
+    int y0 = ((int)(m_y * D_0038C100 * 16.0f) + (IsPal_001735F8() ? 0x7200 : 0x7000)) +
              (((*m_xyoffset >> 32) & 0x7FF) << 4);
     unsigned int color = D_0038C104 ? D_0038C108 : m_color;
     Font_001735F8* f = m_font;
-    float spacing = (float)(f->m_spacing << 4) * m_scaleX * sx;
-    float space = (float)(f->m_space << 4) * m_scaleX * sx;
+    float spacing = (float)(f->m_spacing << 4) * m_scaleX * D_0038C0FC;
+    float space = (float)(f->m_space << 4) * m_scaleX * D_0038C0FC;
     const char* s = m_text;
 
     for (;;) {
@@ -109,10 +112,12 @@ void Text_001735F8::Draw()
         int esc = 0;
         while (*s == '\\' && !esc) {
             s++;
-            char c = *s;
-            if (c == '\\') {
+            switch (*s) {
+            case '\\':
                 esc = 1;
-            } else if (c == 'C' || c == 'c') {
+                break;
+            case 'C':
+            case 'c': {
                 s++;
                 int i = func_001045B0(s);
                 s++;
@@ -122,11 +127,16 @@ void Text_001735F8::Draw()
                 End();
                 Begin();
                 m_rgba = saved;
-            } else if (c == 'S' || c == 's') {
+                break;
+            }
+            case 'S':
+            case 's':
                 s++;
                 esc = 1;
                 g = &m_font->m_glyphs[m_font->m_special[func_001045B0(s)]];
-            } else if (c == 'B' || c == 'b') {
+                break;
+            case 'B':
+            case 'b': {
                 s++;
                 esc = 1;
                 int i = func_001045B0(s);
@@ -136,25 +146,29 @@ void Text_001735F8::Draw()
                 End();
                 Begin();
                 D_0038BDC0 = 0;
+                break;
+            }
             }
         }
         if (*s == 0)
             return;
-        if (*s == ' ' && !g) {
+        int u0, v0, u1, v1, ya, yb, xb;
+        if (*s != ' ' || g) {
+            if (!g)
+                g = &font->m_glyphs[font->m_map[(unsigned char)*s]];
+            float top = (float)(font->m_ascent - g->m_base);
+            u0 = g->m_u0;
+            v0 = g->m_v0;
+            u1 = g->m_u1;
+            v1 = g->m_v1;
+            ya = y0 + (int)(top * m_scaleY * D_0038C100);
+            yb = ya + (int)((float)(v1 - v0) * m_scaleY * D_0038C100);
+            xb = x + (int)((float)(u1 - u0) * m_scaleX * D_0038C0FC);
+        } else {
             x += (int)(space + spacing);
             s++;
             continue;
         }
-        if (!g)
-            g = &font->m_glyphs[font->m_map[(unsigned char)*s]];
-        float top = (float)(font->m_ascent - g->m_base);
-        int u0 = g->m_u0;
-        int v0 = g->m_v0;
-        int u1 = g->m_u1;
-        int v1 = g->m_v1;
-        int ya = y0 + (int)(top * m_scaleY * D_0038C100);
-        int yb = ya + (int)((float)(v1 - v0) * m_scaleY * D_0038C100);
-        int xb = x + (int)((float)(u1 - u0) * m_scaleX * D_0038C0FC);
         if (!m_clip || !((x | xb | y0 | yb) & 0xFFFF0000)) {
             PutQ(u0, v0, 0, 0);
             PutQ(x, ya, color, 0);
@@ -162,7 +176,6 @@ void Text_001735F8::Draw()
             PutQ(xb, yb, color, 0);
         }
         x = xb + (int)spacing;
-        s++;
 
         if ((D_00394274 - D_003942E4) >> 4 >= 0xFA) {
             unsigned char* end = (unsigned char*)(((int)D_00394274 + 3) & ~3);
@@ -185,14 +198,15 @@ void Text_001735F8::Draw()
             Put(((unsigned short)D_00394280 & 0x3FF) | 0x6C014000);
             D_00394290 = 1;
             func_00164408(0x53, 2, 0, 0x156, 1, (unsigned int)D_4C0 >> 3);
-            D_00394284 = 0x20;
             D_00394288 = D_00394274;
             D_0039428C = 4;
+            D_00394284 = 0x20;
             Put((((unsigned short)D_00394280 + 1) & 0x3FF) | 0x6C000000);
         }
         if (font != m_font) {
             End();
             Begin();
         }
+        s++;
     }
 }

@@ -1,4 +1,3 @@
-/* fuzzy: 90.3 */
 struct Box_001608D8 {
     unsigned char lo[4];
     unsigned char hi[4];
@@ -63,10 +62,15 @@ extern "C" int func_001608D8(unsigned char* out, int max, Quant_001608D8* q)
             Sum_001608D8 s;
             func_001600A0(&s, q->m8, &q->m0[j]);
             float k = (0.0f < s.n) ? 255.9999f / s.n : 0.0f;
-            p[0] = (int)(s.c[0] * k);
-            p[1] = (int)(s.c[1] * k);
-            p[2] = (int)(s.c[2] * k);
-            p[3] = (int)(s.c[3] * k);
+            int v;
+            v = (int)(s.c[0] * k);
+            p[0] = v;
+            v = (int)(s.c[1] * k);
+            p[1] = v;
+            v = (int)(s.c[2] * k);
+            p[2] = v;
+            v = (int)(s.c[3] * k);
+            p[3] = v;
         } else {
             p[0] = 0;
             p[1] = 0;

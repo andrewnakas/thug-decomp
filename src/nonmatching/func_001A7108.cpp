@@ -1,4 +1,4 @@
-/* fuzzy: 80.7 */
+/* fuzzy: 83.3 */
 typedef int qword_001A7108 __attribute__((mode(TI)));
 
 struct Vec_001A7108 {
@@ -36,10 +36,10 @@ struct Obj_001A7108 {
 
 int Obj_001A7108::Method(Vec_001A7108* a, Vec_001A7108* b, int axis, int i, float limit)
 {
-    float* base = m160;
-    float* out = base + i;
     Vec_001A7108 d = *a - *b;
     m170[i] = 0;
+    float* base = m160;
+    float* out = base + i;
     float r = func_00101A10(mC->m70, &d, axis, i);
     *out = r;
     if (fabsf(r) > limit) {

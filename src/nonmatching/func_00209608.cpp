@@ -1,4 +1,4 @@
-/* fuzzy: 76.9 */
+/* fuzzy: 77.1 */
 typedef int qword_00209608 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -139,8 +139,8 @@ float Obj_00209608::GetValue()
     func_00101F60(&s1, &s2, &p, &pb, &mua, &mub, 0);
     float t = Length_00209608(p - v[1].p);
     t /= Length_00209608(v[2].p - v[1].p);
-    float mid = v[1].val + (v[2].val - v[1].val) * t;
     float u = sqrtf(v[0].p.x * v[0].p.x + v[0].p.y * v[0].p.y + v[0].p.z * v[0].p.z);
     u /= Length_00209608(p - v[0].p);
+    float mid = v[1].val + (v[2].val - v[1].val) * t;
     return v[0].val + (mid - v[0].val) * u;
 }

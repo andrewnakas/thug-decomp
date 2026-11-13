@@ -1,4 +1,4 @@
-/* fuzzy: 64.0 */
+/* fuzzy: 64.4 */
 typedef int qword __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -80,7 +80,7 @@ void func_001A2040(Frame_001A2040* frames, float* w, int count, Frame_001A2040* 
             while (w[j] <= 0.0f && j > 0)
                 j--;
             acc += w[i];
-            float t = 1.0f - w[j] / (w[j] + sw);
+            float t = 1.0f - w[j] / (sw + w[j]);
             Frame_001A2040* fj = &frames[j];
             Frame_001A2040* fi = &frames[i];
             for (int k = 0; k < count; k++) {

@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 72.9 */
+/* fuzzy: 82.6 */
 /* nonmatch func_002B9A28 (0x9EC): fresh draft from the asm. Builds restart nodes (and CTF flag/base nodes) for the 18 restart slots. */
 extern char D_00392650[]; /* "angles" */
 extern char D_00392658[]; /* "name" */
@@ -92,24 +92,28 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
     int id = 0x5B8D81;
 
     for (int i = 0; i < 18; i++) {
-        int type = m_restarts[i].type;
+        int type = (m_restarts + i)->type;
         if (!type)
             continue;
-        int count = (type == 1 || type == 3) ? 2 : 1;
+        int count = 1;
+        if (type == 3)
+            count = 2;
+        if (type == 1)
+            count = 2;
         for (int j = 0; j < count; j++) {
             int name = id++;
             int rtype = 0;
-            if (m_restarts[i].type == 1)
+            if ((m_restarts + i)->type == 1)
                 rtype = func_001F0D78(D_00392690);
-            if (m_restarts[i].type == 3)
+            if ((m_restarts + i)->type == 3)
                 rtype = func_001F0D78(D_00392698);
-            if (m_restarts[i].type == 2 || j == 1)
+            if ((m_restarts + i)->type == 2 || j == 1)
                 rtype = func_001F0D78(D_0037A198);
-            if (m_restarts[i].type == 4)
+            if ((m_restarts + i)->type == 4)
                 rtype = func_001F0D78(D_003926A0);
-            if ((unsigned int)(m_restarts[i].type - 5) < 4) {
+            if ((unsigned int)((m_restarts + i)->type - 5) < 4) {
                 rtype = func_001F0D78(D_003926A8);
-                switch (m_restarts[i].type) {
+                switch ((m_restarts + i)->type) {
                 case 5:
                     name = func_001F0D78(D_0037A1A8);
                     break;
@@ -126,21 +130,22 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
             }
             if (rtype) {
                 void* node = func_001E9378(nodes, *index);
-                if (m_restarts[i].type == 4) {
-                    func_001E7AF8(node, 0x7F261953, m_restarts[i].x, m_restarts[i].y + 50.0f, m_restarts[i].z);
+                Restart_002B9A28* r = m_restarts + i;
+                if (r->type == 4) {
+                    func_001E7AF8(node, 0x7F261953, r->x, r->y + 50.0f, r->z);
                     func_001E7A68(node, crcClass, 0xD, crcGeneric);
                 } else {
-                    func_001E7AF8(node, 0x7F261953, m_restarts[i].x, m_restarts[i].y + 50.0f, m_restarts[i].z);
+                    func_001E7AF8(node, 0x7F261953, r->x, r->y + 50.0f, r->z);
                     func_001E7A68(node, crcClass, 0xD, crcRestart);
                 }
-                func_001E7AF8(node, crcAngles, 0.0f, ((float)m_restarts[i].dir + 2.0f) * 1.5707964f, 0.0f);
+                func_001E7AF8(node, crcAngles, 0.0f, ((float)(m_restarts + i)->dir + 2.0f) * 1.5707964f, 0.0f);
                 func_001E7A68(node, crcName, 0xD, name);
                 func_001E7A68(node, crcType, 0xD, rtype);
                 func_001E7A68(node, 0, 0xD, crcCreated);
-                if (m_restarts[i].type != 4) {
+                if ((m_restarts + i)->type != 4) {
                     char* label = D_0037A208;
                     if (j == 0) {
-                        switch (m_restarts[i].type) {
+                        switch ((m_restarts + i)->type) {
                         case 1:
                             label = D_0037A218;
                             break;
@@ -169,9 +174,10 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
                 *index += 1;
             }
             char* color = 0;
-            if ((unsigned int)(m_restarts[i].type - 5) < 4) {
+            Restart_002B9A28* f = m_restarts + i;
+            if ((unsigned int)(f->type - 5) < 4) {
                 void* node = func_001E9378(nodes, *index);
-                int t = m_restarts[i].type;
+                int t = f->type;
                 if (t == 5)
                     color = D_003926B0;
                 if (t == 6)
@@ -184,8 +190,8 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
                 func_003331D0(modelName, D_0037A268, color, color);
                 func_003331D0(scriptName, D_0037A290, color);
                 func_003331D0(nodeName, D_0037A2B0, color);
-                func_001E7AF8(node, 0x7F261953, m_restarts[i].x, m_restarts[i].y, m_restarts[i].z);
-                func_001E7AF8(node, crcAngles, 0.0f, ((float)m_restarts[i].dir + 2.0f) * 1.5707964f, 0.0f);
+                func_001E7AF8(node, 0x7F261953, f->x, f->y, f->z);
+                func_001E7AF8(node, crcAngles, 0.0f, ((float)f->dir + 2.0f) * 1.5707964f, 0.0f);
                 func_001E7A68(node, crcName, 0xD, func_001F0D78(nodeName));
                 func_001E7A68(node, crcClass, 0xD, func_001F0D78(D_0037A2C0));
                 func_001E7A68(node, crcType, 0xD, func_001F0D78(flagName));
@@ -199,8 +205,8 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
 
                 node = func_001E9378(nodes, *index);
                 func_003331D0(nodeName, D_0037A310, color);
-                func_001E7AF8(node, 0x7F261953, m_restarts[i].x, m_restarts[i].y, m_restarts[i].z);
-                func_001E7AF8(node, crcAngles, 0.0f, ((float)m_restarts[i].dir + 2.0f) * 1.5707964f, 0.0f);
+                func_001E7AF8(node, 0x7F261953, f->x, f->y, f->z);
+                func_001E7AF8(node, crcAngles, 0.0f, ((float)f->dir + 2.0f) * 1.5707964f, 0.0f);
                 func_001E7A68(node, crcName, 0xD, func_001F0D78(nodeName));
                 func_001E7A68(node, crcClass, 0xD, func_001F0D78(D_0037A2C0));
                 func_001E7A68(node, crcType, 0xD, func_001F0D78(flagName));
@@ -216,8 +222,8 @@ void Obj_002B9A28::AddNodes(void* nodes, int* index)
                 func_003331D0(nodeName, D_0037A320, color);
                 func_003331D0(flagName, D_0037A330, color);
                 func_003331D0(modelName, D_0037A340, color, color);
-                func_001E7AF8(node, 0x7F261953, m_restarts[i].x, m_restarts[i].y, m_restarts[i].z);
-                func_001E7AF8(node, crcAngles, 0.0f, ((float)m_restarts[i].dir + 2.0f) * 1.5707964f, 0.0f);
+                func_001E7AF8(node, 0x7F261953, f->x, f->y, f->z);
+                func_001E7AF8(node, crcAngles, 0.0f, ((float)f->dir + 2.0f) * 1.5707964f, 0.0f);
                 func_001E7A68(node, crcName, 0xD, func_001F0D78(nodeName));
                 func_001E7A68(node, crcClass, 0xD, func_001F0D78(D_0037A2C0));
                 func_001E7A68(node, crcType, 0xD, func_001F0D78(flagName));

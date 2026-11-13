@@ -1,4 +1,4 @@
-/* fuzzy: 84.9 */
+/* fuzzy: 85.8 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00373720[];
@@ -79,12 +79,12 @@ extern "C" void* func_00331404(void* dst, const void* src, unsigned int n);
 
 extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned int n, unsigned int* ids, int broadcast)
 {
+    void* game = D_0038FC78;
+    void* net = D_00392068;
     IdList3B_002394C8 list3B;
     IdList5B_002394C8 list5B;
     Iter_002394C8 it;
     char flags[8];
-    void* game = D_0038FC78;
-    void* net = D_00392068;
     unsigned int i;
     int team;
     Conn_002394C8* c;

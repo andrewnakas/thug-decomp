@@ -1,4 +1,3 @@
-/* fuzzy: 97.3 */
 typedef int qword_0018B200 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);
@@ -51,15 +50,17 @@ struct Feeler_0018B200 {
     char pad94[0xA0 - 0x94];
     V_0018B200 m_point;     /* 0xA0 */
     V_0018B200 m_normal;    /* 0xB0 */
-    int m_ref;              /* 0xC0 */
-    char padC4[0xE0 - 0xC4];
-    ~Feeler_0018B200()
-    {
-        if (m_ref) {
-            func_00183CB8(m_ref, &m_ref);
-            m_ref = 0;
+    struct Ref {
+        int m_obj;
+        ~Ref()
+        {
+            if (m_obj) {
+                func_00183CB8(m_obj, &m_obj);
+                m_obj = 0;
+            }
         }
-    }
+    } m_ref;                /* 0xC0 */
+    char padC4[0xE0 - 0xC4];
 };
 
 extern "C" Feeler_0018B200* func_00209240(Feeler_0018B200* f);
@@ -99,8 +100,8 @@ extern "C" void func_0018B200(V_0018B200* pos, M_0018B200* m, V_0018B200* old, V
         float l = sqrtf(a.x * a.x + a.z * a.z);
         if (a.y < l) {
             float k = dist / l;
-            a.z = a.z * k;
             a.x = a.x * k;
+            a.z = a.z * k;
         }
         a.x += pos->x;
         a.y += pos->y;
@@ -125,8 +126,8 @@ extern "C" void func_0018B200(V_0018B200* pos, M_0018B200* m, V_0018B200* old, V
             float l2 = sqrtf(b.x * b.x + b.z * b.z);
             if (0.0f < l2) {
                 float k = dist / l2;
-                b.z = b.z * k;
                 b.x = b.x * k;
+                b.z = b.z * k;
             }
             b.x += pos->x;
             b.y += pos->y;
@@ -160,9 +161,9 @@ extern "C" void func_0018B200(V_0018B200* pos, M_0018B200* m, V_0018B200* old, V
             m->r[0] = V_0018B200(-m->r[0].x, -m->r[0].y, -m->r[0].z, -m->r[0].w);
             m->r[2] = V_0018B200(-m->r[2].x, -m->r[2].y, -m->r[2].z, -m->r[2].w);
             m->r[3].w = 1.0f;
-            m->r[0].w = 0.0f;
             m->r[1].w = 0.0f;
             m->r[2].w = 0.0f;
+            m->r[0].w = 0.0f;
         }
     }
 }

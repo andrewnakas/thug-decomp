@@ -1,4 +1,4 @@
-/* fuzzy: 85.8 */
+/* fuzzy: 97.5 */
 extern void* D_00392068;
 extern void* D_0038FC78;
 extern char D_00373720[];
@@ -12,7 +12,6 @@ struct Msg_002394C8 {
     int m_C;
     unsigned char m_10;
     char pad11[0x0F];
-    void Set(void* d, unsigned short n, unsigned char t) { m_data = d; m_size = n; m_type = t; }
 };
 
 extern char D_00371C78[];
@@ -67,7 +66,7 @@ extern "C" void* func_00239358(int obj);
 extern "C" bool func_0024F540(void* p);
 extern "C" unsigned int func_002657A0(void* mgr, unsigned int n, unsigned int* ids, char* flags, int gen,
                                       unsigned int time);
-extern "C" void func_00265E50(void* mgr, unsigned int id, int owner);
+extern "C" bool func_00265E50(void* mgr, unsigned int id, int owner);
 extern "C" void* func_002A39D8(void* net);
 extern "C" Conn_002394C8* func_002A52F0(void* net, unsigned short id);
 extern "C" Conn_002394C8* func_002A53F8(void* net, Iter_002394C8* it, int kind);
@@ -114,7 +113,9 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
             if (send) {
                 Msg_002394C8 infoMsg;
                 func_001FA800(&infoMsg);
-                infoMsg.Set(&info, sizeof(info), 0x4B);
+                infoMsg.m_size = sizeof(info);
+                infoMsg.m_type = 0x4B;
+                infoMsg.m_data = &info;
                 func_001FF970(client, func_002B3080(from), &infoMsg);
                 info.m_owner = owner;
                 info.m_group = g;
@@ -133,7 +134,9 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
         func_00331404(list3B.m_ids, ids, size);
         Msg_002394C8 msg;
         func_001FA800(&msg);
-        msg.Set(&list3B, size + 0x10, 0x3B);
+        msg.m_data = &list3B;
+        msg.m_size = size + 0x10;
+        msg.m_type = 0x3B;
         msg.m_C = 2;
         msg.m_10 = 8;
         for (c = func_002A53F8(net, &it, 0); c; c = func_002A5490(net, &it, 0))
@@ -144,7 +147,9 @@ extern "C" void func_002394C8(int obj, int owner, unsigned int time, unsigned in
         list5B.m_net = func_002A7660(net);
         size = list5B.m_count * sizeof(unsigned int);
         func_00331404(list5B.m_ids, ids, size);
-        msg.Set(&list5B, size + 0xC, 0x5B);
+        msg.m_data = &list5B;
+        msg.m_size = size + 0xC;
+        msg.m_type = 0x5B;
         for (c = func_002A53F8(net, &it, 1); c; c = func_002A5490(net, &it, 1)) {
             if (func_002B1FE8(c))
                 func_00200998(client, func_002B3080(c), msg.m_type, msg.m_size, msg.m_data, D_00373720, 8, 1, 0);

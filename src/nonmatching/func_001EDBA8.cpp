@@ -1,4 +1,4 @@
-/* fuzzy: 91.0 */
+/* fuzzy: 99.5 */
 struct Heap_001EDBA8 {
     char pad[0xEC];
     int mEC;
@@ -22,7 +22,8 @@ extern Entry_001EDBA8* D_0038E6F8;
 extern unsigned int D_0038E6E8;
 extern char D_00365498[];
 extern char D_003654E8[];
-extern "C" void func_001EDA20(char* name, unsigned char* data, int a, int b);
+/* func_001EDA20 reads no argument registers (it frees the D_0038E6F8 table); the call at 0x001EDBE8 sets none. */
+extern "C" void func_001EDA20();
 extern "C" void func_0010A950(void* heap, int v);
 extern "C" void func_0010A9B0(void* heap);
 extern "C" void* func_0010BDE0(int size);
@@ -44,8 +45,8 @@ extern "C" void func_001EC2A0(unsigned int crc, int x, unsigned char* p, int len
 void Load_001EDBA8(char* name, unsigned char* data, int a, int b)
 {
     unsigned char* p = data;
-    func_001EDA20(name, data, a, b);
     int done = 0;
+    func_001EDA20();
     if (b) {
         func_0010A950(D_00388A70, D_00388A70->mEC);
         D_0038E6F8 = (Entry_001EDBA8*)func_0010BDE0(0xC000);
@@ -123,10 +124,13 @@ void Load_001EDBA8(char* name, unsigned char* data, int a, int b)
             int len = p - start;
             Comp_001EDBA8* c = func_001E4FC8(crc);
             if (c) {
-                if (c->m2 == 7 && x == *c->mC) break;
-                func_001ED8D0(c);
+                if (c->m2 != 7 || x != *c->mC) {
+                    func_001ED8D0(c);
+                    func_001EC2A0(crc, x, start, len, name);
+                }
+            } else {
+                func_001EC2A0(crc, x, start, len, name);
             }
-            func_001EC2A0(crc, x, start, len, name);
             break;
         }
         case 0x2B:

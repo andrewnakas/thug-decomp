@@ -1,4 +1,4 @@
-/* fuzzy: 94.7 */
+/* fuzzy: 97.0 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Heap_001D84E0 {
@@ -64,6 +64,7 @@ void Mesh_001D84E0::Transform(Vec_001D84E0* pos, void* mat)
     if (m_sub) {
         func_001D7B18(m_sub, pos, mat, 0);
     }
+    Box_001D84E0* box = &m_box;
     Vec_001D84E0* tmp = 0;
     if (m_packed) {
         func_0010A950(D_00388A70, D_00388A70->mD8);
@@ -103,8 +104,8 @@ void Mesh_001D84E0::Transform(Vec_001D84E0* pos, void* mat)
     m_box.mn = *pv;
     v.x = pv->z = pv->y = -10000000.0f;
     m_box.mx = v;
-    func_00102358(&m_box, &a);
-    func_00102358(&m_box, &b);
+    func_00102358(box, &a);
+    func_00102358(box, &b);
     if (tmp) {
         func_001D8D10(this, tmp);
         func_0010A8D8(D_00388A70, tmp);

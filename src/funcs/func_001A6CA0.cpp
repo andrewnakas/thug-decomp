@@ -1,4 +1,3 @@
-/* fuzzy: 87.2 */
 /* sym: Turn__10C_001A6CA0PvPfifi = 0x001A7108 */
 /* sym: Start__10C_001A6CA0i = 0x001A6A10 */
 extern "C" int func_001E7EB0(void* params, unsigned int name, float* out, int req);
@@ -9,6 +8,11 @@ struct Obj_001A6CA0 {
     float m50[4];
 };
 
+struct Vec_001A6CA0 {
+    float x, y, z, w;
+    float& operator[](int i) { return (&x)[i]; }
+};
+
 struct C_001A6CA0 {
     int m_pad[3];
     Obj_001A6CA0* mC;
@@ -16,13 +20,11 @@ struct C_001A6CA0 {
     int m1C;
     int m20;
     int m24[79];
-    float m160[3];
-    int m16C[5];
-    float m180[3];
-    int m18C;
-    float m190[3];
-    int m19C;
-    float m1A0[3];
+    Vec_001A6CA0 m160;
+    Vec_001A6CA0 m170;
+    Vec_001A6CA0 m180;
+    Vec_001A6CA0 m190;
+    Vec_001A6CA0 m1A0;
     int Turn(void* script, float* rot, int mode, float angle, int axis);
     void Start(int axis);
     int Rotate(void* params, void* script);

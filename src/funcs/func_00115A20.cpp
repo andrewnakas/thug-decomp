@@ -1,4 +1,3 @@
-/* fuzzy: 92.8 */
 struct Hdr_00115A20 {
     int m_count;
     unsigned short m_n4;
@@ -39,8 +38,9 @@ extern "C" void* func_00118DF0(char** p);
 
 static inline void Align4(char** pp)
 {
-    if ((int)*pp & 3) {
-        *pp = *pp + 4 - ((int)*pp & 3);
+    int r = (int)*pp & 3;
+    if (r) {
+        *pp += 4 - r;
     }
 }
 
@@ -63,15 +63,13 @@ int Geom_00115A20::Parse(Hdr_00115A20* hdr)
         p += 4;
         p += ((n - 1) / 32 + 1) * 4;
     }
-    char* start = p;
-    int size;
     if (m_flags & 0x400000) {
-        size = m_count * 4;
+        m20 = p;
+        p += m_count * 4;
     } else {
-        size = m_count * 2;
+        m20 = p;
+        p += m_count * 2;
     }
-    m20 = start;
-    p = start + size;
     Align4(&p);
     for (int i = 0; i < m_count; i++) {
         func_00115C68(this, m20, i);

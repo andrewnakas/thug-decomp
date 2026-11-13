@@ -1,4 +1,4 @@
-/* fuzzy: 88.2 */
+/* fuzzy: 91.3 */
 /* Loads a .HED index (from cdrom0: in uppercase, or host: on a dev kit) and builds a lookup table grouped by
    the first key func_001124E8 derives from each file name: one 12-byte group header per distinct key, a 0xFFFFFFFF
    terminator, then each group's {offset or name, size, key2} entries. With `keepNames` the index stays loaded,
@@ -143,12 +143,12 @@ Group_00112728* func_00112728(const char* name, int fromCd, int keepNames)
     HedEntry_00112728* e;
     for (e = data; e->m_offset != 0xFFFFFFFF; e = e->Next(func_00331BB8(e->m_name)))
         count++;
-    int total = count + 1;
     unsigned int* offsets = (unsigned int*)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
     unsigned int* sizes = (unsigned int*)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
     unsigned int* keys = (unsigned int*)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
     unsigned int* keys2 = (unsigned int*)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
     char** names = (char**)func_0010A638(D_00388A70, count * 4, 1, D_00388A70->m_D8);
+    int total = count + 1;
 
     int idx = 0;
     for (e = data; e->m_offset != 0xFFFFFFFF; e = e->Next(func_00331BB8(e->m_name))) {

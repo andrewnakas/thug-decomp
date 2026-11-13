@@ -1,4 +1,4 @@
-/* fuzzy: 78.0 */
+/* fuzzy: 84.9 */
 struct Tag_00161250 {
     unsigned int m0 : 16;
     unsigned int m2 : 16;
@@ -54,7 +54,7 @@ extern "C" Tag_00161250* func_00161250(Tag_00161250* t)
             func_00334658(marks[i], marks[i + 1] - marks[i], 8, func_00161218);
         func_00334658(marks[i], out - marks[i], 8, func_00161218);
     }
-    for (Pair_00161250* q = base; q < base + count; q++) {
+    for (Pair_00161250* q = (Pair_00161250*)0x70000000; q < base + count; q++) {
         t = q->m_tag;
         do {
             last = t;
@@ -68,9 +68,10 @@ extern "C" Tag_00161250* func_00161250(Tag_00161250* t)
     unsigned int w = *(unsigned int*)t;
     while ((w >> 28) != 7) {
         if (w & 0x3FF0000) {
-            t->m8 &= 0xFC00;
-            t->m8 |= D_00394280;
-            D_00394280 += t->m2;
+            unsigned short* h = (unsigned short*)t;
+            h[4] &= 0xFC00;
+            h[4] |= D_00394280;
+            D_00394280 += h[1];
         }
         t = func_00161168(t, 0);
         w = *(unsigned int*)t;

@@ -1,4 +1,4 @@
-/* fuzzy: 73.2 */
+/* fuzzy: 83.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0019AD48 {
@@ -79,6 +79,7 @@ struct Feeler_0019AD48 {
 };
 
 extern "C" void func_00209280(Feeler_0019AD48* f, const Vec_0019AD48& start, const Vec_0019AD48& end);
+static inline void Wrap_00209280(Feeler_0019AD48* f, const Vec_0019AD48& start, const Vec_0019AD48& end) { func_00209280(f, start, end); }
 extern "C" int func_002093E8(Feeler_0019AD48* f, int a, int b);
 extern "C" int func_00103F28(const char* fmt, ...);
 extern "C" void func_0018DF70(int obj, Feeler_0019AD48* f);
@@ -100,12 +101,11 @@ void Obj_0019AD48::Move(const Vec_0019AD48& delta)
 {
     Vec_0019AD48 old = m_pos;
     Feeler_0019AD48 f;
-    func_00209280(&f, m_pos, Vec_0019AD48(m_pos.x + delta.x, m_pos.y + delta.y, m_pos.z + delta.z, m_pos.w + delta.w));
+    Wrap_00209280(&f, m_pos, Vec_0019AD48(m_pos.x + delta.x, m_pos.y + delta.y, m_pos.z + delta.z, m_pos.w + delta.w));
     if (func_002093E8(&f, 0, 0)) {
         func_00103F28(D_00362060, D_0036207F, 0xAF1, D_003620F0);
         m_pos = f.m_point + f.m_normal;
-        Vec_0019AD48 b = Bounce_0019AD48(delta, f.m_dist, f.m_normal);
-        m_pos += b;
+        m_pos += Bounce_0019AD48(delta, f.m_dist, f.m_normal);
         m_vel -= f.m_normal * (Dot_0019AD48(m_vel, f.m_normal) * 1.5f);
     } else {
         m_pos += delta;

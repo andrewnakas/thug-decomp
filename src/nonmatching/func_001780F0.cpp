@@ -1,5 +1,5 @@
 /* cflags: -fno-rerun-loop-opt */
-/* fuzzy: 45.1 */
+/* fuzzy: 70.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001780F0 {
@@ -7,10 +7,53 @@ struct Vec_001780F0 {
         struct { float x, y, z, w; };
         qword q;
     };
+    void operator*=(float k)
+    {
+        x *= k;
+        y *= k;
+        z *= k;
+        w *= k;
+    }
+};
+
+/* a Vec_001780F0 built from its four components */
+struct VecInit_001780F0 : Vec_001780F0 {
+    VecInit_001780F0(float ax, float ay, float az, float aw)
+    {
+        x = ax;
+        y = ay;
+        z = az;
+        w = aw;
+    }
+};
+
+/* a quadword of the packet, copied word by word */
+struct Words_001780F0 {
+    unsigned int w[4];
 };
 
 struct Mat_001780F0 {
     Vec_001780F0 r[4];
+    Vec_001780F0& operator[](int i)
+    {
+        return r[i];
+    }
+    Mat_001780F0() {}
+    Mat_001780F0(const Mat_001780F0& o)
+    {
+        r[0] = o.r[0];
+        r[1] = o.r[1];
+        r[2] = o.r[2];
+        r[3] = o.r[3];
+    }
+    Mat_001780F0& operator=(const Mat_001780F0& o)
+    {
+        r[0] = o.r[0];
+        r[1] = o.r[1];
+        r[2] = o.r[2];
+        r[3] = o.r[3];
+        return *this;
+    }
 };
 
 struct Pkt_001780F0 {
@@ -98,11 +141,11 @@ extern Mat_001780F0 D_003E1100;
 extern Mat_001780F0 D_003E1240;
 extern Mat_001780F0 D_003E12C0;
 extern Mat_001780F0 D_003E1300;
-extern Vec_001780F0 D_003E1580;
-extern Vec_001780F0 D_003E1590;
-extern Vec_001780F0 D_003E15A0;
-extern Vec_001780F0 D_003E15B0;
-extern Vec_001780F0 D_003E1640;
+extern Words_001780F0 D_003E1580;
+extern Words_001780F0 D_003E1590;
+extern Words_001780F0 D_003E15A0;
+extern Words_001780F0 D_003E15B0;
+extern Words_001780F0 D_003E1640;
 extern Vec_001780F0 D_003DD9F0[3];
 extern Vec_001780F0 D_003DDA20[4];
 extern char D_280[];
@@ -127,7 +170,7 @@ extern "C" unsigned int func_001726C0(Inst_001780F0* i, int a);
 extern "C" unsigned int func_00172778(Inst_001780F0* i);
 extern "C" unsigned int func_001727F8(Inst_001780F0* i, int a, int b);
 extern "C" unsigned int func_00172858(Inst_001780F0* i, int a);
-extern "C" void func_00172870(Vec_001780F0* out, Inst_001780F0* i);
+extern "C" Vec_001780F0 func_00172870(Inst_001780F0* i);
 extern "C" void func_0017B5C8(Inst_001780F0* i, Node_001780F0* n);
 extern "C" void func_00323298(Vec_001780F0* out, Mat_001780F0* m, Vec_001780F0* v);
 extern "C" void func_00323318(Mat_001780F0* d, const Mat_001780F0* a, Mat_001780F0* b);
@@ -159,10 +202,13 @@ static inline void Quad(unsigned int a, unsigned int b, unsigned int c, unsigned
     D_00394274 = (unsigned char*)(p + 4);
 }
 
-static inline void CopyQuad(const Vec_001780F0* v)
+
+static inline void CopyWords(Words_001780F0* d, const Words_001780F0* s)
 {
-    const unsigned int* s = (const unsigned int*)v;
-    Quad(s[0], s[1], s[2], s[3]);
+    d->w[0] = s->w[0];
+    d->w[1] = s->w[1];
+    d->w[2] = s->w[2];
+    d->w[3] = s->w[3];
 }
 
 static inline void AddReg(long data, int reg)
@@ -178,6 +224,13 @@ static inline void Mscal(char* prog)
 {
     Put((((unsigned int)prog >> 3) & 0xFFFF) | 0x14000000);
     D_00394294 = D_00394280;
+}
+
+static inline void Unpack(unsigned int num, unsigned int addr)
+{
+    num &= 0xFF;
+    Put((num << 16) | 0x6C000000 | (addr & 0x3FF));
+    D_00394290 = num;
 }
 
 static inline void Close()
@@ -201,12 +254,22 @@ static inline void Flush()
 
 static inline void ZeroMat(Mat_001780F0* m)
 {
-    for (int i = 0; i < 4; i++) {
-        m->r[i].x = 0.0f;
-        m->r[i].y = 0.0f;
-        m->r[i].z = 0.0f;
-        m->r[i].w = 0.0f;
-    }
+    m->r[0].x = 0.0f;
+    m->r[0].y = 0.0f;
+    m->r[0].z = 0.0f;
+    m->r[0].w = 0.0f;
+    m->r[1].x = 0.0f;
+    m->r[1].y = 0.0f;
+    m->r[1].z = 0.0f;
+    m->r[1].w = 0.0f;
+    m->r[2].x = 0.0f;
+    m->r[2].y = 0.0f;
+    m->r[2].z = 0.0f;
+    m->r[2].w = 0.0f;
+    m->r[3].x = 0.0f;
+    m->r[3].y = 0.0f;
+    m->r[3].z = 0.0f;
+    m->r[3].w = 0.0f;
 }
 
 static inline void SetVec(Vec_001780F0* v, float x, float y, float z, float w)
@@ -217,59 +280,21 @@ static inline void SetVec(Vec_001780F0* v, float x, float y, float z, float w)
     v->w = w;
 }
 
-static inline void ScaleVec(Vec_001780F0* d, const Vec_001780F0* s, float k)
+static inline Vec_001780F0 Scale(const Vec_001780F0& s, float k)
 {
-    d->x = s->x * k;
-    d->y = s->y * k;
-    d->z = s->z * k;
-    d->w = s->w * k;
+    return VecInit_001780F0(s.x * k, s.y * k, s.z * k, s.w * k);
 }
 
-/* m * k, through a temporary as the original does */
-static inline void MulBy(Mat_001780F0* out, const Mat_001780F0* m, const Mat_001780F0* k)
+
+/* m * k */
+static inline Mat_001780F0 Mul(const Mat_001780F0& m, const Mat_001780F0& k)
 {
-    Mat_001780F0 t = *m;
-    func_00323318(&t, k, &t);
-    *out = t;
+    Mat_001780F0 t = m;
+    func_00323318(&t, &k, &t);
+    return t;
 }
 
-/* Sphere (view space centre c, radius r) against the view frustum:
-   0 = outside, 1 = crosses a plane, 2 = fully inside. */
-static inline int Classify(float r, const Vec_001780F0* c)
-{
-    float x = c->x;
-    float y = c->y;
-    float z = c->z;
-    float a;
-    float b;
-    if (r < z - D_00394088)
-        return 0;
-    if (r < D_0039408C - z)
-        return 0;
-    a = D_0039405C * z;
-    b = D_00394064 * y;
-    if (r < a + b)
-        return 0;
-    if (r < a - b)
-        return 0;
-    a = D_00394058 * z;
-    b = D_00394060 * x;
-    if (r < a - b)
-        return 0;
-    if (r < a + b)
-        return 0;
-    if (r < D_00394088 - z && r < z - D_0039408C) {
-        a = -D_00394074 * z;
-        b = D_0039407C * y;
-        if (r < a - b && r < a + b) {
-            a = -D_00394070 * z;
-            b = D_00394078 * x;
-            if (r < a + b && r < a - b)
-                return 2;
-        }
-    }
-    return 1;
-}
+
 
 /* Tint the four light colours by the packed rgb in c, and load them (times 2^-30)
    into row 3 of the direction matrix and rows 0..2 of the colour matrix. */
@@ -291,10 +316,10 @@ static inline void Tint(unsigned int c, const Vec_001780F0* col, Vec_001780F0* t
     tint[1].z = col[1].z * k;
     tint[2].z = col[2].z * k;
     tint[3].z = col[3].z * k;
-    ScaleVec(&dir->r[3], &tint[0], 9.31322574615478515625e-10f);
-    ScaleVec(&lit->r[0], &tint[1], 9.31322574615478515625e-10f);
-    ScaleVec(&lit->r[1], &tint[2], 9.31322574615478515625e-10f);
-    ScaleVec(&lit->r[2], &tint[3], 9.31322574615478515625e-10f);
+    dir->r[3] = Scale(tint[0], 9.31322574615478515625e-10f);
+    lit->r[0] = Scale(tint[1], 9.31322574615478515625e-10f);
+    lit->r[1] = Scale(tint[2], 9.31322574615478515625e-10f);
+    lit->r[2] = Scale(tint[3], 9.31322574615478515625e-10f);
 }
 
 static inline void DrawMesh(Mesh_001780F0* m, int flags)
@@ -326,15 +351,11 @@ extern "C" void func_001780F0()
     Mat_001780F0 m1C0;
     Mat_001780F0 dir;
     Mat_001780F0 lit;
-    Mat_001780F0 scale;
-    Mat_001780F0 scaled;
-    Mat_001780F0 nrm;
-    Mat_001780F0 ldir;
     Vec_001780F0 col[4];
     Vec_001780F0 tint[4];
     Vec_001780F0 ctr;
-    Vec_001780F0 sph;
-    int clip;
+    Mat_001780F0 scale;
+    Mat_001780F0 scaled;
     unsigned int colour;
 
     ZeroMat(&inst);
@@ -346,12 +367,14 @@ extern "C" void func_001780F0()
     ZeroMat(&m180);
     ZeroMat(&m1C0);
     ZeroMat(&dir);
-    for (int i = 0; i < 4; i++) {
-        SetVec(&col[i], 0.0f, 0.0f, 0.0f, 1.0f);
-    }
-    for (int i = 0; i < 4; i++) {
-        SetVec(&tint[i], 0.0f, 0.0f, 0.0f, 1.0f);
-    }
+    SetVec(&col[0], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&col[1], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&col[2], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&col[3], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&tint[0], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&tint[1], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&tint[2], 0.0f, 0.0f, 0.0f, 1.0f);
+    SetVec(&tint[3], 0.0f, 0.0f, 0.0f, 1.0f);
     SetVec(&ctr, 0.0f, 0.0f, 0.0f, 1.0f);
 
     if (D_0039427C != D_003942FC) {
@@ -401,9 +424,11 @@ extern "C" void func_001780F0()
         D_00394294 = 0;
         D_00394280 = 0;
         func_00164E48(0, (unsigned int)D_378 >> 3);
-        CopyQuad(&D_003E1640);
-        CopyQuad(&D_003E1580);
-        CopyQuad(&D_003E1590);
+        Words_001780F0* q = (Words_001780F0*)D_00394274;
+        CopyWords(&q[0], &D_003E1640);
+        CopyWords(&q[1], &D_003E1580);
+        CopyWords(&q[2], &D_003E1590);
+        D_00394274 = (unsigned char*)(q + 3);
         func_00164EB8(0);
         func_001645F8(0, 0, 0);
         AddReg(D_00394048, 0x18);
@@ -412,10 +437,10 @@ extern "C" void func_001780F0()
         Mscal(D_310);
         Close();
 
-        SetVec(&scale.r[0], 1.0f, 0.0f, 0.0f, 0.0f);
-        SetVec(&scale.r[1], 0.0f, 1.0f, 0.0f, 0.0f);
-        SetVec(&scale.r[2], 0.0f, 0.0f, 1.4f, 0.0f);
-        SetVec(&scale.r[3], 0.0f, 0.0f, 0.0f, 0.0f);
+        scale.r[0] = VecInit_001780F0(1.0f, 0.0f, 0.0f, 0.0f);
+        scale.r[1] = VecInit_001780F0(0.0f, 1.0f, 0.0f, 0.0f);
+        scale.r[2] = VecInit_001780F0(0.0f, 0.0f, 1.4f, 0.0f);
+        scale.r[3] = VecInit_001780F0(0.0f, 0.0f, 0.0f, 0.0f);
 
         Geom_001780F0* g = n->m48;
         if (!g)
@@ -427,9 +452,9 @@ extern "C" void func_001780F0()
                 if (!(s->m60 & 1))
                     continue;
                 inst = s->m0;
-                MulBy(&view, &inst, &D_003E1080);
-                MulBy(&mid, &inst, &D_003E1100);
-                MulBy(&proj, &mid, &D_003E12C0);
+                view = Mul(inst, D_003E1080);
+                mid = Mul(inst, D_003E1100);
+                proj = Mul(mid, D_003E12C0);
                 func_00323318(&scaled, &scale, &view);
                 Tag(0x10000000, 0);
                 Put(0x30000000);
@@ -446,15 +471,25 @@ extern "C" void func_001780F0()
                     ctr = m->m30;
                     ctr.w = 1.0f;
                     func_00323298(&ctr, &view, &ctr);
-                    clip = Classify(m->m30.w, &ctr);
-                    if (clip) {
-                        if (clip == 2) {
-                            func_00161090(m->mC, 0);
-                        } else {
-                            func_00161090(m->mC, 2);
-                        }
-                        n->m28[D_00394094] = 1;
+                    float r = m->m30.w;
+                    /* wholly outside one of the frustum planes */
+                    if (r < ctr.z - D_00394088 || r < D_0039408C - ctr.z
+                        || r < D_0039405C * ctr.z + D_00394064 * ctr.y
+                        || r < D_0039405C * ctr.z - D_00394064 * ctr.y
+                        || r < D_00394058 * ctr.z - D_00394060 * ctr.x
+                        || r < D_00394058 * ctr.z + D_00394060 * ctr.x)
+                        continue;
+                    /* wholly inside: no clipping needed */
+                    if (r < D_00394088 - ctr.z && r < ctr.z - D_0039408C
+                        && r < -D_00394074 * ctr.z - D_0039407C * ctr.y
+                        && r < -D_00394074 * ctr.z + D_0039407C * ctr.y
+                        && r < -D_00394070 * ctr.z + D_00394078 * ctr.x
+                        && r < -D_00394070 * ctr.z - D_00394078 * ctr.x) {
+                        func_00161090(m->mC, 0);
+                    } else {
+                        func_00161090(m->mC, 2);
                     }
+                    n->m28[D_00394094] = 1;
                 }
             }
         }
@@ -470,29 +505,34 @@ extern "C" void func_001780F0()
                 func_0017B5C8(s, n);
             }
             inst2 = s->m0;
-            MulBy(&view2, &inst2, &D_003E1080);
-            func_00172870(&sph, s);
-            ctr = sph;
+            view2 = Mul(inst2, D_003E1080);
+            ctr = func_00172870(s);
             float r = ctr.w;
             ctr.w = 1.0f;
             func_00323298(&ctr, &view2, &ctr);
-            clip = Classify(r, &ctr);
-            if (!clip)
+            if (r < ctr.z - D_00394088 || r < D_0039408C - ctr.z
+                || r < D_0039405C * ctr.z + D_00394064 * ctr.y
+                || r < D_0039405C * ctr.z - D_00394064 * ctr.y
+                || r < D_00394058 * ctr.z - D_00394060 * ctr.x
+                || r < D_00394058 * ctr.z + D_00394060 * ctr.x)
                 continue;
-            clip = (clip == 2) ? 0 : 1;
+            int clip = 1;
+            if (r < D_00394088 - ctr.z && r < ctr.z - D_0039408C
+                && r < -D_00394074 * ctr.z - D_0039407C * ctr.y
+                && r < -D_00394074 * ctr.z + D_0039407C * ctr.y
+                && r < -D_00394070 * ctr.z + D_00394078 * ctr.x
+                && r < -D_00394070 * ctr.z - D_00394078 * ctr.x)
+                clip = 0;
             n->m28[D_00394094] = 1;
             Tag(0x10000000, 0);
             if ((s->m60 >> 3) & 1) {
                 clip |= 0x20;
             }
-            for (int i = 0; i < 3; i++) {
-                view2.r[i].x *= 128.0f;
-                view2.r[i].y *= 128.0f;
-                view2.r[i].z *= 128.0f;
-                view2.r[i].w *= 128.0f;
-            }
-            MulBy(&m180, &view2, &D_003E1240);
-            MulBy(&m1C0, &m180, &D_003E1300);
+            view2[0] *= 128.0f;
+            view2[1] *= 128.0f;
+            view2[2] *= 128.0f;
+            m180 = Mul(view2, D_003E1240);
+            m1C0 = Mul(m180, D_003E1300);
 
             Light_001780F0* l = s->m74;
             if (l) {
@@ -519,13 +559,11 @@ extern "C" void func_001780F0()
                 dir.r[1].z = D_003DD9F0[2].y;
                 dir.r[2].z = D_003DD9F0[2].z;
             }
-            nrm = s->m0;
+            Mat_001780F0 nrm = s->m0;
             func_003233B8(&nrm.r[0], &nrm.r[0]);
             func_003233B8(&nrm.r[1], &nrm.r[1]);
             func_003233B8(&nrm.r[2], &nrm.r[2]);
-            ldir = nrm;
-            func_00323318(&ldir, &dir, &ldir);
-            dir = ldir;
+            dir = Mul(nrm, dir);
 
             if (l) {
                 col[0] = (l->m0 & 0x11) ? l->m80[3] : D_003DDA20[3];
@@ -546,8 +584,10 @@ extern "C" void func_001780F0()
             Tint(colour, col, tint, &dir, &lit);
 
             func_00164E48(0, (unsigned int)D_380 >> 3);
-            CopyQuad(&D_003E15A0);
-            CopyQuad(&D_003E15B0);
+            Words_001780F0* q = (Words_001780F0*)D_00394274;
+            CopyWords(&q[0], &D_003E15A0);
+            CopyWords(&q[1], &D_003E15B0);
+            D_00394274 = (unsigned char*)(q + 2);
             func_00164F48(&m180);
             func_00164F48(&m1C0);
             func_00164F48(&dir);
@@ -569,11 +609,9 @@ extern "C" void func_001780F0()
             Close();
 
             D_00394280 = 0;
-            unsigned int addr = func_001726C0(s, 3);
-            Tag((s->m68 * 4) | 0x30000000, addr);
+            Tag((s->m68 * 4) | 0x30000000, func_001726C0(s, 3));
             Put(0);
-            Put((((s->m68 * 4) & 0xFF) << 16) | 0x6C000000 | (D_00394280 & 0x3FF));
-            D_00394290 = (s->m68 * 4) & 0xFF;
+            Unpack(s->m68 * 4, D_00394280);
             Tag(0x10000000, 0);
             Put(((s->m68 * 4) & 0xFFFF) | 0x04000000);
             Mscal(D_17C0);
@@ -609,11 +647,11 @@ extern "C" void func_001780F0()
             Tag(0x10000000, 0);
             Put(0x03000100);
             Put(0x02000000);
-            ScaleVec(&dir.r[3], &col[0], 9.31322574615478515625e-10f);
-            ScaleVec(&lit.r[0], &col[1], 9.31322574615478515625e-10f);
+            dir.r[3] = Scale(col[0], 9.31322574615478515625e-10f);
+            lit.r[0] = Scale(col[1], 9.31322574615478515625e-10f);
             D_00394280 = 0x100;
-            ScaleVec(&lit.r[1], &col[2], 9.31322574615478515625e-10f);
-            ScaleVec(&lit.r[2], &col[3], 9.31322574615478515625e-10f);
+            lit.r[1] = Scale(col[2], 9.31322574615478515625e-10f);
+            lit.r[2] = Scale(col[3], 9.31322574615478515625e-10f);
             func_00164E48(0, (unsigned int)D_420 >> 3);
             func_00164F48(&dir);
             func_00164F48(&lit);

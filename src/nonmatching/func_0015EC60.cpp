@@ -1,8 +1,29 @@
-/* fuzzy: 82.6 */
+/* fuzzy: 86.2 */
 typedef int qword __attribute__((mode(TI)));
 
+struct Row_0015EC60 {
+    qword q;
+};
+
 struct Mat_0015EC60 {
-    qword r[4];
+    Row_0015EC60 r[4];
+    Mat_0015EC60() {}
+    const Row_0015EC60& operator[](int i) const { return r[i]; }
+    Mat_0015EC60(const Mat_0015EC60& o)
+    {
+        r[0] = o[0];
+        r[1] = o[1];
+        r[2] = o[2];
+        r[3] = o[3];
+    }
+    Mat_0015EC60& operator=(const Mat_0015EC60& o)
+    {
+        r[0] = o.r[0];
+        r[1] = o.r[1];
+        r[2] = o.r[2];
+        r[3] = o.r[3];
+        return *this;
+    }
 };
 
 /* One emission burst in the ring buffer (0x20 bytes). */
@@ -37,6 +58,12 @@ extern "C" unsigned int func_00335048();
 extern "C" void func_0015F870(Burst_0015EC60* b, int n);
 extern "C" void func_00323318(Mat_0015EC60* d, Mat_0015EC60* a, Mat_0015EC60* b);
 extern "C" void func_001617A0(int mode);
+
+static inline void SetMode_0015EC60(int mode)
+{
+    if (D_0039427C != mode)
+        func_001617A0(mode);
+}
 
 static inline Mat_0015EC60 ToScreen(const Mat_0015EC60& a)
 {
@@ -134,8 +161,7 @@ void Emitter_0015EC60::Update()
     }
     m_380 = ToScreen(m_240);
 
-    if (D_0039427C != D_00394298)
-        func_001617A0(D_00394298);
+    SetMode_0015EC60(D_00394298);
 
     unsigned int* p = D_00394274;
     D_00394278 = p;
@@ -146,7 +172,7 @@ void Emitter_0015EC60::Update()
     D_0039429C = 1;
     D_00394274 = p + 3;
     int qwc = (m_count * 2 + 0x14) & 0xFF;
-    p[3] = 0x6C000000 | (qwc << 16) | ((D_00394280 & 0x3FF) | 0x8000);
+    p[3] = 0x6C000000 | (qwc << 16) | (((unsigned short)D_00394280 & 0x3FF) | 0x8000);
     D_00394274 = p + 4;
     D_00394278 = p + 4;
     D_00394290 = qwc;
@@ -183,6 +209,5 @@ void Emitter_0015EC60::Update()
     if (type != 3 && type != 0 && type != 4) {
         *(unsigned short*)D_00394278 = ((int)D_00394274 - (int)D_00394278 - 8) >> 4;
     }
-    if (D_0039427C != D_003942A0)
-        func_001617A0(D_003942A0);
+    SetMode_0015EC60(D_003942A0);
 }

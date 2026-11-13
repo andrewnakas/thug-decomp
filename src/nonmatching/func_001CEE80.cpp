@@ -1,4 +1,4 @@
-/* fuzzy: 97.6 */
+/* fuzzy: 98.1 */
 extern "C" float fabsf(float);
 extern "C" float func_0010FAB8();
 extern "C" unsigned int func_0010FC30();
@@ -142,11 +142,10 @@ void Eng_001CEE80::Update()
         vol = b;
     const float* ga = &m3C[0].m8;
     const float* gb = &m3C[0].mC;
-    int g = mA0;
-    ga += g * 4;
-    gb += g * 4;
-    float lo = g ? m3C[g - 1].m0 : 0.0f;
-    float rpm = *ga + (*gb - *ga) * ((m9C - lo) / (m3C[g].m0 - lo));
+    ga += mA0 * 4;
+    gb += mA0 * 4;
+    float lo = mA0 ? m3C[mA0 - 1].m0 : 0.0f;
+    float rpm = *ga + (*gb - *ga) * ((m9C - lo) / (m3C[mA0].m0 - lo));
     mA4 = mA4 + (rpm - mA4) * (func_001CF8E0(this, 0x3DD9C040) * dt);
     float r0 = func_001CF8B8(this, 0x5AC84A3);
     float r1 = func_001CF8B8(this, 0x95DF9449);

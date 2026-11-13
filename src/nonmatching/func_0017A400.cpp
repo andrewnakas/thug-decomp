@@ -1,4 +1,4 @@
-/* fuzzy: 77.3 */
+/* fuzzy: 81.7 */
 /* Builds the per-frame render DMA chain: one GIF/VIF setup packet per active viewport, then the main
    camera packet, the GS environment registers and the closing tag. */
 struct Material_0017A400 {
@@ -213,11 +213,10 @@ void func_0017A400(int skipList)
     Reg(1, 0x15);                                   /* TEX1_2 */
     Reg(5, 9);                                      /* CLAMP_2 */
     Reg((0xFF000000UL << 32) | (pal ? 0xA0000 : 0x80000), 0x4D);   /* FRAME_2: FBMSK 0xFF000000 (alpha) */
-    unsigned int width = pal ? 0x280 : 0x200;
     unsigned int height = pal ? 0x280 : 0x200;
-    unsigned int x = pal ? (width * 0x700) >> 13 : width >> 2;
-    unsigned int y = pal ? (height * 0x380) >> 13 : height >> 3;
-    Reg(((x + y) & 0x1FF) | (0x8080L << 17), 0x4F);
+    unsigned int width = pal ? 0x280 : 0x200;
+    width = pal ? (width * 0x700) >> 13 : width >> 2;
+    Reg(((width + (pal ? (height * 0x380) >> 13 : height >> 3)) & 0x1FF) | (0x8080L << 17), 0x4F);
     Reg(D_00394048, 0x19);
     Reg(D_00394050, 0x41);
     Reg(((long)D_0038C030 << 32) | 0x66, 0x43);

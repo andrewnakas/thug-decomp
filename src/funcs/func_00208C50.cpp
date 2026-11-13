@@ -1,4 +1,3 @@
-/* fuzzy: 77.3 */
 struct Sector_00208C50 {
     int m0;
     unsigned short m_flags;
@@ -7,16 +6,22 @@ struct Sector_00208C50 {
     void SetStamp(unsigned char st) { m_stamp = st; }
 };
 
-struct Cell_00208C50 {
-    int m0;
-    int m_count;
-    int m8;
-    Sector_00208C50** m_items;
-    char m_pad10[0x30 - 0x10];
-};
+typedef int qword_00208C50 __attribute__((mode(TI)));
 
 struct Vec_00208C50 {
-    float x, y, z, w;
+    union {
+        struct { float x, y, z, w; };
+        qword_00208C50 q;
+    };
+};
+
+struct Cell_00208C50 {
+    Vec_00208C50 m_min;
+    Vec_00208C50 m_max;
+    int m20;
+    int m_count;
+    int m28;
+    Sector_00208C50** m_items;
 };
 
 struct Box_00208C50 {
@@ -33,9 +38,7 @@ struct Grid_00208C50 {
     float m_cellD;
     int m_numX;
     int m_numZ;
-    char m_pad30[0x50 - 0x30];
-    Cell_00208C50 m_cells[1][20];
-    Cell_00208C50& GetCell(int x, int z) { return m_cells[x][z]; }
+    Cell_00208C50 m_cells[20][20];
 };
 
 extern Sector_00208C50* D_003F3F70[];
@@ -67,8 +70,8 @@ extern "C" Sector_00208C50** func_00208C50(Grid_00208C50* grid, Box_00208C50* bo
     int count = 0;
     for (int x = x0; x <= x1; x++) {
         for (int z = z0; z <= z1; z++) {
-            for (int i = 0; i < grid->GetCell(x, z).m_count; i++) {
-                Sector_00208C50* s = grid->GetCell(x, z).m_items[i];
+            for (int i = 0; i < grid->m_cells[x][z].m_count; i++) {
+                Sector_00208C50* s = grid->m_cells[x][z].m_items[i];
                 if (!(s->m_flags & 6) && s->m_stamp != stamp) {
                     D_003F3F70[count++] = s;
                     s->SetStamp(stamp);

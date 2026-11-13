@@ -1,4 +1,4 @@
-/* fuzzy: 92.9 */
+/* fuzzy: 96.8 */
 /* sym: __13Coll_001CAFC0 = 0x00209240 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -137,8 +137,8 @@ int Self_001CAFC0::Start(Vec_001CAFC0* pos)
     if (!hit) {
         Vec_001CAFC0 saved;
         Vec_001CAFC0 side(-m_vel[2], 0.0f, m_vel[0], 1.0f);
-        *pos += side * 12.0f;
         saved = p;
+        *pos += side * 12.0f;
         hit = func_001C6458(this, pos, &p, &c1);
         if (!hit) {
             *pos -= side * 24.0f;
@@ -182,8 +182,9 @@ int Self_001CAFC0::Start(Vec_001CAFC0* pos)
     mC44 = 0;
     mC40 = mC4;
     mC80 = 1;
-    m970 = m_vel * -(Param_001CAFC0(0x21DFBE77) + 6.0f);
+    float k = Param_001CAFC0(0x21DFBE77);
     mBD0 = m_vel;
+    m970 = m_vel * -(k + 6.0f);
     mBE4 = m_pos[1] - mBF4;
     m970[1] = 1.0f;
     func_001BF130(this, 4);

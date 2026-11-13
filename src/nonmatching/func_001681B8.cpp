@@ -1,4 +1,4 @@
-/* fuzzy: 94.0 */
+/* fuzzy: 97.2 */
 extern "C" long func_0010FA98();
 extern "C" float func_00341068(float x);   /* sinf */
 
@@ -46,7 +46,7 @@ void Obj_001681B8::UpdateWave(Wave_001681B8* w, int stopped)
         offset[0] -= 8.0f;
     float a1 = w->freq[1] * t;
     float b1 = w->speed[1] * t;
-    float s1 = func_00341068(WrapAngle(a1 + w->phase[1]));
+    float s1 = func_00341068(WrapAngle(w->phase[1] + a1));
     offset[1] = Scroll(b1, w->amp[1], s1);
     if (offset[1] < 0.0f)
         offset[1] += 8.0f;

@@ -1,7 +1,6 @@
 /* fuzzy: 83.8 */
-/* NM 10/37: ThreadParam stores - game loads 0x800 into $a0 first and stores stackSize first; all 120 store orders tried (work/perm5.py) */
 extern "C" void func_001F83C8();
-extern char D_001F8430[];
+extern "C" void func_001F8430();
 extern char D_003F3770[];
 extern char D_0038F3F0[];
 
@@ -32,7 +31,7 @@ struct ThreadParam_001F8450 {
 extern "C" int func_0031BCA0(SemaParam_001F8450*);
 extern "C" int func_0031BAA0(ThreadParam_001F8450*);
 extern "C" void func_0031BAC0(int, int);
-extern "C" void func_00327FD0(char*, int);
+extern "C" void func_00327FD0(void (*fn)(), int sema);
 
 void func_001F8450()
 {
@@ -48,5 +47,5 @@ void func_001F8450()
     tp.gp = D_0038F3F0;
     tp.stackSize = 0x800;
     func_0031BAC0(func_0031BAA0(&tp), sema);
-    func_00327FD0(D_001F8430, sema);
+    func_00327FD0(func_001F8430, sema);
 }

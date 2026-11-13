@@ -1,4 +1,4 @@
-/* fuzzy: 95.4 */
+/* fuzzy: 99.4 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001CFB18 {
@@ -69,11 +69,12 @@ void Obj_001CFB18::SetupBones()
     Vec_001CFB18 pts[4];
     int i = 4;
     while (i--) {
+        Vec_001CFB18* p = &pts[i];
         Mat_001CFB18 m = skel->bones[i].GetMatrix();
-        pts[i].x = -m.r[3].x;
-        pts[i].y = m.r[3].z;
-        pts[i].z = -m.r[3].y;
-        pts[i].w = 1.0f;
+        p->x = -m.r[3].x;
+        p->y = m.r[3].z;
+        p->z = -m.r[3].y;
+        p->w = 1.0f;
     }
     Mat_001CFB18 m = skel->root.m;
     Vec_001CFB18 root;

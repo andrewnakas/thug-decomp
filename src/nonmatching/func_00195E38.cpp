@@ -1,4 +1,4 @@
-/* fuzzy: 88.0 */
+/* fuzzy: 97.0 */
 extern "C" float sqrtf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -65,6 +65,7 @@ struct Slerp_00195E38 {
     char pad0[0x90];
     float m90;
     char pad94[0xA0 - 0x94];
+    inline void Set(Mat_00195E38* from, Mat_00195E38* to);
 };
 
 extern "C" void func_003233B8(Vec_00195E38* d, Vec_00195E38* s);
@@ -72,6 +73,7 @@ extern "C" unsigned int func_0010FC30();
 extern "C" float func_0010FAB8();
 extern "C" void* func_00102FD0(Slerp_00195E38* s);
 extern "C" void func_00103000(Slerp_00195E38* s, Mat_00195E38* from, Mat_00195E38* to);
+inline void Slerp_00195E38::Set(Mat_00195E38* from, Mat_00195E38* to) { func_00103000(this, from, to); }
 extern "C" void func_00103930(Slerp_00195E38* s, float t, Mat_00195E38* out);
 extern "C" void func_00119228(Quat_00195E38* q, float w);
 extern "C" void func_00119230(Quat_00195E38* q, float x, float y, float z);
@@ -141,7 +143,7 @@ void Obj_00195E38::Update()
     target.r[0].Set(target.r[2].z, 0.0f, -target.r[2].x);
     Slerp_00195E38 slerp;
     func_00102FD0(&slerp);
-    func_00103000(&slerp, &m_mat, &target);
+    slerp.Set(&m_mat, &target);
     float t = func_0010FAB8() * 3.0f / slerp.m90;
     if (t > 1.0f)
         t = 1.0f;

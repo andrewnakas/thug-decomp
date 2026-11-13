@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 82.6 */
+/* fuzzy: 97.9 */
 /* sym: __13Desc_001BC938 = 0x00141910 */
 typedef int qword __attribute__((mode(TI)));
 
@@ -7,6 +7,7 @@ struct Vec_001BC938 {
     union {
         qword q;
         float c[4];
+        struct { float x, y, z, w; };
     };
     void Set(float x, float y, float z, float w) { c[0] = x; c[1] = y; c[2] = z; c[3] = w; }
     Vec_001BC938& operator=(const Vec_001BC938& o) { q = o.q; return *this; }
@@ -15,7 +16,7 @@ struct Vec_001BC938 {
     void operator*=(float k) { c[0] *= k; c[1] *= k; c[2] *= k; c[3] *= k; }
     bool operator==(const Vec_001BC938& o) const
     {
-        return c[0] == o.c[0] && c[1] == o.c[1] && c[2] == o.c[2] && c[3] == o.c[3];
+        return x == o.x && y == o.y && z == o.z && w == o.w;
     }
 };
 
@@ -25,20 +26,19 @@ struct VecC_001BC938 : Vec_001BC938 {
 
 struct Mat_001BC938 {
     Vec_001BC938 r[4];
+    Vec_001BC938& operator[](int i) { return r[i]; }
     void Ident()
     {
-        r[0][0] = 1.0f; r[0][1] = 0.0f; r[0][2] = 0.0f; r[0][3] = 0.0f;
-        r[1][0] = 0.0f; r[1][1] = 1.0f; r[1][2] = 0.0f; r[1][3] = 0.0f;
-        r[2][0] = 0.0f; r[2][1] = 0.0f; r[2][2] = 1.0f; r[2][3] = 0.0f;
-        r[3][0] = 0.0f; r[3][1] = 0.0f; r[3][2] = 0.0f; r[3][3] = 1.0f;
+        r[0].x = 1.0f; r[0].y = 0.0f; r[0].z = 0.0f; r[0].w = 0.0f;
+        r[1].x = 0.0f; r[1].y = 1.0f; r[1].z = 0.0f; r[1].w = 0.0f;
+        r[2].x = 0.0f; r[2].y = 0.0f; r[2].z = 1.0f; r[2].w = 0.0f;
+        r[3].x = 0.0f; r[3].y = 0.0f; r[3].z = 0.0f; r[3].w = 1.0f;
     }
 };
 
-static inline Vec_001BC938 Cross_001BC938(const Vec_001BC938& a, const Vec_001BC938& b)
+static inline VecC_001BC938 Cross_001BC938(const Vec_001BC938& a, const Vec_001BC938& b)
 {
-    Vec_001BC938 r;
-    r.Set(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f);
-    return r;
+    return VecC_001BC938(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f);
 }
 
 extern "C" void func_00323298(Vec_001BC938* out, const Mat_001BC938* m, const Vec_001BC938* v);
@@ -64,6 +64,7 @@ struct Desc_001BC938 {
     int m_E0;
     Vec_001BC938 m_F0[3];
     int m_120;
+    int m_124;
     unsigned char m_128[12];
     unsigned int m_134;
     int m_138;
@@ -72,7 +73,7 @@ struct Desc_001BC938 {
     int m_144;
     int m_148;
     int m_14C;
-    int m_150[4];
+    int m_150[3];
 };
 
 extern "C" bool func_001E8398(void* params, unsigned int name, void* out, int required);
@@ -129,13 +130,11 @@ void Obj_001BC938::Spawn(void* params)
         func_001E7FA8(params, 0x0C4C809E, &dir, 1);
         func_003233B8(&dir, &dir);
         rot.r[2] = dir;
-        Vec_001BC938 up;
-        if (rot.r[2] == VecC_001BC938(0.0f, 1.0f, 0.0f, 1.0f)) {
-            up.Set(0.0f, 0.0f, -1.0f, 1.0f);
+        if (rot[2] == VecC_001BC938(0.0f, 1.0f, 0.0f, 1.0f)) {
+            rot.r[0] = Cross_001BC938(dir, VecC_001BC938(0.0f, 0.0f, -1.0f, 1.0f));
         } else {
-            up.Set(0.0f, 1.0f, 0.0f, 1.0f);
+            rot.r[0] = Cross_001BC938(dir, VecC_001BC938(0.0f, 1.0f, 0.0f, 1.0f));
         }
-        rot.r[0] = Cross_001BC938(dir, up);
         rot.r[1] = Cross_001BC938(rot.r[2], rot.r[0]);
     }
     desc.m_C *= scale;

@@ -46,31 +46,32 @@ field suffixes are rejected). GNU `as` (used only for splat's asm) cannot encode
 | Function | Size | Kind | Status |
 |---|---|---|---|
 | func_0010ED38 | 0x108 | hand-written stub / nop padding | permanently asm: no logic to decompile |
-| func_0010F8B8 | 0x28 | interrupt control (ei/di), sync | helpers allowed |
-| func_00112048 | 0xe0 | interrupt control (ei/di), sync | helpers allowed |
-| func_001154D0 | 0x174 | VU0 macro mode | helpers allowed |
-| func_0011E278 | 0x20c | VU0 macro mode | helpers allowed |
-| func_0011E4A8 | 0x310 | VU0 macro mode | helpers allowed |
-| func_00121200 | 0x338 | VU0 macro mode | helpers allowed |
-| func_0012A138 | 0xa14 | VU0 macro mode | helpers allowed |
-| func_00164920 | 0x1a8 | interrupt control (ei/di), sync | helpers allowed |
-| func_00164AC8 | 0x250 | interrupt control (ei/di), sync | helpers allowed |
-| func_0016B8B8 | 0x9b4 | interrupt control (ei/di), sync | helpers allowed |
-| func_0016C940 | 0xca4 | VU0 macro mode | helpers allowed |
-| func_0016F050 | 0xb80 | VU0 macro mode | helpers allowed |
-| func_0016FBD0 | 0x124 | VU0 macro mode | helpers allowed |
-| func_0016FCF8 | 0x2f0 | VU0 macro mode | helpers allowed |
+| func_0010F8B8 | 0x28 | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_00112048 | 0xe0 | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_001154D0 | 0x174 | VU0 macro mode | fuzzy 97.8 (src/nonmatching) |
+| func_0011E278 | 0x20c | VU0 macro mode | asm: one ~95-op hand-scheduled VU0 block with its branches inside the asm; C++ around single-op helpers would only replay the instruction stream |
+| func_0011E4A8 | 0x310 | VU0 macro mode | fuzzy 57.1 (src/nonmatching) |
+| func_00121200 | 0x338 | VU0 macro mode | fuzzy 91.1 (src/nonmatching) |
+| func_0012A138 | 0xa14 | VU0 macro mode | fuzzy 51.9 (src/nonmatching) |
+| func_00164920 | 0x1a8 | interrupt control (ei/di), sync | fuzzy 70.3 (src/nonmatching) |
+| func_00164AC8 | 0x250 | interrupt control (ei/di), sync | fuzzy 85.5 (src/nonmatching) |
+| func_0016B8B8 | 0x9b4 | interrupt control (ei/di), sync | asm: saves and restores the whole FPU register file around the handler; that cannot be ordered reliably against compiler-generated float code, and 64 per-register helpers would be a transcription |
+| func_0016C940 | 0xca4 | VU0 macro mode | fuzzy 96.0 (src/nonmatching) |
+| func_0016F050 | 0xb80 | VU0 macro mode | fuzzy 89.8 (src/nonmatching) |
+| func_0016FBD0 | 0x124 | VU0 macro mode | fuzzy 89.0 (src/nonmatching) |
+| func_0016FCF8 | 0x2f0 | VU0 macro mode | fuzzy 92.6 (src/nonmatching) |
 | func_00172340 | 0x20 | hand-written stub / nop padding | permanently asm: no logic to decompile |
 | func_00172360 | 0x1c | hand-written stub / nop padding | permanently asm: no logic to decompile |
-| func_0017CD90 | 0x6a8 | VU0 macro mode | helpers allowed |
-| func_001E26E8 | 0x12c | interrupt control (ei/di), sync | helpers allowed |
-| func_001E2840 | 0x3c | interrupt control (ei/di), sync | helpers allowed |
-| func_001E2880 | 0x28 | interrupt control (ei/di), sync | helpers allowed |
-| func_001F77B0 | 0x1bc | interrupt control (ei/di), sync | helpers allowed |
-| func_001F7970 | 0x40 | interrupt control (ei/di), sync | helpers allowed |
-| func_00267538 | 0x1a0 | VU0 macro mode | helpers allowed |
-| func_002CE628 | 0x148 | interrupt control (ei/di), syscall | helpers allowed |
+| func_0017CD90 | 0x6a8 | VU0 macro mode | fuzzy 82.0 (src/nonmatching) |
+| func_001E26E8 | 0x12c | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_001E2840 | 0x3c | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_001E2880 | 0x28 | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_001F77B0 | 0x1bc | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_001F7970 | 0x40 | interrupt control (ei/di), sync | exact (src/funcs) |
+| func_00267538 | 0x1a0 | VU0 macro mode | fuzzy 96.6 (src/nonmatching) |
+| func_002CE628 | 0x148 | interrupt control (ei/di), syscall | asm: the program entry point; it sets `$gp`/`$sp` itself before any stack exists and passes fixed registers to the SetupThread/SetupHeap kernel calls |
 | func_002CE770 | 0x8 | hand-written stub / nop padding | permanently asm: no logic to decompile |
-| func_002CE778 | 0x34 | syscall | helpers allowed |
+| func_002CE778 | 0x34 | syscall | fuzzy 50.0 (src/nonmatching) |
 
-27 functions, 0x4d64 bytes: 23 may be written as C++ with helpers, 4 stay asm for good.
+27 functions, 0x4d64 bytes: 23 may be written as C++ with helpers (7 exact, 13 equivalent, 3 kept
+as asm for the reasons given; PR #606), 4 stay asm for good.

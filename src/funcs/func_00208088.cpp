@@ -1,8 +1,13 @@
-/* fuzzy: 72.2 */
 /* sym: _vt$13Node_00208088 = 0x0035D5C8 */
 /* sym: _vt$13Head_00208088 = 0x0035D5B0 */
+typedef int qword_00208088 __attribute__((mode(TI)));
+
 struct Vec_00208088 {
-    float x, y, z, w;
+    union {
+        float c[4];
+        qword_00208088 q;
+    };
+    const float& operator[](int i) const { return c[i]; }
 };
 
 struct Box_00208088 {
@@ -10,7 +15,7 @@ struct Box_00208088 {
     Vec_00208088 mx;
     bool Intersects(const Box_00208088& b) const
     {
-        if (mn.x > b.mx.x || b.mn.x > mx.x || mn.z > b.mx.z || b.mn.z > mx.z || mn.y > b.mx.y || b.mn.y > mx.y)
+        if (mn[0] > b.mx[0] || b.mn[0] > mx[0] || mn[2] > b.mx[2] || b.mn[2] > mx[2] || mn[1] > b.mx[1] || b.mn[1] > mx[1])
             return false;
         return true;
     }
@@ -30,6 +35,7 @@ extern "C" void* func_0010BDE0(int size);
 struct Obj_00208088 {
     char pad0[0x8];
     unsigned short m8;
+    int Refs() const { return m8; }
     char padA[0x6];
     Box_00208088 m_box;
 };
@@ -51,10 +57,10 @@ public:
     Node_00208088* m_prev;
     Node_00208088(void* data)
     {
-        m_next = this;
-        m_prev = this;
         m_data = data;
         m8 = 0;
+        m_next = this;
+        m_prev = this;
     }
     virtual ~Node_00208088()
     {
@@ -74,8 +80,8 @@ public:
     virtual void Key();
     void Append(Node_00208088* n)
     {
-        n->m_next = this;
         n->m_prev = m_prev;
+        n->m_next = this;
         m_prev->m_next = n;
         m_prev = n;
     }
@@ -113,10 +119,8 @@ void Grid_00208088::Build(Item_00208088* items, int count)
             func_0010A950(D_00388A70, D_00388A70->mD8);
             int k;
             for (k = 0; k < count; k++) {
-                Item_00208088* it = &items[k];
-                Obj_00208088* o = it->m_obj;
-                if (o->m8 > 0 && o->m_box.Intersects(m_cells[i][j].m_box)) {
-                    head.Append(new Node_00208088(it));
+                if (items[k].m_obj->Refs() > 0 && items[k].m_obj->m_box.Intersects(m_cells[i][j].m_box)) {
+                    head.Append(new Node_00208088(&items[k]));
                 }
             }
             func_0010A9B0(D_00388A70);

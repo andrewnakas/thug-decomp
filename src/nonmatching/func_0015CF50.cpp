@@ -1,4 +1,4 @@
-/* fuzzy: 82.0 */
+/* fuzzy: 87.7 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0015CF50 {
@@ -283,17 +283,18 @@ extern "C" void func_0015CF50(Obj_0015CF50* o, float x, float z)
                         float px = fx + lin[a] + wave[(b + t) & 0xFF];
                         float pz = fz + lin[b] + wave[(a + t) & 0xFF];
                         if (left == 0) {
+                            unsigned int cycle = 4;
                             func_00175C90(0x5125, 4, 0x56, 1, (unsigned int)D_3680 >> 3);
                             D_00394284 = 8;
                             D_00394288 = D_00394274;
-                            D_0039428C = 4;
+                            D_0039428C = cycle;
                             cols = (unsigned int*)(D_00394274 + 4);
                             Put((((unsigned short)D_00394280 + 3) & 0x3FF) | 0x6E004000);
                             D_00394274 = (unsigned char*)(cols + 0x50);
                             EndUnpack();
                             D_00394284 = 0x20;
                             D_00394288 = D_00394274;
-                            D_0039428C = 4;
+                            D_0039428C = cycle;
                             pts = (Vec_0015CF50*)(D_00394274 + 4);
                             Put((((unsigned short)D_00394280 + 4) & 0x3FF) | 0x6C000000);
                             D_00394274 = (unsigned char*)(pts + 0x50);

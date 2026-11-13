@@ -1,4 +1,3 @@
-/* fuzzy: 97.1 */
 struct Array_0021BFB0 {
     int pad[3];
     unsigned int m_size;
@@ -100,8 +99,7 @@ bool func_0021BFB0(void* params)
         num = count;
     cnt = 0;
     func_00121B48(name, 0, list, &cnt);
-    int c = cnt;
-    if (c == 0) {
+    if (cnt == 0) {
         func_00121B48(name, 0x94E5A308, list, &cnt);
         void* p = list[func_00100030(cnt)];
         func_001E7200(p, 0xF1E3CD22, 1);
@@ -115,16 +113,21 @@ bool func_0021BFB0(void* params)
         func_001E7200(p, 0x4B833E64, num - 1);
         num--;
         func_00121B48(name, 0xE4834204, list, &cnt);
-        c = cnt;
+        p = list[func_00100030(cnt)];
+        func_001E7200(p, 0xF1E3CD22, 1);
+        func_001E7200(p, 0x355F9467, 0);
+        func_001E7200(p, 0x4B833E64, num - 1);
+        num--;
+    } else {
+        void* p = list[func_00100030(cnt)];
+        func_001E7200(p, 0xF1E3CD22, 1);
+        func_001E7200(p, 0x355F9467, 0);
+        func_001E7200(p, 0x4B833E64, num - 1);
+        num--;
     }
-    void* p = list[func_00100030(c)];
-    func_001E7200(p, 0xF1E3CD22, 1);
-    func_001E7200(p, 0x355F9467, 0);
-    func_001E7200(p, 0x4B833E64, num - 1);
-    num--;
     for (int j = 0; j < num; j++) {
         val = 0;
-        do {
+        while (!val) {
             void* q = func_001E9378(peds, func_00100030(n));
             func_001E7DE8(q, 0x355F9467, &val, 1);
             if (val) {
@@ -132,7 +135,7 @@ bool func_0021BFB0(void* params)
                 func_001E7200(q, 0x355F9467, 0);
                 func_001E7200(q, 0x4B833E64, j);
             }
-        } while (!val);
+        }
     }
     return true;
 }

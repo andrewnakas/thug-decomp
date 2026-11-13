@@ -1,4 +1,4 @@
-/* fuzzy: 92.9 */
+/* fuzzy: 93.8 */
 struct Model_0017D6D8 {
     int m0[4];
     unsigned int m_flags;
@@ -26,10 +26,11 @@ extern "C" void func_0010A830(void* heap, int size, void* p, int a);
 static inline unsigned char* Read(void* dst, unsigned char* p, int n)
 {
     unsigned char* d = (unsigned char*)dst;
+    unsigned char* s = p;
     for (; n > 0; n--) {
-        *d++ = *p++;
+        *d++ = *s++;
     }
-    return p;
+    return s;
 }
 
 extern "C" int func_0017D6D8(unsigned char* p, int size, Model_0017D6D8* m, int a, int flags, int c)

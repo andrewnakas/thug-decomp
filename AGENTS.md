@@ -72,6 +72,12 @@ python3 toolchain/setup.py
 ## Hard rules (the scan and match gates enforce most of them)
 
 - **Plain C++ only.** No `asm`/`__asm__`, register pinning, `.set noreorder`, `#pragma`, `INCLUDE_ASM`.
+  The only exception is the short list in `config/inline_asm_allow.us.txt` (VU0 macro mode, interrupt and
+  system-call code; see `docs/ASM_ONLY.md`): there, and only there, an `__asm__ __volatile__` statement may sit
+  alone in a `static inline` helper, with one instruction or a fixed hardware sequence of at most 3 (`sync.l` +
+  `ei`), operands through constraints, and no directive (`.word`, `.set`...), label, branch, jump or register
+  pinning. Everything else in the function is C++. scan.py enforces all of it. Why: we publish our own C++,
+  never transcriptions of the game's compiled code or its bytes.
 - **No string literals.** The game's strings stay in its `.rodata`: `extern char D_0035AC80[];`.
 - **No hard-coded addresses** inside the image (`0x00100000`–`0x00468C30`): use the symbol (`D_00393E80`,
   `func_00100030`). Hardware registers (`0x10000000`…, `0x12000000`…) and scratchpad (`0x70000000`) are fine.
@@ -96,7 +102,9 @@ python3 toolchain/setup.py
 - `$gp` = `0x0038F3F0`; globals of 8 bytes or less are gp-relative (`-G8`): `extern int D_00393E80;`.
 - Float constants live in `.lit4` (`0x00387400`–`0x00388258`), one copy per use; write them as literals.
 - `sqrt.s` comes from `sqrtf()` (declare `extern "C" float sqrtf(float);`, `-ffast-math` is pinned).
-- VU0 macro-mode code (`vaddax`, `vdiv`, `qmfc2`…) was inline asm in the original: such functions stay asm.
+- VU0 macro-mode code (`vaddax`, `vdiv`, `qmfc2`…) was inline asm in the original. Only the functions on
+  `config/inline_asm_allow.us.txt` may be written with single-operation helpers (see the exception above); SN's
+  own `as` (which assembles compiler output) encodes the macro-mode and COP2 mnemonics, GNU `as` does not.
 
 ## Matching findings (proved on merged units)
 

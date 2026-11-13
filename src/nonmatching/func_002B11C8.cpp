@@ -1,4 +1,4 @@
-/* fuzzy: 88.8 */
+/* fuzzy: 90.9 */
 /* nonmatch func_002B11C8 (0xA10): fresh draft from the asm. Rebuilds the score list (teams or players, sorted by score when ranked) and sends one "update_score" per line. */
 /* sym: _vt$13Node_002B11C8 = 0x00373000 */
 /* sym: _vt$14Score_002B11C8 = 0x00372FE8 */
@@ -190,172 +190,172 @@ void Obj_002B11C8::UpdateScores()
         timed = true;
 
     unsigned int now = func_0010FC30();
-    if (now - D_00392360 < 1000)
-        return;
-    D_00392360 = now;
-    func_001F0370(D_003795A0, 0, 0, 0);
+    if (now - D_00392360 >= 1000) {
+        D_00392360 = now;
+        func_001F0370(D_003795A0, 0, 0, 0);
 
-    if (ranked && func_002A25F0(net)) {
-        Score_002B11C8* teams[4];
-        char buf[0x30];
-        for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
-            if (func_002A1DA8(net, i) > 0) {
-                unsigned int name;
-                switch (i) {
-                case 0:
-                    name = 0x3224348D;
-                    break;
-                case 1:
-                    name = 0xB4B04623;
-                    break;
-                case 2:
-                    name = 0x7FEC9586;
-                    break;
-                case 3:
-                    name = 0x62E9A53E;
-                    break;
-                default:
-                    name = 0;
-                    break;
+        if (ranked && func_002A25F0(net)) {
+            Score_002B11C8* teams[4];
+            char buf[0x30];
+            for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
+                if (func_002A1DA8(net, i) > 0) {
+                    unsigned int name;
+                    switch (i) {
+                    case 0:
+                        name = 0x3224348D;
+                        break;
+                    case 1:
+                        name = 0xB4B04623;
+                        break;
+                    case 2:
+                        name = 0x7FEC9586;
+                        break;
+                    case 3:
+                        name = 0x62E9A53E;
+                        break;
+                    default:
+                        name = 0;
+                        break;
+                    }
+                    teams[i] = new Score_002B11C8;
+                    func_00331A9C(teams[i]->m_name, func_001E5488(name, 0));
+                    teams[i]->m_king = 0;
+                    teams[i]->m_hasFlags = 0;
+                    teams[i]->m_flags = 0;
+                    teams[i]->m_color = i + 2;
+                    teams[i]->m_score = func_002B0FB8(net, i);
                 }
-                teams[i] = new Score_002B11C8;
-                func_00331A9C(teams[i]->m_name, func_001E5488(name, 0));
-                teams[i]->m_king = 0;
-                teams[i]->m_hasFlags = 0;
-                teams[i]->m_flags = 0;
-                teams[i]->m_color = i + 2;
-                teams[i]->m_score = func_002B0FB8(net, i);
             }
-        }
-        for (Player_002B11C8* p = func_002A53F8(net, &pit, 0); p; p = func_002A5490(net, &pit, 0)) {
-            if (!func_002B2280(p))
-                continue;
-            if (func_002B1FC8(p)) {
-                func_003331D0(buf, D_00392368, teams[p->m_team]->m_name);
-                func_00331A9C(teams[p->m_team]->m_name, buf);
+            for (Player_002B11C8* p = func_002A53F8(net, &pit, 0); p; p = func_002A5490(net, &pit, 0)) {
+                if (!func_002B2280(p))
+                    continue;
+                if (func_002B1FC8(p)) {
+                    func_003331D0(buf, D_00392368, teams[p->m_team]->m_name);
+                    func_00331A9C(teams[p->m_team]->m_name, buf);
+                }
+                if (func_002B2F30(p))
+                    teams[p->m_team]->m_king = 1;
+                if (func_002B22B8(p)) {
+                    teams[p->m_team]->m_hasFlags = 1;
+                    teams[p->m_team]->m_flags |= 1 << func_002B22C8(p);
+                }
             }
-            if (func_002B2F30(p))
-                teams[p->m_team]->m_king = 1;
-            if (func_002B22B8(p)) {
-                teams[p->m_team]->m_hasFlags = 1;
-                teams[p->m_team]->m_flags |= 1 << func_002B22C8(p);
+            for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
+                if (func_002A1DA8(net, i) > 0) {
+                    teams[i]->key = teams[i]->m_score;
+                    list.InsertSorted(teams[i]);
+                }
             }
-        }
-        for (int i = 0; i < func_0024F590(func_0022E358(game)); i++) {
-            if (func_002A1DA8(net, i) > 0) {
-                teams[i]->key = teams[i]->m_score;
-                list.InsertSorted(teams[i]);
-            }
-        }
-    } else {
-        for (Player_002B11C8* p = func_002A53F8(net, &pit, 0); p; p = func_002A5490(net, &pit, 0)) {
-            if (!func_002B2280(p))
-                continue;
-            Score_002B11C8* s = new Score_002B11C8;
-            if (func_002B1FC8(p))
-                func_003331D0(s->m_name, D_00392368, p->m_name);
-            else
-                func_00331A9C(s->m_name, p->m_name);
-            s->m_king = func_002B2F30(p);
-            int color;
-            if (func_0024F540(func_0022E358(game)))
-                color = p->m_team;
-            else
-                color = p->m_skater->m_id;
-            s->m_color = color + 2;
-            if (func_002B22B8(p)) {
-                s->m_hasFlags = 1;
-                s->m_flags |= 1 << func_002B22C8(p);
-            }
-            if (ranked) {
-                s->key = func_002B1108(net, p->m_skater->m_id);
-                list.InsertSorted(s);
-            } else {
-                list.InsertBefore(s);
-            }
-        }
-    }
-
-    lit.Begin(&list);
-    int rank = 0;
-    Score_002B11C8* s = lit.Next();
-    while (s) {
-        char line[0x40];
-        char tag[0x10];
-        tag[0] = 0;
-        if (s->m_king) {
-            func_003331D0(tag, D_00392370);
-        } else if (s->m_hasFlags) {
-            if (s->m_flags & 1)
-                func_00331678(tag, D_00392378);
-            if (s->m_flags & 2)
-                func_00331678(tag, D_00392380);
-            if (s->m_flags & 4)
-                func_00331678(tag, D_00392388);
-            if (s->m_flags & 8)
-                func_00331678(tag, D_00392390);
         } else {
-            tag[0] = 0;
-        }
-        Score_002B11C8* next = lit.Next();
-        if (ranked) {
-            if (timed) {
-                int secs = (unsigned int)s->key / 1000;
-                if (secs >= 3600)
-                    func_003331D0(line, D_003795B0, tag, s->m_color, s->m_name, s->m_color,
-                                  secs / 3600, secs % 3600 / 60, secs % 60);
+            for (Player_002B11C8* p = func_002A53F8(net, &pit, 0); p; p = func_002A5490(net, &pit, 0)) {
+                if (!func_002B2280(p))
+                    continue;
+                Score_002B11C8* s = new Score_002B11C8;
+                if (func_002B1FC8(p))
+                    func_003331D0(s->m_name, D_00392368, p->m_name);
                 else
-                    func_003331D0(line, D_003795D0, tag, s->m_color, s->m_name, s->m_color, secs / 60, secs % 60);
-            } else {
-                func_003331D0(line, D_003795F0, tag, s->m_color, s->m_name, s->m_color, s->key);
+                    func_00331A9C(s->m_name, p->m_name);
+                s->m_king = func_002B2F30(p);
+                int color;
+                if (func_0024F540(func_0022E358(game)))
+                    color = p->m_team;
+                else
+                    color = p->m_skater->m_id;
+                s->m_color = color + 2;
+                if (func_002B22B8(p)) {
+                    s->m_hasFlags = 1;
+                    s->m_flags |= 1 << func_002B22C8(p);
+                }
+                if (ranked) {
+                    s->key = func_002B1108(net, p->m_skater->m_id);
+                    list.InsertSorted(s);
+                } else {
+                    list.InsertBefore(s);
+                }
             }
-        } else {
-            func_003331D0(line, D_00392398, s->m_color, s->m_name);
         }
-        unsigned int id;
-        switch (rank) {
-        case 0:
-            id = 0x2B083809;
-            break;
-        case 1:
-            id = 0xB20169B3;
-            break;
-        case 2:
-            id = 0xC5065925;
-            break;
-        case 3:
-            id = 0x5B62CC86;
-            break;
-        case 4:
-            id = 0x2C65FC10;
-            break;
-        case 5:
-            id = 0xB56CADAA;
-            break;
-        case 6:
-            id = 0xC26B9D3C;
-            break;
-        case 7:
-            id = 0x52D480AD;
-            break;
-        default:
-            id = 0;
-            break;
+
+        lit.Begin(&list);
+        int rank = 0;
+        Score_002B11C8* s = lit.Next();
+        while (s) {
+            char line[0x40];
+            char tag[0x10];
+            tag[0] = 0;
+            if (s->m_king) {
+                func_003331D0(tag, D_00392370);
+            } else if (s->m_hasFlags) {
+                if (s->m_flags & 1)
+                    func_00331678(tag, D_00392378);
+                if (s->m_flags & 2)
+                    func_00331678(tag, D_00392380);
+                if (s->m_flags & 4)
+                    func_00331678(tag, D_00392388);
+                if (s->m_flags & 8)
+                    func_00331678(tag, D_00392390);
+            } else {
+                tag[0] = 0;
+            }
+            Score_002B11C8* next = lit.Next();
+            if (ranked) {
+                if (timed) {
+                    int secs = (unsigned int)s->key / 1000;
+                    if (secs >= 3600)
+                        func_003331D0(line, D_003795B0, tag, s->m_color, s->m_name, s->m_color,
+                                      secs / 3600, secs % 3600 / 60, secs % 60);
+                    else
+                        func_003331D0(line, D_003795D0, tag, s->m_color, s->m_name, s->m_color, secs / 60, secs % 60);
+                } else {
+                    func_003331D0(line, D_003795F0, tag, s->m_color, s->m_name, s->m_color, s->key);
+                }
+            } else {
+                func_003331D0(line, D_00392398, s->m_color, s->m_name);
+            }
+            unsigned int id;
+            switch (rank) {
+            case 0:
+                id = 0x2B083809;
+                break;
+            case 1:
+                id = 0xB20169B3;
+                break;
+            case 2:
+                id = 0xC5065925;
+                break;
+            case 3:
+                id = 0x5B62CC86;
+                break;
+            case 4:
+                id = 0x2C65FC10;
+                break;
+            case 5:
+                id = 0xB56CADAA;
+                break;
+            case 6:
+                id = 0xC26B9D3C;
+                break;
+            case 7:
+                id = 0x52D480AD;
+                break;
+            default:
+                id = 0;
+                break;
+            }
+            void* params = func_001E6978(func_001190D0(8));
+            func_001E7A30(params, 0xC4745838, 3, line);
+            func_001E7A68(params, 0x40C698AF, 0xD, id);
+            Ref_002B11C8 ref;
+            func_0012DB48(&ref, root, id, 0);
+            Handler_002B11C8* h = ref.p;
+            ref.Clear();
+            if (h)
+                h->Update(params);
+            func_001F0370(D_00379608, params, 0, 0);
+            if (params)
+                func_001E6AE8(params, 3);
+            delete s;
+            s = next;
+            rank++;
         }
-        void* params = func_001E6978(func_001190D0(8));
-        func_001E7A30(params, 0xC4745838, 3, line);
-        func_001E7A68(params, 0x40C698AF, 0xD, id);
-        Ref_002B11C8 ref;
-        func_0012DB48(&ref, root, id, 0);
-        Handler_002B11C8* h = ref.p;
-        ref.Clear();
-        if (h)
-            h->Update(params);
-        func_001F0370(D_00379608, params, 0, 0);
-        if (params)
-            func_001E6AE8(params, 3);
-        delete s;
-        s = next;
-        rank++;
     }
 }

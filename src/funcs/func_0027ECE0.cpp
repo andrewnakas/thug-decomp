@@ -1,4 +1,3 @@
-/* fuzzy: 93.1 */
 extern "C" float fabsf(float);
 
 typedef int qword __attribute__((mode(TI)));
@@ -8,9 +7,10 @@ struct Row_0027ECE0 {
         qword q;
         struct { float x, y, z, w; };
     };
+    const float& operator[](int i) const { return (&x)[i]; }
     bool operator==(const Row_0027ECE0& o) const
     {
-        return x == o.x && y == o.y && z == o.z && w == o.w;
+        return x == o[0] && y == o[1] && z == o[2] && w == o[3];
     }
     Row_0027ECE0& operator+=(const Row_0027ECE0& o)
     {
@@ -84,7 +84,7 @@ extern "C" void func_0027F008(Obj_0027ECE0* self, Vec_0027ECE0* n);
 
 void Obj_0027ECE0::Update()
 {
-    if (m_body->m_old == m_body->m_pos)
+    if (m_body->m_pos == m_body->m_old)
         return;
     Vec_0027ECE0 dir(m_body->m_pos.x - m_body->m_old.x, m_body->m_pos.y - m_body->m_old.y,
                      m_body->m_pos.z - m_body->m_old.z, m_body->m_pos.w - m_body->m_old.w);
@@ -96,12 +96,14 @@ void Obj_0027ECE0::Update()
     m_end = Vec_0027ECE0(m_body->m_pos.x + v.x, m_body->m_pos.y + v.y, m_body->m_pos.z + v.z, m_body->m_pos.w + v.w) +
             dir * func_002032A0(0x20102726, 0);
     if (func_0028E1C0(this, 0x10, 0)) {
+        char* ev = mB0;
         Vec_0027ECE0 n = m160;
+        Vec_0027ECE0* pn = &n;
         float d = n.x * m70.x + n.y * m70.y + n.z * m70.z;
         if (!m290 || fabsf(d) < 0.01f) {
-            func_001BB080(m598, 6, mB0);
+            func_001BB080(m598, 6, ev);
             if (!m5B8->m2C)
-                func_0027F008(this, &n);
+                func_0027F008(this, pn);
         } else {
             m_body->m_pos = m150;
             m_body->m_pos += n * 0.1f;

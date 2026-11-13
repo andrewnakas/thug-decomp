@@ -128,6 +128,9 @@ cc1plus near our version is `ee-gcc2.9-991111` (6,720 symbols, ELF). Compared on
 assembled with SN's as; prologue saves and nops ignored), its code equals SN 1.36's in **65 (45%)**, and in **83
 (58%)** with `-fno-schedule-insns -fno-schedule-insns2` on both. It decides differently too often for its
 decisions to transfer. A GDB oracle for us would need symbols recovered for SN's `cc1plus.exe` (§7, item 5).
+**Update (2026-11-13): built.** `tools/oracle.py` runs SN's own cc1plus.exe under gdb inside wibo, at hook points
+recovered from the stripped binary, and can force decisions. Forced decisions alone turn 14 of the 60 best near
+misses into exact matches. See [ORACLE.md](ORACLE.md).
 
 ---
 

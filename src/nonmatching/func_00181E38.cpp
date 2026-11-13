@@ -1,8 +1,8 @@
-/* fuzzy: 91.0 */
+/* fuzzy: 96.1 */
 /* Downloads a rectangle of GS local memory to main memory (host <- local transfer): builds a small VIF/GIF
    packet (BITBLTBUF, TRXPOS, TRXREG, FINISH, TRXDIR = 1), sends it over the VIF1 DMA channel, reverses the
-   bus direction and DMAs the image into dst, then restores the bus. The game's two `sync` barriers after the
-   CHCR writes are inline asm and are not expressible here. */
+   bus direction and DMAs the image into dst, then restores the bus. The two `sync` barriers after the CHCR
+   writes (0x001820AC, 0x00182168) are a one-instruction hardware helper (allowlisted). */
 typedef int qword __attribute__((mode(TI)));
 
 struct Packet_00181E38 {
@@ -24,6 +24,11 @@ extern "C" void func_00323258(Packet_00181E38* p, unsigned int w);
 extern "C" void func_00323270(Packet_00181E38* p, unsigned long d);
 extern "C" void func_00323200(Packet_00181E38* p);
 extern "C" void func_0031BF20(int mode);
+
+static inline void Sync()
+{
+    __asm__ __volatile__("sync");
+}
 
 #define VIF1_STAT (*(volatile unsigned int*)0x10003C00)
 #define VIF1_FIFO (*(volatile qword*)0x10005000)
@@ -82,8 +87,12 @@ void func_00181E38(void* dst, short sbp, short psm, short ssax, short ssay, shor
     D1_QWC = 7;
     D1_MADR = (unsigned int)pkt.m_base & 0x0FFFFFFF;
     D1_CHCR = 0x101;
-    while (D1_CHCR & 0x100)
-        ;
+    Sync();
+    /* the game tests CHCR once after the sync, then polls in a separate loop (0x001820B0 lw/andi/beqz, loop at 0x001820C8) */
+    if (D1_CHCR & 0x100) {
+        do {
+        } while (D1_CHCR & 0x100);
+    }
     while (!(GS_CSR & 2))
         ;
     VIF1_STAT = 0x800000;
@@ -92,8 +101,11 @@ void func_00181E38(void* dst, short sbp, short psm, short ssax, short ssay, shor
     D1_QWC = qwc;
     D1_MADR = (unsigned int)dst & 0x0FFFFFFF;
     D1_CHCR = 0x100;
-    while (D1_CHCR & 0x100)
-        ;
+    Sync();
+    if (D1_CHCR & 0x100) {
+        do {
+        } while (D1_CHCR & 0x100);
+    }
     VIF1_STAT = 0;
     GS_BUSDIR = 0;
     GS_CSR = 2;

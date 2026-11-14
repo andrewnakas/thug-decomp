@@ -1,4 +1,4 @@
-/* fuzzy: 84.6 */
+/* force: {"kind": "ga", "before": [120, 158]} */
 struct Node_0011A7A0 {
     int m0;
     unsigned int m_id;
@@ -29,6 +29,13 @@ struct List_0011A7A0 {
         }
         return p;
     }
+    Node_0011A7A0* Head()
+    {
+        if (!~m_first->m_id) {
+            return 0;
+        }
+        return m_first;
+    }
     int Count()
     {
         int n = 0;
@@ -39,10 +46,11 @@ struct List_0011A7A0 {
     }
     Node_0011A7A0* Nth(unsigned int i)
     {
-        Node_0011A7A0* p = m_first;
-        if (p->m_id == 0xFFFFFFFF) p = 0;
-        for (; p; p = p->Next()) {
-            if (i-- == 0) return p;
+        Node_0011A7A0* p = Head();
+        while (p) {
+            if (i-- == 0)
+                return p;
+            p = p->Next();
         }
         return 0;
     }

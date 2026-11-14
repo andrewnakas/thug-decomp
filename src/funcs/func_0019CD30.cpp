@@ -1,4 +1,3 @@
-/* fuzzy: 94.2 */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0019CD30 {
@@ -91,7 +90,8 @@ void Obj_0019CD30::Update()
     Vec_0019CD30* f = &m30;
     func_001B80F8(func_00185578(mC, 0xC4E311FA));
     func_0019D0D0(this);
-    float d = Clamp_0019CD30(m30.x * m40.x + m30.y * m40.y + m30.z * m40.z, -1.0f, 1.0f);
+    float d = m30.x * m40.x + m30.y * m40.y + m30.z * m40.z;
+    d = Clamp_0019CD30(d, -1.0f, 1.0f);
     float ang = func_003412F0(d);
     if (ang > 1.570796371f) {
         ang = 3.141592741f - ang;
@@ -101,12 +101,12 @@ void Obj_0019CD30::Update()
     if (r > ang) {
         r = ang;
     }
-    ang = r;
+    float a = r;
     if (!pos) {
-        ang = -ang;
+        a = -a;
     }
-    float s = func_00341068(ang);
-    float co = func_00340F60(ang);
+    float s = func_00341068(a);
+    float co = func_00340F60(a);
     float x = m30.x;
     float z = f->z;
     m30.x = co * x + s * z;

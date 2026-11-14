@@ -1,4 +1,5 @@
-/* fuzzy: 87.8 */
+/* fuzzy: 90.9 */
+/* blocked: residue is the stack-slot order of the spilled colour-pointer givs (reload) against the preheader order; statement order trades one for the other, the directed force search finds no match */
 extern "C" void* func_0010A638(void* heap, int size, int a, int b);
 extern "C" void func_0010A8D8(void* heap, void* p);
 extern void* D_00388A70;
@@ -79,6 +80,10 @@ Comp153B88::Comp153B88(int owner, int n, int id, int a, int b)
     }
     m208 = func_00168738(a, b);
     for (int i = 0; i < 2; i++) {
+        m220[i].r = 0x80;
+        m220[i].g = 0x80;
+        m220[i].b = 0x80;
+        m220[i].a = 0x80;
         m210[i].r = 0x80;
         m210[i].g = 0x80;
         m210[i].b = 0x80;
@@ -87,10 +92,6 @@ Comp153B88::Comp153B88(int owner, int n, int id, int a, int b)
         m218[i].g = 0x80;
         m218[i].b = 0x80;
         m218[i].a = 0x80;
-        m220[i].r = 0x80;
-        m220[i].g = 0x80;
-        m220[i].b = 0x80;
-        m220[i].a = 0x80;
     }
     m1E4 = -1.0f;
 }

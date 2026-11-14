@@ -1,4 +1,5 @@
 /* fuzzy: 86.0 */
+/* blocked: the game passes the clamped dot in $f3 and copies it to $f12 (0x101E74); `d = Clamp(d)` reproduces that copy but changes the float schedule (38 words), the directed force search finds no match on either shape */
 struct Vec {
     float x, y, z, w;
 };

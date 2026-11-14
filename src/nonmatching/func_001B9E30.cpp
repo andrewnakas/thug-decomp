@@ -1,4 +1,5 @@
 /* fuzzy: 88.0 */
+/* blocked: the game keeps a copy of m16C for the Check() inline (daddu $a0,$v1 at 0x1B9E4C); gcse copy-propagates ours away. A nested inline, a local and merged conditions tried */
 struct Sub_001B9E30 {
     char pad[0x1C];
     int m1C;

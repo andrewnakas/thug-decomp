@@ -1,4 +1,5 @@
 /* fuzzy: 92.9 */
+/* blocked: the game keeps model+0x24 in $v0 (0x14EA28) and adds 4 for the data pointer; cse folds ours to +0x28. GetData/GetType, a reference and split locals all fold */
 /* sym: __13Base_0014E988i = 0x00143030 */
 /* sym: _vt$12Der_0014E988 = 0x0035F848 */
 extern void* D_00388A70;

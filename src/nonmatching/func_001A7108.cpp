@@ -1,4 +1,5 @@
 /* fuzzy: 83.3 */
+/* blocked: residue is the order of the d stores against the m170 store and their float registers; moving the m170 store, assigning d, or building d with the ctor is equal or worse, and the directed force search finds no match */
 typedef int qword_001A7108 __attribute__((mode(TI)));
 
 struct Vec_001A7108 {

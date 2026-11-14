@@ -1,4 +1,5 @@
 /* fuzzy: 82.3 */
+/* blocked: game keeps mE0 in $t0 on the mask-miss path (PRE'd reload only after the store); tried continue/&&/early return/while/entry ref/unsigned types/Count() inline: always reloads on both paths. */
 struct Ent_0014CFC0 {
     int m0;
     unsigned short* m4;

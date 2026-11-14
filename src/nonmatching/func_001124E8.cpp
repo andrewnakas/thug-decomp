@@ -1,4 +1,5 @@
 /* fuzzy: 90.8 */
+/* blocked: game loop test compares the char with 0x5C in a register and is not duplicated; an inline test keeps the bottom test but gives xori, a plain test is duplicated (size +8..+0x18). */
 extern "C" int func_00331BB8(const char* s);
 extern "C" char* func_00331A9C(char* dst, const char* src);
 extern "C" int func_001F0D78(const char* s);

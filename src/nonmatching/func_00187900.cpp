@@ -1,4 +1,5 @@
 /* fuzzy: 95.2 */
+/* blocked: same residue as func_00186E80 (movn vs movz in the second loop, a1/a2 swap); sibling iterator idioms no better; directed search best 7 words. */
 /* sym: _vt$11It_00187900 = 0x00361AA0 */
 
 struct N_00187900 {

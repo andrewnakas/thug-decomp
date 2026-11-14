@@ -1,4 +1,5 @@
 /* fuzzy: 83.9 */
+/* blocked: else path holds a dead `li $v0,-1` (post-reload remnant); idx=-1 sentinel, switch ranges and int idx variants all change size. */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00176F18 {

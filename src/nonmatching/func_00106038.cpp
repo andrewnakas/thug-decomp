@@ -1,4 +1,5 @@
-/* fuzzy: 78.3 */
+/* fuzzy: 87.0 */
+/* blocked: remaining: gp address and stackSize swap $a3/$v1 (global-alloc order); 240 statement orders tried, directed search best 5 words. */
 struct ThreadParam_00106038 {
     int status;
     void* entry;
@@ -29,12 +30,16 @@ struct Thread_00106038 {
 
 Thread_00106038* Thread_00106038::Create()
 {
+    void* entry = m_entry;
+    int stackSize = m_stackSize;
+    int prio = m_priority;
+    void* stack = m_stack;
     ThreadParam_00106038 p;
-    p.entry = m_entry;
-    p.stackSize = m_stackSize;
+    p.entry = entry;
+    p.stack = stack;
+    p.stackSize = stackSize;
+    p.initPriority = prio;
     p.gpReg = D_0038F3F0;
-    p.initPriority = m_priority;
-    p.stack = m_stack;
     m_id = func_0031BAA0(&p);
     return this;
 }

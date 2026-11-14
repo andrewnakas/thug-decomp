@@ -14,7 +14,9 @@ forced decision, in the JSON form tools/oracle.py --with takes:
 
 Each force is a tie-break or ordering decision inside SN's own cc1plus.exe (global-alloc order, a ready-list
 pick, a local-alloc quantity order, reload's spill-slot order, the register find_reg / find_free_reg picks among
-those its own checks accept) that the source has not been found to reach. tools/oracle.py proves the
+those its own checks accept, the thread fill_eager_delay_slots tries first, a gcse copy/constant propagation or
+PRE deletion declined through the failure path the pass already handles) that the source has not been found to
+reach. tools/oracle.py proves the
 unit's residue is only that decision: compiled under gdb with exactly these forces, the output is the game's
 code, byte for byte (relocations resolved). Without them it is not (else the unit belongs in src/funcs/).
 
@@ -35,7 +37,7 @@ from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATC
 
 FORCE_RE = re.compile(r"/\*\s*force:\s*(\{.*?\})\s*\*/")
 MAX_FORCES = 8
-FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr"}
+FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr", "reorg", "cprop", "pre"}
 
 
 def unit_forces(path):
@@ -49,7 +51,10 @@ def unit_forces(path):
 def count_decisions(forces):
     """What MAX_FORCES limits: every force line is one decision, except
       * a sched replay order ({"kind":"sched","order":[...],"picks":N}): the N ready-list picks it overrides;
-      * a spill-slot order ({"kind":"spill","order":[p1..pN]}): N - 1 (the choices that fix an order of N)."""
+      * a spill-slot order ({"kind":"spill","order":[p1..pN]}): N - 1 (the choices that fix an order of N).
+    reorg ({"kind":"reorg","uid":B,"pred":P}), cprop ({"kind":"cprop","reg":R,"uid":U,...}) and pre
+    ({"kind":"pre","uid":U} or {"kind":"pre","expr":E,"pass":K}) lines are one decision each: one branch's
+    thread order, one propagation into one insn, one PRE deletion (or PRE leaving one expression alone)."""
     def one(f):
         if f.get("kind") == "spill":
             return max(1, len(f.get("order", [])) - 1)

@@ -50,10 +50,12 @@ before the `0x128($sp)` one in the source.
      insn first in that cycle.
    - **reorg**: a delay-slot word, or the same branch with another target. It names the filler that put the insn in
      the slot (`fill_simple_delay_slots`, `fill_eager_delay_slots`, `fill_slots_from_thread`...), using the return
-     address seen at `emit_delay_sequence`.
+     address seen at `emit_delay_sequence`, and each fill_eager branch's `prediction` (`eager` events). Force:
+     `{"kind":"reorg","uid":B,"pred":P}`.
    - **gcse**: gcse's own `-dG` log (CONST-PROP / COPY-PROP / PRE), with `*` on actions that touch a differing insn
      or one of its pseudos. Force: `{"kind":"cprop","reg":R[,"uid":U][,"what":"copy|const"]}` makes
-     `try_replace_reg` fail at that propagation (the call is skipped and returns 0).
+     `try_replace_reg` fail at that propagation (the call is skipped and returns 0); `{"kind":"pre","uid":U}`
+     makes pre_delete's `validate_change` fail for that occurrence.
    - **code shape**: the instruction multisets differ. An alignment lists the game-only and ours-only instructions.
      No tie explains it.
 
@@ -63,7 +65,10 @@ Force specs (`--with` or the trace's `forced` field): `{"kind":"ga","before":[A,
 two insns a cycle), `{"kind":"sched","pass":P,"block":N,"picks":K,"order":[UIDs]}` (replay a whole block; see
 "Target-directed search"), `{"kind":"cprop","reg":R}`, and the register-allocation kinds of "Register choice and
 spill-slot forces" below: `{"kind":"spill","order":[P1,...]}`, `{"kind":"fr","reg":P,"hard":H}`,
-`{"kind":"lfr","block":B,"reg":P,"hard":H}` (H is gcc's hard register number: 2 = `$v0`, 4 = `$a0`, 32 + n = `$fn`).
+`{"kind":"lfr","block":B,"reg":P,"hard":H}` (H is gcc's hard register number: 2 = `$v0`, 4 = `$a0`, 32 + n = `$fn`),
+and the reorg/gcse kinds of "Delay-slot thread and gcse forces" below: `{"kind":"reorg","uid":B,"pred":P}`,
+`{"kind":"cprop","reg":R,"uid":U,"what":"copy|const","pass":K}`, `{"kind":"pre","uid":U}` /
+`{"kind":"pre","expr":E,"pass":K}`.
 
 ## Hook points in SN 1.36 `cc1plus.exe` (all verified by disassembly against gcc 2.95.3's source)
 
@@ -77,6 +82,9 @@ spill-slot forces" below: `{"kind":"spill","order":[P1,...]}`, `{"kind":"fr","re
 | issue (`last_scheduled_insn = insn`) | 0x4F4F27 | insn in esi; `last_scheduled_insn` 0x610CEC |
 | `emit_delay_sequence(insn, list, length)` | 0x57B100 | caller from the return address |
 | `cprop_insn` copy-prop / const-prop `try_replace_reg` calls | 0x4E96C2 / 0x4E971C | regno esi, insn edi, src ebx; force skips the call (eax=0) |
+| `one_cprop_pass` / `one_pre_gcse_pass` entries (pass counters) | 0x4E8C10 / 0x4E9B50 | both zero their own counters first (`const_prop_count` 0x61073C, `gcse_subst_count` 0x610638) |
+| `pre_delete`: its `validate_change (insn, &SET_SRC (set), expr->reaching_reg, 0)` call | 0x4EA922 (returns to 0x4EA927) | insn edi, bb ebp, expression index [esp+0x38]; force skips the call (eax=0) |
+| `fill_eager_delay_slots`: after `prediction = mostly_true_jump (insn, condition)` (call 0x57CCBF), before `if (prediction > 0)` | 0x57CCC7 | insn esi, prediction eax (also feeds `likely = prediction == 2`); force rewrites eax |
 | reload1.c `alter_reg(i, from_reg)` 0x56CF60: the call in reload()'s `for (i = LAST_VIRTUAL_REGISTER + 1; ...)` loop / in `finish_spills`' loop; `finish_spills` entry | 0x56A86D / 0x56F66A; 0x56EFA0 | args at [esp], [esp+4] at the `call`; `reg_old_renumber` (short*) 0x6151B8, `max_regno` 0x62914C; force rewrites the two pushed args |
 | `assign_stack_local` entry; its two calls in `alter_reg` (returned MEM at the next insn) | 0x4DE3D0; 0x56D028 / 0x56D0D3 | `frame_offset` (64-bit) 0x629128; slot offset = INTVAL of the MEM's PLUS |
 | global.c `find_reg` arg 2 `losers` (a HARD_REG_SET *, 16 bytes: FIRST_PSEUDO_REGISTER is 111) | [esp+8] at 0x4EC790 | force points it at 0x62CFE0, 16 unused bytes past .data's VirtualSize (0x62CFC4) in its last mapped page |
@@ -158,7 +166,7 @@ GPL gcc-core-2.95.3 tarball (from ftp.gnu.org) and the two binaries, none of whi
 | func_002BC710 | `this` priority vs key counter | global: pseudo 116 (`this`, priority 9666) beats 121/143/186 to `$s0` on priority (not a tie); then a sched2 cycle (block 7, t=7) where insns 340 and 352 tie on every key but luid | `ga before [121,116]`: 42 -> 2 words; + sched2 issue order 352/633 at block 7 t=7: **MATCH** (3 forced decisions, found by `--chain`) |
 | func_0015D8A0 | | code shape: 201 words; game-only/ours-only instructions listed; no single flip helps (best 200) | none |
 | func_002A0840 | gcse const-prop | code shape (10 game-only insns: the `nor`/`movn` sequence); gcse log marks CONST-PROP of reg 123 in insn 396 and COPY-PROPs of 124/131 into insn 81 as touching the differing insns | not a tie |
-| func_00145DC0 | reorg delay slot | reorg: same branch (insn 219), target one word off; our slot was filled by `fill_eager_delay_slots` with insn 224; the game filled it from the taken thread (target's first insn copied, branch to target+4) | report only (no reorg force yet) |
+| func_00145DC0 | reorg delay slot | reorg: same branch (insn 219), target one word off; our slot was filled by `fill_eager_delay_slots` with insn 224; the game filled it from the taken thread (target's first insn copied, branch to target+4) | `{"kind":"reorg","uid":219,"pred":1}`: **MATCH** (1 -> 0 words) |
 | func_0022F500 (lane 1) | second copy of a `new` result | see below | `cprop` force: not the cause |
 
 **func_0022F500: where `daddu $s4, $s3` comes from.** The copy is insn 219, `(set (reg/v 146) (reg 149))`: the
@@ -308,10 +316,10 @@ the greedy search (`--force --chain 4 --max-force 10`) on a src/nonmatching unit
 
 Forces are keyed by pseudo-register numbers, block numbers and clocks, so they are tied to the exact source
 text: any edit to a concession unit needs a fresh `--find`. Allowed kinds: `ga`, `la`, `sched` (at most 8 decisions
-per unit, counted as in "Target-directed search" below), and since 2026-11-13 `spill`, `fr` and `lfr` (see
-"Register choice and spill-slot forces"; a spill order of N pseudos counts N - 1 decisions). New kinds (reorg
-thread choice, reload register choice) are added to `FORCE_KINDS` in tools/concession.py as the oracle learns to
-force them, and listed here.
+per unit, counted as in "Target-directed search" below), since 2026-11-13 `spill`, `fr` and `lfr` (see
+"Register choice and spill-slot forces"; a spill order of N pseudos counts N - 1 decisions), and `reorg`, `cprop`
+and `pre` (see "Delay-slot thread and gcse forces"; one decision per line). New kinds (reload register choice)
+are added to `FORCE_KINDS` in tools/concession.py as the oracle learns to force them, and listed here.
 
 ## Target-directed search (2026-11-13)
 
@@ -419,12 +427,61 @@ All four stack-slot units in this batch had their spilled pseudos in a rotated o
 of the higher-numbered pseudos first (for example 287, 288 before 278, 279, 281). That suggests the pseudos were
 created in another order in the original (an inline body expanded earlier, say); the source lever is not known.
 
+## Delay-slot thread and gcse forces (2026-11-13)
+
+Three more kinds reach the two residues the blocked notes kept naming: which thread reorg fills a branch's delay
+slot from, and a gcse propagation or PRE deletion the game did not make. Like the register kinds, each acts on an
+**input or a failure path the pass already has**: the pass still runs every one of its own legality tests, and
+the hook only reports an error (failing `concession.py`) if the decision point never came.
+
+| Kind | Spec | Hook | What it changes | Why the result is a choice the compiler could make |
+|---|---|---|---|---|
+| `reorg` | `{"kind":"reorg","uid":B,"pred":P}` (optional `"n":K`: only the K-th time fill_eager_delay_slots reaches B; it runs twice, MAX_REORG_PASSES) | 0x57CCC7 | the value `prediction = mostly_true_jump (insn, condition)` has in fill_eager_delay_slots for conditional branch B; P is one of the values mostly_true_jump returns (-1, 0, 1, 2) | prediction is a branch-probability estimate. It only picks which thread `fill_slots_from_thread` tries first (the target when > 0, else the fall-through when the branch owns it) and its `likely` argument (P == 2). Both orders are code the pass runs for some branch; inside, every candidate still passes the resource, opposite-thread liveness, `may_trap_p`, annul (`eligible_for_annul_*`), thread-ownership and `redundant_insn` tests, and the jump is redirected by the pass itself. Unconditional branches (prediction fixed at 2) are not hooked |
+| `cprop` | `{"kind":"cprop","reg":R,"uid":U,"what":"copy"\|"const","pass":K}` | 0x4E96C2 / 0x4E971C | cprop_insn's `try_replace_reg (R, src, U)` fails (the call is skipped, returns 0) in cprop pass K (1 = the first pass, 2 = the final alter_jumps pass) | try_replace_reg is `validate_replace_src`, which fails whenever the replaced insn is not recognised; cprop_insn then just moves on to the next register. Not propagating is always correct (the register still holds the value) |
+| `pre` | `{"kind":"pre","uid":U}` or `{"kind":"pre","expr":E,"pass":K}` (every redundant occurrence of expression E) | 0x4EA922 | pre_delete's `validate_change (insn, &SET_SRC (set), reaching_reg, 0)` fails for occurrence U (or all of E's) | gcse.c handles that failure ("on the x86 some of the movXX patterns ... may cause validate_change to fail"): the occurrence keeps its own computation and is not marked `deleted_p`, so pre_insert and pre_insert_copies make no insertion or copy for it. With all of E's occurrences declined, PRE leaves E alone (the reaching-reg pseudo is still created, as on that path) |
+
+Each line counts as one decision. Reverse forces (a propagation or a PRE deletion the compiler did *not* make, a
+thread the pass's tests reject) are not offered: they would need the pass to skip a legality test.
+
+Identity check (forcing the compiler's own choices must change nothing): on 11 matched src/funcs units (the 6
+largest, func_001AC030 with 251 fill_eager visits, and 5 mid-sized), every fill_eager branch forced to its own
+prediction (with `n`) plus a `cprop` decline of every try_replace_reg call that failed by itself (110 calls)
+gives byte-identical assembly and no hook error.
+
+Finding the forces (`tools/oracle_directed.py`): the differing words, their neighbours (delay slots) and the
+pseudos of their insns form an "involved" set. `reorg` candidates are the other predictions (<= 0 -> 1 and 2;
+1 -> 0 and 2; 2 -> 0 and 1) for every fill_eager branch in that set or whose slot insn is. `cprop` candidates are
+the successful propagations (the `-dG` log's COPY-PROP / CONST-PROP lines, matched to the trace's calls for the
+pass number) into an involved insn or of an involved pseudo; `pre` candidates are the redundant occurrences that
+are involved, and every expression whose reaching reg or inserted insn is. Each is tried alone on top of the
+current state, before the schedule and allocation candidates, in every round of the beam search.
+
+**Result** (`concession.py --find --directed --write` on the 182 src/nonmatching units whose diff touched a
+fill_eager branch or a gcse action, all but the 20 lane-claimed units; about 30 s per unit at 2 jobs, each traced
+compile under 100 MB): **3 new concession units**, all through `reorg`.
+- func_00145DC0 (`reorg` 219 pred 1) and func_001BA1F8 (`reorg` 225 pred 1; the game's slot is an annulled
+  `bc1fl` filled from the target): one decision each. Both are the LAST_MILE "delay slot filled from the branch
+  target" residue. With the target thread tried first, the pass itself also produces the rest of the game's code
+  around the branch (the note expected a fall-through copy to linger; it does not).
+- func_0018C0A8: two `reorg` decisions plus one `fr` and two sched2 cycles (5).
+- Over the cap: func_00148990 (11 sched cycles), func_00159060 (a spill order of 10 pseudos, 9 decisions); no new
+  kind involved.
+- `cprop` and `pre`: **no unit converted, and no single decline lowered the differing-word count** in the gcse
+  units the blocked notes name (func_001ADDC8, func_001B9E30, func_00168F58, func_00265038, func_00107050,
+  func_001FE5D8). Declining the PRE deletions of func_001ADDC8 (insns 114, 145) stops the latch copies but the
+  game's loop is still strength-reduced differently (18 -> 37 words); in func_001B9E30 the kept copy of m16C is
+  not a gcse COPY-PROP (only reg 123 -> 119 props exist, and declining them changes nothing near 0x1B9E4C). So
+  these residues come from cse/loop.c, or from propagations the game *did* make that ours did not (a reverse
+  force, which would skip legality tests and is not offered).
+
 ## Limits and next steps
 
-- Reorg has no force yet: the trace shows the filler, not the thread decision inside `fill_slots_from_thread`.
+- Reorg forces reach fill_eager_delay_slots' thread order only; a slot fill_simple_delay_slots filled from before
+  the branch (so fill_eager never saw it) is not forced.
 - cse.c has no hooks. The func_0022F500 diagnosis above was made from `-dr`/`-ds` dumps by hand.
 - PRE hash order is shown through the `-dG` log (expression numbers = hash-table order; reaching regs are new pseudos
-  numbered in that order, which feeds allocno_compare's tie-break). It is not forced.
+  numbered in that order, which feeds allocno_compare's tie-break). It is not forced (a `pre` force declines a
+  deletion; it does not reorder the table).
 - Ready-list forces are keyed by (pass, block, clock). A force that changes an earlier cycle shifts later clocks.
   `--chain` re-explains after each kept flip, so later forces are found against the new schedule.
 - The addresses are specific to `ee-gcc2.95.3-136/lib/gcc-lib/ee/2.95.3/cc1plus.exe` (sha256 in

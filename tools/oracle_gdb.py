@@ -124,9 +124,15 @@ A = dict(
     assign_stack_local=0x4DE3D0, frame_offset=0x629128, reg_old_renumber=0x6151B8, max_regno=0x62914C,
     # gcse.c cprop_insn (0x4E95B0): the try_replace_reg calls (copy-prop, const-prop)
     cprop_copy_call=0x4E96C2, cprop_const_call=0x4E971C,
+    one_cprop_pass=0x4E8C10, one_pre_gcse_pass=0x4E9B50,
+    # gcse.c pre_delete (0x4EA7C0): its validate_change (insn, &SET_SRC (set), expr->reaching_reg, 0) call
+    pre_delete_call=0x4EA922,
+    # reorg.c fill_eager_delay_slots (0x57CBD0): just after `prediction = mostly_true_jump (insn, condition)`
+    # (call 0x57CCBF, `add esp,0x18` at 0x57CCC4), before `if (prediction > 0)`; insn in esi, prediction in eax
+    eager_prediction=0x57CCC7,
 )
 
-state = {"fn": 0, "ga": 0, "pass": None, "bb": None, "block": None, "sb": 0}
+state = {"fn": 0, "ga": 0, "pass": None, "bb": None, "block": None, "sb": 0, "cprop": 0, "pre": 0}
 
 
 # ------------------------------------------------------------------ global allocation
@@ -411,7 +417,44 @@ def delay_seq():
     emit(ev="delay", caller=ret, branch=uid(insn), slots=insn_list(lst), length=length)
 
 
+# ------------------------------------------------------------------ reorg: thread order in fill_eager_delay_slots
+EAGER = {}
+
+
+def eager_prediction():
+    """fill_eager_delay_slots: `prediction` (mostly_true_jump's estimate, -1..2) only decides which thread
+    fill_slots_from_thread tries first (target if > 0, else the fall-through when we own it) and its `likely`
+    argument (prediction == 2). A reorg force {"kind":"reorg","uid":U,"pred":P[,"n":K]} replaces the estimate
+    for branch U (the K-th time fill_eager_delay_slots reaches it, default every time) with P, one of the
+    values mostly_true_jump returns. Every legality test (resources, opposite-thread liveness, may_trap_p,
+    annulling, ownership of the thread, redundant_insn) runs as usual inside fill_slots_from_thread."""
+    insn = reg("esi")
+    u = uid(insn)
+    pred = s32_reg("eax")
+    EAGER[u] = EAGER.get(u, 0) + 1
+    forced = None
+    for f in forces("reorg"):
+        if f.get("uid") != u or f.get("n", EAGER[u]) != EAGER[u]:
+            continue
+        p = int(f["pred"])
+        if p not in (-1, 0, 1, 2):
+            emit(ev="error", at="reorg", msg=f"reorg force {f}: pred must be -1, 0, 1 or 2")
+            continue
+        gdb.execute("set $rax = %d" % (p & 0xFFFFFFFF))
+        f["done"] = f.get("done", 0) + 1
+        forced = f
+    emit(ev="eager", uid=u, n=EAGER[u], pred=pred, forced=forced)
+
+
 # ------------------------------------------------------------------ gcse constant/copy propagation
+def cprop_pass():
+    state["cprop"] += 1
+
+
+def pre_pass():
+    state["pre"] += 1
+
+
 def cprop_call(kind, ret_addr):
     def fn():
         regno = reg("esi")
@@ -421,13 +464,36 @@ def cprop_call(kind, ret_addr):
         to = s32(src + 8) if kind == "copy" else None
         skip = None
         for f in forces("cprop"):
-            if f.get("uid") in (None, u) and f.get("reg") in (None, regno) and f.get("what", kind) == kind:
+            if f.get("uid") in (None, u) and f.get("reg") in (None, regno) and f.get("what", kind) == kind \
+                    and f.get("pass", state["cprop"]) == state["cprop"]:
                 skip = f
-        emit(ev="cprop", what=kind, reg=regno, uid=u, to=to, forced=skip)
+        emit(ev="cprop", what=kind, reg=regno, uid=u, to=to, pass_=state["cprop"], forced=skip)
         if skip is not None:                     # make try_replace_reg "fail": skip the call, return 0
+            skip["done"] = skip.get("done", 0) + 1
             gdb.execute("set $rax = 0")
             gdb.execute("set $rip = 0x%x" % ret_addr)
     return fn
+
+
+def pre_delete_call():
+    """pre_delete turns a redundant occurrence into a copy from the expression's reaching reg with
+    validate_change, and handles its failure (the occurrence stays, is not marked deleted_p, and pre_insert /
+    pre_insert_copies then make no insertion or copy for it). A pre force {"kind":"pre","uid":U[,"pass":K]}
+    makes that validate_change fail for insn U: the call is skipped and returns 0."""
+    insn = reg("edi")
+    u = uid(insn)
+    esp = reg("esp")
+    indx = s32(esp + 0x38)
+    bb = s32_reg("ebp")
+    skip = None
+    for f in forces("pre"):
+        if f.get("uid") == u and f.get("pass", state["pre"]) == state["pre"] and f.get("expr", indx) == indx:
+            skip = f
+    emit(ev="pre_delete", uid=u, expr=indx, bb=bb, pass_=state["pre"], forced=skip)
+    if skip is not None:
+        skip["done"] = skip.get("done", 0) + 1
+        gdb.execute("set $rax = 0")
+        gdb.execute("set $rip = 0x%x" % (A["pre_delete_call"] + 5))
 
 
 # ------------------------------------------------------------------ reload: spill-slot order
@@ -486,9 +552,12 @@ def slot_ret():
 
 
 def install():
-    if "gcse" in HOOKS:
+    if "gcse" in HOOKS or forces("cprop") or forces("pre"):
+        Hook(A["one_cprop_pass"], cprop_pass)
+        Hook(A["one_pre_gcse_pass"], pre_pass)
         Hook(A["cprop_copy_call"], cprop_call("copy", A["cprop_copy_call"] + 5))
         Hook(A["cprop_const_call"], cprop_call("const", A["cprop_const_call"] + 5))
+        Hook(A["pre_delete_call"], pre_delete_call)
     if "ga" in HOOKS or forces("fr"):
         Hook(A["ga_after_qsort"], ga_after_qsort)
         Hook(A["find_reg"], find_reg_entry)
@@ -507,8 +576,9 @@ def install():
         Hook(A["sched_sorted"], sched_sorted)
         Hook(A["sched_reordered"], sched_reordered)
         Hook(A["sched_pick"], sched_pick)
-    if "reorg" in HOOKS:
+    if "reorg" in HOOKS or forces("reorg"):
         Hook(A["emit_delay_sequence"], delay_seq)
+        Hook(A["eager_prediction"], eager_prediction)
     if "spill" in HOOKS or forces("spill"):
         Hook(A["alter_reg_init_call"], spill_site("init"))
         Hook(A["alter_reg_finish_call"], spill_site("finish"))
@@ -532,6 +602,9 @@ gdb.execute("continue")
 for f in forces("spill"):
     if f.get("done", 0) != len(f["order"]):
         emit(ev="error", at="alter_reg", msg=f"spill force {f} replayed {f.get('done', 0)} of {len(f['order'])}")
+for f in forces("reorg") + forces("cprop") + forces("pre"):
+    if not f.get("done"):         # the decision point never came: the force names nothing in this compile
+        emit(ev="error", at=f["kind"], msg=f"{f['kind']} force {f} never reached its decision point")
 for f in forces("fr") + forces("lfr"):
     if not f.get("ok"):           # never accepted: find_reg's own checks rejected H (or the call never came)
         emit(ev="error", at=f["kind"], msg=f"{f['kind']} force {f} was never accepted by the allocator")

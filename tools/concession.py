@@ -29,6 +29,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,6 +38,7 @@ from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATC
 
 FORCE_RE = re.compile(r"/\*\s*force:\s*(\{.*?\})\s*\*/")
 MAX_FORCES = 8
+TRACE_RETRIES = 3
 FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr", "reorg", "cprop"}   # "pre" is an oracle diagnostic only: no identity check yet
 
 
@@ -117,11 +119,19 @@ def verify(name, path, wd=None):
         info["plain"] = len(plain.diffs)
         if plain.ok:
             return ["it matches exactly without its forces: move it to src/funcs/ and drop the force lines"], info
-        unit = oracle.Unit(name, path, wd / "oracle")
-        text, ev = unit.traced("gate", force=forces)
+        # wibo occasionally hangs under heavy load (tools/cc.py retries for the same reason): retry the traced
+        # compile a few times on a timeout before reporting it, so one hang cannot fail the whole gate
+        for attempt in range(TRACE_RETRIES):
+            try:
+                unit = oracle.Unit(name, path, wd / "oracle")
+                text, ev = unit.traced("gate", force=forces)
+                break
+            except subprocess.TimeoutExpired:
+                if attempt == TRACE_RETRIES - 1:
+                    return [f"forced compile timed out {TRACE_RETRIES} times (wibo hang under load?): rerun the gate"], info
         errs = [e for e in ev if e.get("ev") == "error"]
         res = oracle.compare_asm(unit, text, "gate")
-    except (cc.StageError, OSError, KeyError) as e:
+    except (cc.StageError, OSError, KeyError, subprocess.TimeoutExpired) as e:
         return [f"forced compile failed: {str(e).strip().splitlines()[-1][:300]}"], info
     if res.error:
         return [res.error.strip().splitlines()[-1][:300]], info

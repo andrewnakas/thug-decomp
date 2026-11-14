@@ -1,4 +1,5 @@
 /* fuzzy: 82.9 */
+/* blocked: the game computes idx = t % n straight into $s0 (no copy) with i in $s1; ours copies the mfhi result into idx. 'idx = (idx + 1) % r->m_count' gives the game's loop tail but swaps the s-registers (90 words vs 82); 'int idx; idx = t % n' changes nothing. */
 struct Ring_001F5EB8 {
     int m_buf;
     int m_desc;

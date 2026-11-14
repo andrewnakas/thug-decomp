@@ -1,4 +1,5 @@
 /* fuzzy: 87.5 */
+/* blocked: the game copies the frames base for the loop pointer (daddu $a3,$a2) and assigns sum/clamped to $a0/$t0; running-pointer, indexed and declaration-order forms all keep one register; directed search no match */
 /* sym: dpmul = 0x0033E220 */
 /* sym: litodp = 0x0033E798 */
 struct Timer_0010F958 {

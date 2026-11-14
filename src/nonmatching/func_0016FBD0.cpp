@@ -1,4 +1,5 @@
 /* fuzzy: 89.0 */
+/* blocked: the game stores the cfc2 results through &hit/&index held in $a0/$v1 and reads vi1/vi6 into $t0/$t1; pointer locals reproduce the stores but not $t0/$t1, and the directed force search finds no match */
 // Sphere-against-view-volumes test. With the VU0 path enabled the microprogram at 0x458 tests the sphere
 // (centre in xyz, radius in w) and returns hit/index in vi1/vi6; otherwise each of the volumes is tested
 // here, plane by plane. A hit bumps the volume's counter by `count`. Returns whether the sphere hit.

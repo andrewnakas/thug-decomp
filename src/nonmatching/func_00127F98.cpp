@@ -1,4 +1,5 @@
 /* fuzzy: 69.6 */
+/* blocked: the game copies *p into a separate register for s (daddu $a3,$v0) before the switch; load order and declaration forms keep one register (oracle) */
 struct C_00128078 {
     int GetWord(char* word, const char** p);
 };

@@ -1,4 +1,6 @@
-/* fuzzy: 94.9 */
+/* force: {"kind": "lfr", "block": 17, "reg": 174, "hard": 4} */
+/* force: {"kind": "fr", "reg": 142, "hard": 6} */
+/* force: {"kind": "sched", "pass": 2, "block": 6, "clock": 1, "first": [552, 137]} */
 /* blocked: register/movz-vs-movn ties in the second loop's Advance; sibling Valid(k)/local-n Advance idioms, Next(), q->cur all equal or worse; directed search best 7 words. */
 extern char D_00361AA0[];
 

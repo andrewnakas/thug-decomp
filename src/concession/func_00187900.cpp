@@ -1,4 +1,6 @@
-/* fuzzy: 95.2 */
+/* force: {"kind": "lfr", "block": 17, "reg": 176, "hard": 4} */
+/* force: {"kind": "fr", "reg": 144, "hard": 6} */
+/* force: {"kind": "sched", "pass": 2, "block": 6, "clock": 1, "first": [550, 140]} */
 /* blocked: same residue as func_00186E80 (movn vs movz in the second loop, a1/a2 swap); sibling iterator idioms no better; directed search best 7 words. */
 /* sym: _vt$11It_00187900 = 0x00361AA0 */
 

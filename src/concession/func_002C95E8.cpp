@@ -1,4 +1,7 @@
-/* fuzzy: 95.3 */
+/* force: {"kind": "lfr", "block": 10, "reg": 251, "hard": 2} */
+/* force: {"kind": "sched", "pass": 2, "block": 10, "clock": 26, "first": [599, 626]} */
+/* force: {"kind": "sched", "pass": 2, "block": 10, "clock": 33, "first": [650, 622]} */
+/* force: {"kind": "sched", "pass": 2, "block": 10, "clock": 34, "first": [652, 765]} */
 /* blocked: residue is the second (z) clamp's schedule after func_002CE120: the game loads m4.m4 before t.z.
    Declaring tz/ez before lim cuts 17 -> 15 differing words but lowers fuzzy (95.3 -> 93.6); tz before b and an
    inline Fit helper for both axes (62 words) do not help; oracle_directed stops at 10 words, no forced match. */

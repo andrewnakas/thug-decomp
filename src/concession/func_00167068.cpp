@@ -1,4 +1,4 @@
-/* fuzzy: 77.8 */
+/* force: {"kind": "lfr", "block": 0, "reg": 130, "hard": 3} */
 extern unsigned int* D_00394274;
 extern unsigned int D_00394280;
 extern unsigned int D_00394290;

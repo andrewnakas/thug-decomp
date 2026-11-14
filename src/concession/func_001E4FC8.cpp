@@ -1,4 +1,4 @@
-/* fuzzy: 84.2 */
+/* force: {"kind": "lfr", "block": 0, "reg": 118, "hard": 3} */
 struct Node_001E4FC8 {
     int m0;
     unsigned int m_id;

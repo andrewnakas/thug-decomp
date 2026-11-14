@@ -1,4 +1,5 @@
-/* fuzzy: 96.4 */
+/* force: {"kind": "spill", "order": [501, 497, 496, 494, 498]} */
+/* force: {"kind": "sched", "pass": 2, "block": 8, "clock": 4, "first": [1724, 1615]} */
 /* Grass field setup: samples the ground height (feeler ray from +50000 down to -50000) on a 128-unit grid over
    the world bounding box (clamped to 0x15F x 0x12D cells), quantises heights into a shared table (within 0x1E0),
    keeps for each cell the highest of itself and its +x/+z/+xz neighbours, packs every row's non-empty span into

@@ -1,4 +1,4 @@
-/* fuzzy: 98.4 */
+/* force: {"kind": "lfr", "block": 0, "reg": 121, "hard": 3} */
 /* nonmatch func_00297990: best earlier draft (thug-claude-lane3/work/nm67/wt2/func_00297990.nm.cpp), 5 of 154 words differ. */
 /* near miss (5 words): v0/v1 swap in org = verts[idx[0]] qword copy (address/data regs). Tried decl permutations, *(verts+idx[0]), .q copy, temp index. r3 wt2 also: org/up decl order and org init placement (size change or 8 words), verts[*idx], unsigned/short idx, byte-offset form: no change. */
 typedef int qword __attribute__((mode(TI)));

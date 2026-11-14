@@ -1,4 +1,6 @@
-/* fuzzy: 98.4 */
+/* force: {"kind": "lfr", "block": 13, "reg": 147, "hard": 3} */
+/* force: {"kind": "sched", "pass": 2, "block": 3, "clock": 9, "first": 109} */
+/* force: {"kind": "sched", "pass": 2, "block": 3, "clock": 9, "first": 131} */
 struct Msg_001FB948 {
     unsigned char m_type;
     char pad1;

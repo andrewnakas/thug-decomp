@@ -1,5 +1,5 @@
 /* cflags: -fno-gcse */
-/* fuzzy: 97.7 */
+/* force: {"kind": "lfr", "block": 4, "reg": 123, "hard": 3} */
 struct Addr_001FB480 {
     unsigned short m0;
     unsigned short port;

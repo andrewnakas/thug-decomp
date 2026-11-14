@@ -1,4 +1,4 @@
-/* fuzzy: 98.6 */
+/* force: {"kind": "lfr", "block": 0, "reg": 120, "hard": 3} */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_001CEA68 {

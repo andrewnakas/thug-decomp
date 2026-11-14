@@ -1,4 +1,4 @@
-/* fuzzy: 98.4 */
+/* force: {"kind": "spill", "order": [705, 700, 701]} */
 /* blocked: spill-slot order of this+0xB0 / this+0xB4 / left-1 (game gives left-1 the lowest slot). Tried a for-loop decrement and count as the loop variable: no gain. */
 /* sym: AddLines__15Goals_0024C590i = 0x0024C590 */
 // Adds `count` message lines to an on-screen goal/trick list. Each line takes a free slot of the

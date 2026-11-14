@@ -1,4 +1,4 @@
-/* fuzzy: 99.3 */
+/* force: {"kind": "fr", "reg": 154, "hard": 4} */
 /* near miss: 3 words: the inlined GetId's net pointer lands in $v1 (game $a0, reusing m_44's reg); everything else matches (spilled int locals declared 30..44 then assigned 40,34,38,30,3C; shared loop index i; walking Bit pointer) */
 struct Player_00273A60 {
     char pad[0x1804];

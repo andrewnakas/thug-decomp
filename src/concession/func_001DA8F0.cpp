@@ -1,5 +1,5 @@
 /* cflags: -fno-schedule-insns */
-/* fuzzy: 95.2 */
+/* force: {"kind": "lfr", "block": 0, "reg": 120, "hard": 3} */
 typedef int qword_001DA8F0 __attribute__((mode(TI)));
 union Vec_001DA8F0 {
     qword_001DA8F0 q;

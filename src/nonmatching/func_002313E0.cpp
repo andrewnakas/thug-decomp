@@ -1,4 +1,5 @@
 /* fuzzy: 94.5 */
+/* blocked (lane2 b3): residue is %hi temps in $a2/$a3 where ours uses $v0/$v1 (D_003730A0, D_003730B8, D_00371C78) plus the store order of the 0x80 message; reordering the msg field stores (and loading the key into a local first) does not move the scheduler. */
 /* sym: __12Msg_002313E0 = 0x001FA800 */
 extern "C" void* memcpy(void*, const void*, unsigned int);
 

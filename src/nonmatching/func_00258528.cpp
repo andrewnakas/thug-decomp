@@ -1,4 +1,5 @@
 /* fuzzy: 87.5 */
+/* blocked (lane2 b3): residue is the latch order (game: i = i+1 copy before the lw arr->mC, which reorg then copies into both delay slots) plus arr/k in $s6/$s5 swapped. `int k = i + 1; ... i = k;`, k before the call, and a while loop all compile to the same code as this. */
 struct Arr_00258528 {
     int m0;
     int m4;

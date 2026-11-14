@@ -1,4 +1,5 @@
 /* fuzzy: 93.6 */
+/* blocked (lane2 b3): game has a dead `lb $v0,0x58(info)` (info->m58) before both returns (0x1D3B60/0x1D3BC8), which also gives info the $s3 allocation; no non-volatile C++ read survives flow, and nothing shows a handler touching m58. */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_001D3890 {

@@ -1,4 +1,5 @@
 /* fuzzy: 97.2 */
+/* blocked (lane2 b3): 7 words: the game holds &m_vel in $v0 (a second pseudo), but stores through it must still look unknown-based (reloads). A fresh pointer, p[1], or sk->m_vel directly all make block 1 (or 2) known-based and lose the reloads (75+ words). */
 struct Vec_001C59B0 {
     float x, y, z, w;
     Vec_001C59B0() {}

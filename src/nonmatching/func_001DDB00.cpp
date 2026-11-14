@@ -1,4 +1,5 @@
 /* fuzzy: 99.0 */
+/* blocked (lane2 b3): 15 words, all in the side/t/l/r block at 0x1DDDF4-0x1DDE60: game keeps the dot sum in $f0 and side.w in $f1 (ours swapped), and schedules t*t before 1-t. Tried: u = 1-t local, split t, l/r order, (l,r)*=g after, Dot(side,d), plain-store Neg (worse); none moves it. */
 typedef int qword __attribute__((mode(TI)));
 union Vec_001DDB00 {
     qword q;

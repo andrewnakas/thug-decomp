@@ -1,4 +1,5 @@
 /* fuzzy: 79.0 */
+/* blocked (lane2 b3): game switch tree tests ==0x21, then slti 0x22 (> 0x21 -> default), then 0x20 by xor/movz: the GT test only appears when the left subtree is not a single leaf, i.e. a third (empty, pruned) case value below 0x21 that the binary does not pin. */
 extern "C" unsigned char* func_001EB070(unsigned char* p);
 extern "C" void func_001E6B30(void* p);
 extern "C" unsigned char* func_001ED6B8(void* p, unsigned char* q, int a);

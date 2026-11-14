@@ -1,4 +1,5 @@
 /* fuzzy: 87.3 */
+/* blocked (lane2 b3): game computes &used into $s6 inside the retry loop (block after the first `if (used)`) and keeps 13 and sp+4 un-hoisted there; a do/while retry loop followed by the scan loop hoists everything (98 words), the current for(;;) form hoists only &used. */
 /* NEAR MISS (r2 wt2): 42/106, size+frame now right (0x1a8, 0x60, s0-s7). Fixes: loop 2 uses its own index j and
    returns idx (the game's loop 2 'found' returns the last random idx: daddu v0,s2), which also gives the 8th saved reg.
    Left: game computes &used fresh in loop 1 (addiu a2,sp,4) and sets the loop-2 pointer s6=&used in loop 1 after the

@@ -13,7 +13,8 @@ forced decision, in the JSON form tools/oracle.py --with takes:
     /* force: {"kind": "sched", "pass": 2, "block": 21, "clock": 1, "first": 137} */
 
 Each force is a tie-break or ordering decision inside SN's own cc1plus.exe (global-alloc order, a ready-list
-pick, a local-alloc quantity order) that the source has not been found to reach. tools/oracle.py proves the
+pick, a local-alloc quantity order, reload's spill-slot order, the register find_reg / find_free_reg picks among
+those its own checks accept) that the source has not been found to reach. tools/oracle.py proves the
 unit's residue is only that decision: compiled under gdb with exactly these forces, the output is the game's
 code, byte for byte (relocations resolved). Without them it is not (else the unit belongs in src/funcs/).
 
@@ -34,7 +35,7 @@ from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATC
 
 FORCE_RE = re.compile(r"/\*\s*force:\s*(\{.*?\})\s*\*/")
 MAX_FORCES = 8
-FORCE_KINDS = {"ga", "la", "sched"}
+FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr"}
 
 
 def unit_forces(path):
@@ -46,9 +47,16 @@ def unit_forces(path):
 
 
 def count_decisions(forces):
-    """What MAX_FORCES limits: every force line is one decision, except a sched replay order
-    ({"kind":"sched","order":[...],"picks":N}), which counts as the N ready-list picks it overrides."""
-    return sum(max(1, int(f.get("picks", 1))) if "order" in f else 1 for f in forces)
+    """What MAX_FORCES limits: every force line is one decision, except
+      * a sched replay order ({"kind":"sched","order":[...],"picks":N}): the N ready-list picks it overrides;
+      * a spill-slot order ({"kind":"spill","order":[p1..pN]}): N - 1 (the choices that fix an order of N)."""
+    def one(f):
+        if f.get("kind") == "spill":
+            return max(1, len(f.get("order", [])) - 1)
+        if "order" in f:
+            return max(1, int(f.get("picks", 1)))
+        return 1
+    return sum(one(f) for f in forces)
 
 
 def replay_picks(events):
@@ -83,7 +91,8 @@ def verify(name, path, wd=None):
         problems.append("no /* force: {...} */ lines: a unit that needs none belongs in src/funcs/")
     if count_decisions(forces) > MAX_FORCES:
         problems.append(f"{count_decisions(forces)} forced decisions, more than the {MAX_FORCES} allowed")
-    if any("order" in f and (f.get("kind") != "sched" or not isinstance(f.get("picks"), int)) for f in forces):
+    if any("order" in f and f.get("kind") != "spill" and (f.get("kind") != "sched"
+                                                          or not isinstance(f.get("picks"), int)) for f in forces):
         problems.append('a replay order must be {"kind": "sched", "pass": P, "block": B, "picks": N, "order": [...]}')
     bad = [f for f in forces if f.get("kind") not in FORCE_KINDS]
     if bad:
@@ -116,7 +125,7 @@ def verify(name, path, wd=None):
         problems.append(f"the oracle reported {len(errs)} hook error(s) (first: {errs[0]})")
     measured = replay_picks(ev)
     for f in forces:
-        if "order" in f and measured.get((f["pass"], f["block"]), 0) != f["picks"]:
+        if f.get("kind") == "sched" and "order" in f and measured.get((f["pass"], f["block"]), 0) != f["picks"]:
             problems.append(f"replay order for pass {f['pass']} block {f['block']} declares {f['picks']} pick(s), "
                             f"the compile overrode {measured.get((f['pass'], f['block']), 0)}")
     if not res.ok:

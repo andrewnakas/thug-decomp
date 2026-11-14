@@ -2,6 +2,7 @@
 
 ![Code](https://bytematch.dev/andrewnakas/thug-decomp.svg?label=Code&measure=matched_code_percent)
 ![Functions](https://bytematch.dev/andrewnakas/thug-decomp.svg?label=Functions&measure=matched_functions)
+![Fuzzy](https://bytematch.dev/andrewnakas/thug-decomp.svg?label=Fuzzy&measure=fuzzy_match_percent)
 
 A matching decompilation of **Tony Hawk's Underground** (Neversoft / Activision, 2003, PlayStation 2, NTSC-U
 `SLUS-20731`). The game's C++ is being written back function by function until it compiles to the original
@@ -19,8 +20,22 @@ the game, dumped yourself, to build or check anything. **The leaked THUG source 
 | Compiler | SN Systems ProDG **ee-gcc 2.95.3, SN BUILD 1.36** (`cc1plus`), `-O2 -G8 -ffast-math -fno-exceptions`, run under [wibo](https://github.com/decompals/wibo) (pinned in `toolchain/compiler.toml`; how it was identified: [docs/COMPILER_ID.md](docs/COMPILER_ID.md)) |
 | Split | 11,438 functions (2.37 MB of `.text`) via [splat](https://github.com/ethteck/splat) + [spimdisasm](https://github.com/Decompollaborate/spimdisasm) (R5900) |
 | Build | The full ELF rebuilds byte-identical from C++ + asm (`SLUS_207.31: OK`) |
+| Progress (2026-11-14) | **81.21%** of game code is an exact match in plain C++; **85.23%** counting the concession tier; **98.58%** fuzzy. Every game function except 7 hand-written or hardware-only ones has C++. |
+| Verified | The functional build runs all non-matching and concession C++ in place of the game's code; it boots and plays into the first level in PCSX2 with frames matching the original. |
 
-Progress is tracked on [bytematch.dev](https://bytematch.dev/andrewnakas/thug-decomp).
+Progress is tracked on [bytematch.dev](https://bytematch.dev/andrewnakas/thug-decomp) (the headline counts only
+exact, concession-free matches). What is left, and why, is in [docs/REMAINING.md](docs/REMAINING.md).
+
+## Three tiers of C++
+
+| Tier | Folder | Meaning | Linked into the matching build? |
+|---|---|---|---|
+| Exact | `src/funcs/` | Compiles with the pinned toolchain to the game's exact instructions. | Yes |
+| Concession | `src/concession/` | Exact once a few compiler-internal decisions (a register-allocation order, a scheduler pick, a spill-slot order, a delay-slot thread...) are replayed in SN's own `cc1plus` under gdb. Each decision is a recorded `/* force: */` line, and the gate re-checks it. See RULES.md rule 10 and [docs/techniques/ORACLE.md](docs/techniques/ORACLE.md). | No (the game's asm stays) |
+| Non-matching | `src/nonmatching/` | Functionally equivalent C++ that is not byte-exact yet, with a verified `/* fuzzy: */` similarity score. | No (the game's asm stays) |
+
+The matching build is always byte-identical; the concession and non-matching C++ runs in the separate
+functional build (`tools/build_functional.py`, booted with `tools/pcsx2_boot.py`).
 
 **Joining (human or AI agent)? Read [START_HERE.md](START_HERE.md).**
 
@@ -53,14 +68,14 @@ Then open a pull request using the template. Claim first: comment `/claim 0x0011
 
 [Decompathon Steward](https://github.com/andrewnakas/decompathon-steward) runs on the maintainer's machine,
 which has the disc. **No AI is involved in merging.** For every PR, Steward checks out `main`, copies in only
-the PR's `src/funcs/` files, and runs five deterministic gates:
+the PR's unit files (`src/funcs/`, `src/concession/`, `src/nonmatching/`), and runs five deterministic gates:
 
 | Gate | Tool | Checks |
 |---|---|---|
 | toolcheck | `tools/toolcheck.py` | the toolchain is the pinned one (sha256 + canary compile) |
 | scan | `tools/scan.py` | plain C++ only: no inline asm, register pinning, `#pragma`, string literals, hard-coded addresses |
 | split | `tools/check_split.py` | the split tiles `.text`, every function ends properly, splitting is deterministic |
-| match | `tools/gate.py` | every unit matches instruction for instruction, defines one function, owns no data |
+| match | `tools/gate.py` | every unit matches instruction for instruction, defines one function, owns no data; concession units match under their recorded forces (and not without); non-matching units state their true score |
 | build | `tools/build.py` | the whole ELF is byte-identical (sha1), and objdiff independently agrees |
 
 Public CI (GitHub Actions) runs the checks that need no disc: lint, scan, tests, a compile of every unit, and
@@ -79,12 +94,15 @@ the progress report that ByteMatch reads.
 ## Layout
 
 ```
-config/       splat yaml, symbol files, function table, checksums, split exceptions
-src/funcs/    one matched function per file: func_XXXXXXXX.cpp
-include/      common.h; include/game/ for shared class and struct headers
-tools/        the build and every gate
-toolchain/    compiler.toml (the pinned pipeline), checksums.sha256, setup.py
-configure.py  writes build.ninja + the link script (every object pinned to its address)
+config/           splat yaml, symbol files, function table, checksums, split exceptions
+src/funcs/        one matched function per file: func_XXXXXXXX.cpp
+src/concession/   exact under recorded compiler decisions (/* force: */ lines)
+src/nonmatching/  equivalent C++ that does not match yet (/* fuzzy: */ score)
+include/          common.h; include/game/ for shared class and struct headers
+tools/            the build, every gate, the decision oracle (oracle*.py, concession.py), the functional build
+docs/             matching guide, compiler identification, techniques, REMAINING.md (what is left and why)
+toolchain/        compiler.toml (the pinned pipeline), checksums.sha256, setup.py
+configure.py      writes build.ninja + the link script (every object pinned to its address)
 ```
 
 ## Credits

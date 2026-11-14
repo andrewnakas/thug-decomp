@@ -1,4 +1,3 @@
-/* fuzzy: 96.9 */
 struct Vec_0021A4D0 {
     float x, y, z, w;
     Vec_0021A4D0() {}
@@ -52,11 +51,6 @@ extern "C" float func_0033E9B8(void* p);
 extern "C" void func_001235F0(Vec_0021A4D0* a, Vec_0021A4D0* b, int c0, int c1, int f);
 extern "C" void func_0010BEB8(void* p);
 
-static inline bool IsNum_0021A4D0(unsigned char c)
-{
-    return c == '-' || c == '.' || (c >= '0' && c <= '9');
-}
-
 extern "C" bool func_0021A4D0(void* s)
 {
     func_00123620();
@@ -90,18 +84,16 @@ extern "C" bool func_0021A4D0(void* s)
         if (p[0] == '\n' && p[1] == 'T' && p[2] == 'r' && p[3] == 'a' && p[4] == 'c' && p[5] == 'k' &&
             p[6] == 'i' && p[7] == 'n' && p[8] == 'g') {
             int type = p[9] - '0';
-            char* q = p + 11;
+            p += 11;
             float v[6];
             for (int i = 0; i < 6; i++) {
-                void* t = func_00334100(q);
+                void* t = func_00334100(p);
                 float* pv = &v[i];
                 *pv = func_0033E9B8(t);
-                unsigned char c;
-                do {
-                    c = *q++;
-                } while (c == '-' || c == '.' || (c >= '0' && c <= '9'));
+                while (*p == '-' || *p == '.' || (*p >= '0' && *p <= '9')) p++;
+                p++;
             }
-            p = q - 1;
+            p--;
             Vec_0021A4D0 a(v[0], v[1], v[2]);
             Vec_0021A4D0 b(v[3], v[4], v[5]);
             int color;

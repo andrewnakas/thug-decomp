@@ -1,4 +1,5 @@
 /* fuzzy: 94.4 */
+/* blocked (lane2 b3): game computes the tilt target into $f1 in both arms (if/else, bc1fl) and copies it with mov.s $f3,$f1 at 0x1CE410. if/else or ternary gets the branch shape but no copy (size -4); the copy appears only if Approach assigns its target parameter (non-readonly inline parm), which then drops the eps reload in the pan call. Inline returning the target, v*=k in both arms: no copy. */
 struct Button_001CE2E8 {
     char pad[0x14];
     int m_pressed;

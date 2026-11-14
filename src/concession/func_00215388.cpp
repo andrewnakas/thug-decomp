@@ -1,4 +1,9 @@
-/* fuzzy: 94.3 */
+/* force: {"kind": "lfr", "block": 2, "reg": 126, "hard": 4} */
+/* force: {"kind": "lfr", "block": 4, "reg": 131, "hard": 4} */
+/* force: {"kind": "lfr", "block": 6, "reg": 136, "hard": 4} */
+/* force: {"kind": "lfr", "block": 8, "reg": 141, "hard": 4} */
+/* force: {"kind": "lfr", "block": 10, "reg": 146, "hard": 4} */
+/* force: {"kind": "lfr", "block": 11, "reg": 149, "hard": 4} */
 extern void* D_0038EB78;
 extern char D_0038F5F0[];
 extern char D_003709F8[];

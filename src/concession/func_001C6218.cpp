@@ -1,4 +1,4 @@
-/* fuzzy: 98.5 */
+/* force: {"kind": "fr", "reg": 118, "hard": 35} */
 struct Skater_001C6218 {
     char pad0[0xB0];
     float mB0;

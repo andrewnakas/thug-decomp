@@ -1,4 +1,4 @@
-/* fuzzy: 99.0 */
+/* force: {"kind": "spill", "order": [609, 620, 599]} */
 typedef int qword __attribute__((mode(TI)));
 
 /* A stack holder for a reference-counted singleton: Create(1) on entry,

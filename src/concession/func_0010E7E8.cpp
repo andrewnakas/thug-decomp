@@ -1,4 +1,5 @@
-/* fuzzy: 76.5 */
+/* force: {"kind": "lfr", "block": 0, "reg": 120, "hard": 3} */
+/* force: {"kind": "sched", "pass": 2, "block": 0, "clock": 1, "first": [68, 17]} */
 /* blocked: sched1 tie. The game stores m_result before loading 1 and m_async (0x0010E7EC-0x0010E7F8);
    only -fno-schedule-insns (no neighbour evidence, still 2 words off) moves them. Reordered loads, a
    non-volatile flag and cxxperm did not. */

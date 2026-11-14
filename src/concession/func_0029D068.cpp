@@ -1,4 +1,6 @@
-/* fuzzy: 96.6 */
+/* force: {"kind": "spill", "order": [892, 895, 887, 888, 889, 890]} */
+/* force: {"kind": "fr", "reg": 125, "hard": 32} */
+/* force: {"kind": "fr", "reg": 898, "hard": 32} */
 /* blocked (diagnosis only): 10 of the 22 words are the spill slots of six hoisted local addresses
    (0x0029D0F0-0x0029D118): the game orders them by frame address (0xC0, 0xE0, 0xF0, ...), ours puts the
    0xC0 and 0xE0 locals last. The rest is the heading-wrap loop's float registers. */

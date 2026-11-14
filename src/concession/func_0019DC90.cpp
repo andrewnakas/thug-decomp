@@ -1,4 +1,4 @@
-/* fuzzy: 78.6 */
+/* force: {"kind": "fr", "reg": 120, "hard": 33} */
 float func_0019DC90(float a, float step)
 {
     float half = step * 0.5f;

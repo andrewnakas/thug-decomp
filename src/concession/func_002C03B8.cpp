@@ -1,4 +1,6 @@
-/* fuzzy: 69.2 */
+/* force: {"kind": "lfr", "block": 4, "reg": 136, "hard": 2} */
+/* force: {"kind": "lfr", "block": 6, "reg": 138, "hard": 2} */
+/* force: {"kind": "lfr", "block": 8, "reg": 144, "hard": 2} */
 struct Box_002C03B8 {
     unsigned char x;
     unsigned char y;

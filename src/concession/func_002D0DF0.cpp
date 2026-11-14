@@ -1,4 +1,5 @@
-/* fuzzy: 94.7 */
+/* force: {"kind": "fr", "reg": 136, "hard": 2} */
+/* force: {"kind": "fr", "reg": 151, "hard": 2} */
 /* nonmatch func_002D0DF0: best earlier draft (thug-claude-lane3/work/kz/func_002D0DF0.cpp), 104 of 152 words differ (size 0x25c, want 0x260). */
 extern char D_0037BDC0[];
 extern char D_0037B938[];

@@ -1,4 +1,5 @@
-/* fuzzy: 99.6 */
+/* force: {"kind": "lfr", "block": 79, "reg": 1465, "hard": 34} */
+/* force: {"kind": "lfr", "block": 79, "reg": 1470, "hard": 35} */
 /* sym: __as__13Wall_00285528RC13Wall_00285528 = 0x0019C9D8 */
 typedef int qword __attribute__((mode(TI)));
 

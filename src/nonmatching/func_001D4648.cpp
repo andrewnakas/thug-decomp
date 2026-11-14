@@ -1,4 +1,7 @@
 /* fuzzy: 96.1 */
+/* blocked: the game computes &D_00363ED8 before the loop's entry test and copies it ($a1 -> $s3); a named local
+   before the loop (any position, while/for/do forms) makes the loop enter at its bottom test instead (46 words, lower
+   fuzzy). */
 typedef int qword_001D4648 __attribute__((mode(TI)));
 
 extern void* D_00388A70;

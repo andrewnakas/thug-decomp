@@ -1,4 +1,7 @@
 /* fuzzy: 94.6 */
+/* blocked: the second extent's w is a float copy of the first's (lwc1 0x3C): `Vec(width, up, width, ext[3])` with
+   a named ext gives the game's code shape (10 words) but ext and the operator- result swap stack slots (0x20/0x30),
+   and fuzzy drops; temp/ref/union-TI forms and the directed search do not reorder the slots. */
 struct Vec_001C5330 {
     float x, y, z, w;
     Vec_001C5330() {}

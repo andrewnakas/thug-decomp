@@ -1,4 +1,3 @@
-/* fuzzy: 96.6 */
 // Updates the object from its component's three parameters and, unless the component says to keep it,
 // resets the object's matrix to identity with its rotation part scaled to zero.
 
@@ -65,10 +64,11 @@ static inline void Mul_00267538(Vec_00267538* dst, const Vec_00267538* a, const 
 static inline void ScaleRows_00267538(Mat_00267538* m, Vec_00267538* s)
 {
     s->w = 1.0f;
-    Mul_00267538(&m->row[0], s, &m->row[0]);
-    Mul_00267538(&m->row[1], s, &m->row[1]);
-    Mul_00267538(&m->row[2], s, &m->row[2]);
-    Mul_00267538(&m->row[3], s, &m->row[3]);
+    const Vec_00267538* k = s;
+    Mul_00267538(&m->row[0], k, &m->row[0]);
+    Mul_00267538(&m->row[1], k, &m->row[1]);
+    Mul_00267538(&m->row[2], k, &m->row[2]);
+    Mul_00267538(&m->row[3], k, &m->row[3]);
 }
 
 extern "C" void func_00267538(void* self)

@@ -1,4 +1,6 @@
-/* fuzzy: 89.7 */
+/* fuzzy: 92.6 */
+/* blocked: only a $s3/$s4 swap and which of q/&it the First store and the Advance load use remain; directed
+   search: no match. */
 /* sym: _vt$11It_001FC128 = 0x00366A48 */
 class Handler_001FC128 {
 public:
@@ -52,7 +54,7 @@ void func_001FC128(Node_001FC128* table)
         if (h) {
             It_001FC128* p = &it;
             do {
-                Handler_001FC128* next = p->Advance(it.cur);
+                Handler_001FC128* next = p->Advance(q->cur);
                 delete h;
                 h = next;
             } while (h);

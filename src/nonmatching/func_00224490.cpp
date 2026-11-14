@@ -1,4 +1,7 @@
 /* fuzzy: 87.4 */
+/* blocked: the game zeroes `set` at the switch join and keeps the digit branch's `set = 0`; declaring `int set =
+   0;` before the switch gives the right size (33 words, same fuzzy) but the zero lands in the switch's delay slot in
+   $a1; after the switch cse drops the branch store; directed search: no match. */
 struct Glyph_00224490 {
     unsigned short code;
     unsigned short pad;

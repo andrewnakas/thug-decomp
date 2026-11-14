@@ -1,4 +1,6 @@
 /* fuzzy: 97.4 */
+/* blocked: one Normalize of seg takes a fresh `addiu $a0,$sp,0x20; $a1=$a0` where ours reuses $s6 (=&dir), and the
+   `return node` move is scheduled last; cse/sched, not a force the directed search finds. */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00274DE8 {
     qword q;

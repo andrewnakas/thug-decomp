@@ -1,4 +1,6 @@
-/* fuzzy: 91.6 */
+/* fuzzy: 96.7 */
+/* blocked: 6 words: the m5C load is scheduled before the divu and pos lands in $s0 instead of $v1; statement
+   orders tried, directed search: no match. */
 extern "C" int func_0031BCE0(int);
 extern "C" void func_0031BCC0(int);
 
@@ -26,6 +28,11 @@ struct Ctx_001F6868 {
     int m5C;
 };
 
+static inline int Ahead_001F6868(int from, int to, int size)
+{
+    return (from + size - to) % size;
+}
+
 int func_001F6868(Ctx_001F6868* c, Entry_001F6868* e)
 {
     int found = 0;
@@ -42,7 +49,7 @@ int func_001F6868(Ctx_001F6868* c, Entry_001F6868* e)
     int start = c->m5C - count;
     for (int j = 0; j < count && !found; j++) {
         int idx = (start + c->m54 + j) % c->m54;
-        if ((int)(pos + size - c->m50[idx].m10) % size < c->m50[idx].m14) {
+        if (Ahead_001F6868(pos, c->m50[idx].m10, size) < c->m50[idx].m14) {
             found = 1;
             e->m0 = c->m50[idx].m0;
             e->m8 = c->m50[idx].m8;

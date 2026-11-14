@@ -1,4 +1,6 @@
 /* fuzzy: 90.8 */
+/* blocked: the game's list First() compares against a zero register (sltu with $a2 = 0, set at the top of the loop
+   body); member ValidK(unsigned k = 0), an explicit index and the r = 0 form all fold to a plain movn. */
 class Item_002710B8;
 
 class Node_002710B8 {

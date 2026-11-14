@@ -1,4 +1,6 @@
 /* fuzzy: 84.3 */
+/* blocked: the game keeps the first E7EB0 result in $s1 (saved, never read) and a 0x60 frame; no use of it is
+   visible in the binary, so nothing non-dead reproduces it. */
 struct Sprite_0020F010 {
     float m_scaleX;
     float m_scaleY;

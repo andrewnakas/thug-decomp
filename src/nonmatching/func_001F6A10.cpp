@@ -1,4 +1,6 @@
 /* fuzzy: 95.7 */
+/* blocked: the game cross-jumps the two `printf(msg, path); return 0;` tails (shared jal, nop in the delay slot);
+   ours keeps both; goto/msg form and a void printf do not. */
 extern "C" char* func_00336208(char*, int);
 extern "C" void func_00332088(char*, char*, int);
 extern "C" int func_00331950(char*, char*);

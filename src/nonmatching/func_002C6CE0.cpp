@@ -1,4 +1,7 @@
-/* fuzzy: 76.2 */
+/* fuzzy: 92.5 */
+/* blocked: `tab += k` fixes the register roles; the game still forms tab[k].m58 from the old pointer
+   (addu $v0,$v1,$s0 at 0x002C6D40, a separate addu $s0,$s0,$v1) where ours reuses the bumped pointer
+   (one insn short). tab[k] before the bump, a saved name pointer and (tab + k)->mC all CSE back. */
 struct Entry_002C6CE0 {
     char pad0[0x8];
     int m8;
@@ -33,8 +36,8 @@ void Obj_002C6CE0::Register()
     Item_002C6CE0* it = m44;
     Entry_002C6CE0* tab = D_0038C3C0;
     func_00105260(tab[it->m24].mC, it);
-    Entry_002C6CE0* e = &tab[it->m24];
-    it->m1C = e->m58;
-    it->m20 = e->m8;
+    tab += it->m24;
+    it->m1C = tab->m58;
+    it->m20 = tab->m8;
     func_00105260(q + 0x54, m40);
 }

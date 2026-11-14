@@ -1,4 +1,7 @@
 /* fuzzy: 95.9 */
+/* blocked: the game passes rot as addiu $a0,$sp,0x10 (0x002A0060) but keeps &v (same slot) in $s6; ours
+   CSEs both into one register, and stores v's fields in another order. 4-arg ctor for v, rot at loop or
+   function scope, and an unnamed temporary for rot: all worse or no change. */
 typedef int qword __attribute__((mode(TI)));
 union Vec_0029FEC8 {
     qword q;

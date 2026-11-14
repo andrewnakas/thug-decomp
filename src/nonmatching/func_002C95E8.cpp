@@ -1,4 +1,7 @@
 /* fuzzy: 95.3 */
+/* blocked: residue is the second (z) clamp's schedule after func_002CE120: the game loads m4.m4 before t.z.
+   Declaring tz/ez before lim cuts 17 -> 15 differing words but lowers fuzzy (95.3 -> 93.6); tz before b and an
+   inline Fit helper for both axes (62 words) do not help; oracle_directed stops at 10 words, no forced match. */
 struct Box_002C95E8 {
     unsigned char x;
     signed char y;

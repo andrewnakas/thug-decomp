@@ -1,4 +1,6 @@
 /* fuzzy: 93.8 */
+/* blocked: the game's loop test is slt $v0,$s1,$s2 with 0xEA6 hoisted into $s2 (0x002BD1BC); `i < 0xEA6`
+   and `i <= 0xEA5` give slti and lose that register (104 words), `!=` gives bne (30 words). */
 /* sym: _vt$12Ctx_002BD080 = 0x00367170 */
 struct Game_002BD080 {
     char pad[0xAC];

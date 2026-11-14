@@ -1,4 +1,7 @@
 /* fuzzy: 96.8 */
+/* blocked: cross-jump direction: the game keeps the Busy() return-0 block in line and the !n test branches
+   back to it (0x0029BBEC); ours sends Busy() forward to the !n copy. if (!Busy()) {...} return 0;, no else,
+   and if (n) {...} return 0; give the same or worse (45 words). */
 typedef int qword __attribute__((mode(TI)));
 
 union Vec_0029B8C0 {

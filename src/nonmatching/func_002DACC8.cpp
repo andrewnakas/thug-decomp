@@ -1,4 +1,7 @@
 /* fuzzy: 97.5 */
+/* blocked (diagnosis only): the game reads list.mC through a register holding &list (lw $v1,0xC($s3) at
+   0x002DADE8, 0x002DAF48), ours from the stack slot; plus a branch-shape change in the team iterator's
+   First() at 0x002DAEE8. */
 /* sym: _vt$13Link_002DACC8 = 0x0037CA60 */
 /* sym: _vt$13Head_002DACC8 = 0x0037CA00 */
 extern char D_0037C9D0[];

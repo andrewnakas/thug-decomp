@@ -1,4 +1,5 @@
 /* fuzzy: 90.9 */
+/* blocked: the game computes the first NextA before the count loop in movn form and rotates the loop with nor (-1 not hoisted); every accessor/loop form tried either merges the first call into the loop (jump into the test) or hoists -1 (xor) (13 forms, oracle) */
 /* sym: __11Ev_00189750 = 0x00187C78 */
 /* sym: _$_11Ev_00189750 = 0x00187C88 */
 extern void* D_00388A70;

@@ -1,4 +1,5 @@
 /* fuzzy: 91.3 */
+/* blocked: residue after the store-before-load fix is spill-slot order and register choice; the directed beam search reached 7 differing words in 483 traced compiles but no forced match */
 struct Glyph_00172A28 {
     unsigned short x0;
     unsigned short y0;

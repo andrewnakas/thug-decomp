@@ -1,4 +1,5 @@
 /* fuzzy: 98.3 */
+/* blocked: the game keeps &t (sp+0x80) in $t0 and copies *this into t through that register before func_00323318; ours folds the copy to sp offsets. operator=, Mul/Set member forms tried (oracle) */
 typedef int qword __attribute__((mode(TI)));
 union Vec_00103000 {
     qword q;

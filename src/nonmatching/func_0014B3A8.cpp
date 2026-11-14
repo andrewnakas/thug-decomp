@@ -1,4 +1,5 @@
 /* fuzzy: 72.6 */
+/* blocked: gcse PRE copies the D_003DDA20 index i<<4 into the then-arm for the m_dirCol store, so the else arm shrinks to one insn and jump turns it into default-then-overwrite; the game keeps sll+addu in the else arm. if/return, polarity, default-pointer and statement-split forms of GetDir/SetDir change nothing (oracle) */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_0014B3A8 {

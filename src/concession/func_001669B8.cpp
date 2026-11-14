@@ -1,4 +1,5 @@
-/* fuzzy: 90.6 */
+/* force: {"kind": "fr", "reg": 122, "hard": 4} */
+/* force: {"kind": "fr", "reg": 128, "hard": 4} */
 struct File_001669B8 {
     char pad0[0xC];
     void* mC;
@@ -44,11 +45,13 @@ extern "C" int func_001669B8(void* ctx, int width, int height, unsigned char* sr
         bw = 0x80;
         obw = 0x100;
     }
-    int rows = 0x40;
-    int orows = 0x20;
+    int rows, orows;
     if (ny == 1) {
         rows = height;
         orows = height / 2;
+    } else {
+        rows = 0x40;
+        orows = 0x20;
     }
 
     for (int by = 0; by < ny; by++) {

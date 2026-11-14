@@ -1,4 +1,5 @@
 /* fuzzy: 95.8 */
+/* blocked: reorg: the game fills the beqz-m24 delay slot with V12's a1=0 from the fall-through (branch predicted not taken); ours steals move $v0,$s0 from the target. Forcing a1=0 first in sched2 does not change reorg's thread choice; early return and direct m24 forms are no different (oracle) */
 struct Model_001355A8 {
     int m0;
     int m4;

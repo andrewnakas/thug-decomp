@@ -1,4 +1,5 @@
 /* fuzzy: 92.3 */
+/* blocked: stack slots: the game gives vel its own slot (0x40) and lets the vv-multiplier temp's slot (0x30) go to the sum/Normalize temps; ours reuses 0x30 for vel. Declaring vel earlier, copy-init, or a comma declaration does not reproduce it (oracle) */
 typedef int qword_001B5450 __attribute__((mode(TI)));
 
 extern "C" float sqrtf(float);

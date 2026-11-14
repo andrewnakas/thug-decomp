@@ -1,4 +1,5 @@
 /* fuzzy: 95.1 */
+/* blocked: game computes __in_chrg&1 into $s2 at entry; dtor loop rewrites, sibling Valid idioms and a C-style deleting dtor (as func_0017E0B0) keep the late andi. */
 /* sym: _vt$12Mgr_00144FC0 = 0x0035EF30 */
 extern "C" void func_0010A8D8(void* pool, void* p);
 extern void* D_00388A70;

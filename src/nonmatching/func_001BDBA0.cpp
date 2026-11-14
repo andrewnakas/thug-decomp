@@ -1,4 +1,5 @@
 /* fuzzy: 88.3 */
+/* blocked: game copies mB0 to the stack (sq 0x20) but multiplies the fields read from mC->mB0, w first; by-value operator*, const& vel, temp ctor and member operator* all worse. */
 typedef int qword_001BDBA0 __attribute__((mode(TI)));
 
 struct Vec_001BDBA0 {

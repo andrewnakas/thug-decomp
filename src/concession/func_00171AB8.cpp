@@ -1,4 +1,4 @@
-/* fuzzy: 97.7 */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 2, "first": [691, 658]} */
 extern "C" float sqrtf(float);
 
 typedef int qword_00171AB8 __attribute__((mode(TI)));
@@ -48,9 +48,9 @@ extern "C" void func_00171AB8(Sphere_00171AB8* out, V_00171AB8* pts, int n)
         if (r < len) r = len;
     }
     h = (mx - mn) * 0.5f;
+    out->m_half[0] = h.x;
+    out->m_half[1] = h.y;
+    out->m_half[2] = h.z;
     out->m_center = c;
     out->m_center.w = r;
-    out->m_half[0] = h.x;
-    out->m_half[2] = h.z;
-    out->m_half[1] = h.y;
 }

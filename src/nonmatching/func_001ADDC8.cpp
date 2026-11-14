@@ -1,4 +1,5 @@
 /* fuzzy: 70.5 */
+/* blocked: gcse PRE copies the latch's i+1 (and i<<2) into the loop body's blocks, so i stops being a biv and the outer m124C[i] is not strength-reduced as in the game (t0 at 0x1ADDD4); pointer, indexed and declaration variants all keep the PRE */
 struct Entry_001ADDC8 {
     int m0;
     int m4;

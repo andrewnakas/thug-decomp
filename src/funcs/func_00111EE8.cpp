@@ -1,7 +1,6 @@
-/* fuzzy: 84.4 */
 struct Slot_00111EE8 {
     unsigned int m_size;
-    int m_used;
+    volatile int m_used; // volatile as in the matched siblings func_00111F70 / func_00111FB8
     void* m_mem;
 };
 

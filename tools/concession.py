@@ -37,7 +37,7 @@ from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATC
 
 FORCE_RE = re.compile(r"/\*\s*force:\s*(\{.*?\})\s*\*/")
 MAX_FORCES = 8
-FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr", "reorg", "cprop", "pre"}
+FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr", "reorg", "cprop"}   # "pre" is an oracle diagnostic only: no identity check yet
 
 
 def unit_forces(path):

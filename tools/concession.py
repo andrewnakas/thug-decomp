@@ -14,7 +14,9 @@ forced decision, in the JSON form tools/oracle.py --with takes:
 
 Each force is a tie-break or ordering decision inside SN's own cc1plus.exe (global-alloc order, a ready-list
 pick, a local-alloc quantity order, reload's spill-slot order, the register find_reg / find_free_reg picks among
-those its own checks accept) that the source has not been found to reach. tools/oracle.py proves the
+those its own checks accept, the thread fill_eager_delay_slots tries first, a gcse copy/constant propagation or
+PRE deletion declined through the failure path the pass already handles) that the source has not been found to
+reach. tools/oracle.py proves the
 unit's residue is only that decision: compiled under gdb with exactly these forces, the output is the game's
 code, byte for byte (relocations resolved). Without them it is not (else the unit belongs in src/funcs/).
 
@@ -27,6 +29,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,7 +38,8 @@ from common import BUILD, FUZZY_RE, ROOT, SRC_CONCESSION, SRC_FUNCS, SRC_NONMATC
 
 FORCE_RE = re.compile(r"/\*\s*force:\s*(\{.*?\})\s*\*/")
 MAX_FORCES = 8
-FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr"}
+TRACE_RETRIES = 3
+FORCE_KINDS = {"ga", "la", "sched", "spill", "fr", "lfr", "reorg", "cprop"}   # "pre" is an oracle diagnostic only: no identity check yet
 
 
 def unit_forces(path):
@@ -49,7 +53,10 @@ def unit_forces(path):
 def count_decisions(forces):
     """What MAX_FORCES limits: every force line is one decision, except
       * a sched replay order ({"kind":"sched","order":[...],"picks":N}): the N ready-list picks it overrides;
-      * a spill-slot order ({"kind":"spill","order":[p1..pN]}): N - 1 (the choices that fix an order of N)."""
+      * a spill-slot order ({"kind":"spill","order":[p1..pN]}): N - 1 (the choices that fix an order of N).
+    reorg ({"kind":"reorg","uid":B,"pred":P}), cprop ({"kind":"cprop","reg":R,"uid":U,...}) and pre
+    ({"kind":"pre","uid":U} or {"kind":"pre","expr":E,"pass":K}) lines are one decision each: one branch's
+    thread order, one propagation into one insn, one PRE deletion (or PRE leaving one expression alone)."""
     def one(f):
         if f.get("kind") == "spill":
             return max(1, len(f.get("order", [])) - 1)
@@ -112,11 +119,19 @@ def verify(name, path, wd=None):
         info["plain"] = len(plain.diffs)
         if plain.ok:
             return ["it matches exactly without its forces: move it to src/funcs/ and drop the force lines"], info
-        unit = oracle.Unit(name, path, wd / "oracle")
-        text, ev = unit.traced("gate", force=forces)
+        # wibo occasionally hangs under heavy load (tools/cc.py retries for the same reason): retry the traced
+        # compile a few times on a timeout before reporting it, so one hang cannot fail the whole gate
+        for attempt in range(TRACE_RETRIES):
+            try:
+                unit = oracle.Unit(name, path, wd / "oracle")
+                text, ev = unit.traced("gate", force=forces)
+                break
+            except subprocess.TimeoutExpired:
+                if attempt == TRACE_RETRIES - 1:
+                    return [f"forced compile timed out {TRACE_RETRIES} times (wibo hang under load?): rerun the gate"], info
         errs = [e for e in ev if e.get("ev") == "error"]
         res = oracle.compare_asm(unit, text, "gate")
-    except (cc.StageError, OSError, KeyError) as e:
+    except (cc.StageError, OSError, KeyError, subprocess.TimeoutExpired) as e:
         return [f"forced compile failed: {str(e).strip().splitlines()[-1][:300]}"], info
     if res.error:
         return [res.error.strip().splitlines()[-1][:300]], info

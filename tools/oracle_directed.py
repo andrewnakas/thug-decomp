@@ -23,6 +23,12 @@ answer off the game's code instead:
     {"kind":"lfr","block":b,"reg":p,"hard":h} (local find_free_reg), whichever allocator placed p.
   * spill-slot order: $sp offsets that differ vote for the game's slot of each spilled pseudo, giving
     {"kind":"spill","order":[pseudos]} (reload's alter_reg loop visits them in that order).
+  * delay-slot thread: for every conditional branch next to a differing word (or whose slot insn is),
+    {"kind":"reorg","uid":b,"pred":p} with each other prediction (fill_eager_delay_slots tries the other
+    thread first).
+  * gcse declines: every successful copy/const propagation into an involved insn or of an involved pseudo
+    gives {"kind":"cprop",...}; every involved PRE deletion {"kind":"pre","uid":u}, and every expression whose
+    reaching reg or inserted insn is involved {"kind":"pre","expr":e,"pass":k}. Each is tried alone.
   * beam search over those candidate sets (replace a block's order when it is re-derived, keep the k best
     states by differing words, then by force count), up to N rounds.
 
@@ -327,10 +333,101 @@ def spill_forces(ev, res, al):
     return out
 
 
+# ------------------------------------------------------------------ reorg thread order, gcse cprop / PRE
+def involved_set(res, d, insns):
+    """uids of the differing words (and their neighbours, for delay slots) and ("r", pseudo) of their insns."""
+    wu = d.word_uid or []
+    out = set()
+    for i in res.diffs:
+        for j in (i - 1, i, i + 1):
+            u = wu[j] if 0 <= j < len(wu) else None
+            if u is None:
+                continue
+            out.add(u)
+            ins = insns.get(u) if insns else None
+            if ins is not None and j == i:
+                out |= {("r", rn) for rn, hard in R.regs_in(ins.pattern) if not hard}
+    return out
+
+
+ALT_PRED = {-1: [1, 2], 0: [1, 2], 1: [0, 2], 2: [0, 1]}
+
+
+def reorg_forces(ev, involved):
+    """{"kind":"reorg","uid":B,"pred":P}: fill_eager_delay_slots tries the other thread first for branch B
+    (pred > 0: the target, else the fall-through), for every branch next to a differing word (or whose
+    delay-slot insns are)."""
+    slot_of = {}
+    for e in ev:
+        if e.get("ev") == "delay":
+            for u in e["slots"]:
+                slot_of[u] = e["branch"]
+    near = {u for u in involved if isinstance(u, int)}
+    near |= {slot_of[u] for u in list(near) if u in slot_of}
+    out, seen = [], set()
+    for e in ev:
+        if e.get("ev") != "eager" or e["uid"] not in near or e["uid"] in seen:
+            continue
+        seen.add(e["uid"])
+        for p in ALT_PRED.get(e["pred"], []):
+            out.append({"kind": "reorg", "uid": e["uid"], "pred": p})
+    return out
+
+
+GCSE_PROP = re.compile(r"^(COPY|CONST)-PROP: Replacing reg (\d+) in insn (\d+) with (?:reg (\d+)|constant)")
+
+
+def gcse_forces(unit, ev, involved):
+    """Candidate declines of gcse's own actions that touch a differing insn or one of its pseudos:
+    {"kind":"cprop","reg":R,"uid":U,"what":W,"pass":P} (that propagation's try_replace_reg fails) and
+    {"kind":"pre","uid":U} / {"kind":"pre","expr":E,"pass":P} (pre_delete's validate_change fails for that
+    occurrence / for every occurrence of expression E, so PRE inserts and copies nothing for it)."""
+    log = unit.files.get("gcse", "")
+    done = set()
+    for l in log.splitlines():
+        m = GCSE_PROP.match(l)
+        if m:
+            done.add((m.group(1).lower(), int(m.group(2)), int(m.group(3))))
+    regs = {x[1] for x in involved if isinstance(x, tuple)}
+    uids = {x for x in involved if isinstance(x, int)}
+    out = []
+    for e in ev:
+        if e.get("ev") != "cprop" or (e["what"], e["reg"], e["uid"]) not in done:
+            continue
+        if e["uid"] in uids or e["reg"] in regs or (e.get("to") in regs):
+            f = {"kind": "cprop", "reg": e["reg"], "uid": e["uid"], "what": e["what"], "pass": e["pass_"]}
+            if f not in out:
+                out.append(f)
+    # PRE: reaching regs and inserted insns per expression, from the log
+    reach, ins_uid = {}, {}
+    for l in log.splitlines():
+        m = re.match(r"^PRE: redundant insn (\d+) \(expression (\d+)\) in bb \d+, reaching reg is (\d+)", l)
+        if m:
+            reach.setdefault(int(m.group(2)), set()).add(int(m.group(3)))
+        m = re.match(r"^PRE(?:/HOIST)?: (?:end of )?bb \d+, insn (\d+), copying expression (\d+)", l)
+        if m:
+            ins_uid.setdefault(int(m.group(2)), set()).add(int(m.group(1)))
+    pre = [e for e in ev if e.get("ev") == "pre_delete"]
+    exprs = []
+    for e in pre:
+        x = e["expr"]
+        touch_e = bool(reach.get(x, set()) & regs) or bool(ins_uid.get(x, set()) & uids)
+        if e["uid"] in uids:
+            f = {"kind": "pre", "uid": e["uid"]}
+            if f not in out:
+                out.append(f)
+        if (touch_e or e["uid"] in uids) and (x, e["pass_"]) not in exprs:
+            exprs.append((x, e["pass_"]))
+    for x, ps in exprs:
+        out.append({"kind": "pre", "expr": x, "pass": ps})
+    return out
+
+
 # ------------------------------------------------------------------ search
 class Search:
-    def __init__(self, name, src, wd, log=print, flips=True, ra=True):
+    def __init__(self, name, src, wd, log=print, flips=True, ra=True, rg=True):
         self.ra = ra
+        self.rg = rg
         self.unit = oracle.Unit(name, src, wd)
         import match
         self.addr = match.func_row(name)["addr"]
@@ -376,6 +473,7 @@ class Search:
         al = align(st["res"], self.addr, how)
         s2 = sched_targets(st["ev"], st["res"], d, al, 2) if d.word_uid else {}
         s1 = sched_targets(st["ev"], st["res"], d, al, 1) if d.word_uid else {}
+        insns = {}
         try:
             ps, _, insns, _ = RA.build(d)
             cons, wants = ga_constraints(st["ev"], st["res"], d, al, ps, insns)
@@ -385,6 +483,13 @@ class Search:
         extra = [("choice", f) for f in extra]
         if self.ra:
             extra += [("spill", f) for f in spill_forces(st["ev"], st["res"], al)]
+        if self.rg:
+            try:
+                inv = involved_set(st["res"], d, insns)
+            except Exception:
+                inv = set()
+            extra += [("reorg", f) for f in reorg_forces(st["ev"], inv)]
+            extra += [("gcse", f) for f in gcse_forces(self.unit, st["ev"], inv)]
         return s1, s2, cons, extra
 
     @staticmethod
@@ -414,6 +519,10 @@ class Search:
         s1, s2, cons, extra = self.analyse(st, how)
         F = st["forces"]
         out = []
+        # reorg thread order and gcse declines: each alone (a wrong one costs words, so no sets)
+        for k in ("reorg", "gcse"):
+            for f in [f for kk, f in extra if kk == k and f not in F][:12]:
+                out.append(F + [f])
         sp = [f for k, f in extra if k == "spill" and f not in F]
         ch = [f for k, f in extra if k == "choice" and f not in F]
         if sp:                                 # a spill order is re-derived each round: replace the old one

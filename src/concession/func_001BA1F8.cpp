@@ -1,4 +1,4 @@
-/* fuzzy: 97.3 */
+/* force: {"kind": "reorg", "uid": 225, "pred": 1} */
 struct State_001BA1F8 {
     char pad[0x1C];
     int m_mode;

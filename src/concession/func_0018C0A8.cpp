@@ -1,4 +1,8 @@
-/* fuzzy: 84.8 */
+/* force: {"kind": "fr", "reg": 118, "hard": 20} */
+/* force: {"kind": "reorg", "uid": 39, "pred": 1} */
+/* force: {"kind": "reorg", "uid": 110, "pred": 1} */
+/* force: {"kind": "sched", "pass": 2, "block": 1, "clock": 1, "first": [46, 44]} */
+/* force: {"kind": "sched", "pass": 2, "block": 6, "clock": 1, "first": [117, 115]} */
 /* sym: __14Sound_0018C0A8ii = 0x00120168 */
 /* sym: _$_14Sound_0018C0A8 = 0x00183D80 */
 

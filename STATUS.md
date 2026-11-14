@@ -14,6 +14,7 @@
   plays into New Jersey in PCSX2 with frames matching the original (checked 2026-11-13 and 2026-11-14 by booting the
   original and the functional build back to back).
 - What is left, unit by unit, and why each one does not match: [docs/REMAINING.md](docs/REMAINING.md).
+- Post-mortem (what worked, what did not, the ceiling, and port difficulty): [docs/POSTMORTEM.md](docs/POSTMORTEM.md).
 
 ## History
 

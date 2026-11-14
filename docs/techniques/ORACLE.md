@@ -61,7 +61,9 @@ Force specs (`--with` or the trace's `forced` field): `{"kind":"ga","before":[A,
 (pseudo numbers), `{"kind":"la","block":N,"before":[A,B]}`, `{"kind":"sched","pass":1|2,"block":N,"clock":C,"first":UID}`,
 `{"kind":"sched",...,"clock":C,"first":[U1,U2]}` (U1 issued first, U2 second in that cycle: the EE issues up to
 two insns a cycle), `{"kind":"sched","pass":P,"block":N,"picks":K,"order":[UIDs]}` (replay a whole block; see
-"Target-directed search"), `{"kind":"cprop","reg":R}`.
+"Target-directed search"), `{"kind":"cprop","reg":R}`, and the register-allocation kinds of "Register choice and
+spill-slot forces" below: `{"kind":"spill","order":[P1,...]}`, `{"kind":"fr","reg":P,"hard":H}`,
+`{"kind":"lfr","block":B,"reg":P,"hard":H}` (H is gcc's hard register number: 2 = `$v0`, 4 = `$a0`, 32 + n = `$fn`).
 
 ## Hook points in SN 1.36 `cc1plus.exe` (all verified by disassembly against gcc 2.95.3's source)
 
@@ -75,6 +77,10 @@ two insns a cycle), `{"kind":"sched","pass":P,"block":N,"picks":K,"order":[UIDs]
 | issue (`last_scheduled_insn = insn`) | 0x4F4F27 | insn in esi; `last_scheduled_insn` 0x610CEC |
 | `emit_delay_sequence(insn, list, length)` | 0x57B100 | caller from the return address |
 | `cprop_insn` copy-prop / const-prop `try_replace_reg` calls | 0x4E96C2 / 0x4E971C | regno esi, insn edi, src ebx; force skips the call (eax=0) |
+| reload1.c `alter_reg(i, from_reg)` 0x56CF60: the call in reload()'s `for (i = LAST_VIRTUAL_REGISTER + 1; ...)` loop / in `finish_spills`' loop; `finish_spills` entry | 0x56A86D / 0x56F66A; 0x56EFA0 | args at [esp], [esp+4] at the `call`; `reg_old_renumber` (short*) 0x6151B8, `max_regno` 0x62914C; force rewrites the two pushed args |
+| `assign_stack_local` entry; its two calls in `alter_reg` (returned MEM at the next insn) | 0x4DE3D0; 0x56D028 / 0x56D0D3 | `frame_offset` (64-bit) 0x629128; slot offset = INTVAL of the MEM's PLUS |
+| global.c `find_reg` arg 2 `losers` (a HARD_REG_SET *, 16 bytes: FIRST_PSEUDO_REGISTER is 111) | [esp+8] at 0x4EC790 | force points it at 0x62CFE0, 16 unused bytes past .data's VirtualSize (0x62CFC4) in its last mapped page |
+| local-alloc.c `find_free_reg(class, mode, qty, acc, just_try_suggested, born, dead)` / the insns after its 6 calls | 0x539480 / 0x53843D 0x5385AD 0x5385FB 0x53865A 0x53869C 0x5398C3 | `qty_phys_copy_sugg` (HARD_REG_SET*) 0x611064, `qty_phys_num_copy_sugg` (short*) 0x611074, `qty_phys_num_sugg` 0x61105C, `qty_phys_sugg` 0x6110AC |
 
 Layout facts the tracer depends on: rtx header 8 bytes, every rtx field 8 bytes wide (HOST_WIDE_INT is 64-bit on
 this 32-bit host), so INSN_UID is at +8 and XEXP(x,i) at +8+8i. The binary was built by a gcc for Windows (cdecl,
@@ -302,8 +308,10 @@ the greedy search (`--force --chain 4 --max-force 10`) on a src/nonmatching unit
 
 Forces are keyed by pseudo-register numbers, block numbers and clocks, so they are tied to the exact source
 text: any edit to a concession unit needs a fresh `--find`. Allowed kinds: `ga`, `la`, `sched` (at most 8 decisions
-per unit, counted as in "Target-directed search" below). New kinds (reorg thread choice, find_reg, reload) are added to `FORCE_KINDS` in tools/concession.py as
-the oracle learns to force them, and listed here.
+per unit, counted as in "Target-directed search" below), and since 2026-11-13 `spill`, `fr` and `lfr` (see
+"Register choice and spill-slot forces"; a spill order of N pseudos counts N - 1 decisions). New kinds (reorg
+thread choice, reload register choice) are added to `FORCE_KINDS` in tools/concession.py as the oracle learns to
+force them, and listed here.
 
 ## Target-directed search (2026-11-13)
 
@@ -356,6 +364,60 @@ What still fails (measured, not assumed):
   `$v1` with `$v0` free; no allocno order produces that. These need live ranges from a different sched1.
 - **Dependences.** func_0012F420: the game hoists a load above stores ours keeps it behind (memory
   dependence), so it is never in the same ready list.
+
+## Register choice and spill-slot forces (2026-11-13)
+
+Three force kinds reach allocation decisions the earlier kinds could not. Each one acts on an **input** of the
+compiler's own routine (a loop order, a `losers` set, a suggestion set) and leaves the choice, its legality
+checks and its bookkeeping to that routine; the hook only verifies afterwards that the routine took the asked-for
+option, and reports a hook error (which fails `concession.py`) if it did not.
+
+| Kind | Spec | What it changes | Why the result is a choice the compiler could make |
+|---|---|---|---|
+| `spill` | `{"kind":"spill","order":[P1,P2,...]}` (optional `"site":"finish"`, `"n":K` for the K-th `finish_spills`) | the order in which reload's loop `for (i = ...; i < max_regno; i++) alter_reg (i, -1);` visits the named pseudos: the k-th iteration that would call `alter_reg` for one of them calls it for `order[k]` instead | every pseudo still gets exactly one `alter_reg` call, and `alter_reg`/`assign_stack_local` assign the slots; only the order of the slot assignments (hence which spilled pseudo gets which offset) is permuted. The hook fails unless all N named pseudos were replayed |
+| `fr` | `{"kind":"fr","reg":P,"hard":H}` (optional `"retrying":1` for reload's `retry_global_alloc`) | global.c `find_reg` for P is entered with every hard register except H in its `losers` argument (ORed into any `losers` it already had) | `find_reg` applies all its own tests to H (class, `hard_reg_conflicts`, fixed and call-used sets, mode, the pass-0/pass-1 rule) and, when H passes, records `reg_renumber`, `regs_used_so_far` and the conflicts of the other allocnos itself. If H fails a test, `find_reg` returns no register: hook error. `losers` is the input global.c itself uses to exclude registers (caller-save retry, reload's retry) |
+| `lfr` | `{"kind":"lfr","block":B,"reg":P,"hard":H}` | local-alloc.c `find_free_reg` calls for P's quantity in block B become `just_try_suggested` calls whose only copy-suggested register is H; the quantity's suggestion sets are restored when the call returns | `find_free_reg` checks H against the class, fixed/call-clobbered sets and `regs_live_at` over the quantity's whole lifetime, and marks it live itself (`post_mark_life`). block_alloc's own fallbacks (the real lifetime after the widened one, the alternate class) run as usual; the hook fails unless the quantity ends with H |
+
+Spot check (forcing the compiler's own choices must change nothing): on 11 matched src/funcs units (the 6
+largest, including func_001AC030 with 222 find_reg choices, 629 local quantities and 28 spill slots, and 5
+mid-sized ones), every `fr` and `lfr` set to the register the plain compile chose, plus a `spill` order equal to
+the natural one, gives byte-identical assembly with no hook error. Negative check: `fr` asking for `$zero` is
+refused by find_reg (hook error, no match).
+
+Finding the forces (`tools/oracle_directed.py`, also behind `concession.py --find --directed`):
+- **spill.** Our and the game's words are paired by position (a slot permutation moves no instruction; the
+  word alignment is used only when the sizes differ). Every pair of `$sp`-based loads/stores with different
+  offsets votes "our offset -> game offset". The trace gives each slot's frame offset (`slot` events); the
+  constant between frame offsets and `$sp` offsets is the one that puts the most votes inside the slot range at
+  both ends. The spilled pseudos are then sorted by the offset the game gives them, and the pseudos the
+  permutation leaves in place are dropped from the order.
+- **fr / lfr.** For each pseudo whose register differs from the game's (the same alignment as directed global
+  alloc), an `fr` force if find_reg placed it in this compile, else an `lfr` force for its block. All of them
+  are tried together, and each one alone.
+
+**Result** (`concession.py --find --directed --write`, the units of the earlier batch blocked on stack slots,
+find_reg or reload): **10 of 18 reach a forced match** and were written as concession units.
+- spill: func_002C9FA8 (one order of 5 pseudos), func_0024C590 (3), func_00206F68 (3), func_00273DB0 (4, plus
+  one `fr`).
+- fr: func_00273A60, func_001C6218 (one decision each).
+- lfr: func_001DA8F0, func_001CEA68 (1), func_00209B80 (3), func_00215388 (6: one inline body expanded six
+  times, the same choice in each).
+- No match: func_001EB180, func_001EC7A0, func_001FEC38, func_00231FE8 (find_free_reg refuses the game's
+  register under our lifetimes, or a schedule difference remains), and all four "reload" units:
+  func_001FDFA8 is a code-shape difference (the game's `lui $at` is an assembler macro expansion of another
+  insn pattern); in func_00294AB0 the game keeps pseudo 119 apart from 134, which combine_regs ties into one
+  quantity in ours; func_002448C0 and the first differences of func_002C0BE0 are two argument moves (hard
+  registers) issued in the other order, and the shape-only alignment reads that as a register swap. No reload
+  register choice is involved in any of them, so no reload kind was added.
+- The classifier's "find_reg choice" label covers both allocators: 4 of the 6 such units that matched needed
+  `lfr` (local-alloc placed the pseudo), not `fr`.
+
+Not yet exercised: the `"site":"finish"` form of `spill` (pseudos spilled during reload, whose slots
+`alter_reg` shares per hard register). It is implemented on the same pattern but no unit needed it.
+
+All four stack-slot units in this batch had their spilled pseudos in a rotated order: the game assigns the slots
+of the higher-numbered pseudos first (for example 287, 288 before 278, 279, 281). That suggests the pseudos were
+created in another order in the original (an inline body expanded earlier, say); the source lever is not known.
 
 ## Limits and next steps
 

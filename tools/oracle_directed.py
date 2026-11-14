@@ -19,6 +19,10 @@ answer off the game's code instead:
   * directed global alloc: for every pseudo sitting in a register the game does not use there, the
     conflicting pseudo that holds the game's register and was allocated first gives a constraint
     {"kind":"ga","before":[p,q]}; all of them are applied together.
+  * register choice: for the same pseudos, {"kind":"fr","reg":p,"hard":h} (global find_reg) or
+    {"kind":"lfr","block":b,"reg":p,"hard":h} (local find_free_reg), whichever allocator placed p.
+  * spill-slot order: $sp offsets that differ vote for the game's slot of each spilled pseudo, giving
+    {"kind":"spill","order":[pseudos]} (reload's alter_reg loop visits them in that order).
   * beam search over those candidate sets (replace a block's order when it is re-derived, keep the k best
     states by differing words, then by force count), up to N rounds.
 
@@ -223,9 +227,110 @@ def ga_constraints(ev, res, d, al, ps, insns):
     return cons, wants
 
 
+# ------------------------------------------------------------------ directed register choice (fr / lfr)
+def choice_forces(ev, wants):
+    """Forces that ask find_reg (global) or find_free_reg (local) for the game's register of each pseudo in
+    `wants` (pseudo -> game hard reg), whichever allocator placed it in this compile."""
+    glob = {e["regno"] for e in ev if e.get("ev") == "find_reg" and e.get("hard", -1) >= 0}
+    loc = {}
+    for e in ev:
+        if e.get("ev") == "la_result":
+            for q, regs in e["regs"].items():
+                for r in regs:
+                    loc[r] = e["block"]
+    out = []
+    for p, gh in sorted(wants.items()):
+        if gh is None:
+            continue
+        if p in glob:
+            out.append({"kind": "fr", "reg": p, "hard": gh})
+        elif p in loc:
+            out.append({"kind": "lfr", "block": loc[p], "reg": p, "hard": gh})
+    return out
+
+
+# ------------------------------------------------------------------ directed spill-slot order
+def _sp_mem(w):
+    """(opcode, rt, offset) of a load/store with base $sp, else None."""
+    op = w >> 26
+    if op < 0x20 and op not in (0x1A, 0x1B, 0x1E, 0x1F):     # ldl/ldr/lq/sq and the loads/stores (0x20+)
+        return None
+    if (w >> 21) & 31 != 29:
+        return None
+    off = w & 0xFFFF
+    return op, (w >> 16) & 31, off - 0x10000 if off & 0x8000 else off
+
+
+def spill_forces(ev, res, al):
+    """[spill force]: reorder alter_reg's slot assignments so every spilled pseudo gets the game's offset.
+
+    Our sp-relative offsets are matched to the game's by position (or through the word alignment when the
+    sizes differ); slot offsets from the trace are frame offsets, so the
+    constant between the two is taken as the one that explains the most differing words."""
+    slots, last = [], None
+    for e in ev:
+        if e.get("ev") == "alter_reg":
+            last = e
+        elif e.get("ev") == "slot" and last is not None:
+            slots.append((last["site"], last["n"], last["sub"] if last["sub"] is not None else last["regno"],
+                          e["off"]))
+    if not slots:
+        return []
+    t, o = res.target.words, res.ours.words
+    votes = Counter()
+    for i, tw in enumerate(t):
+        # same size: a slot permutation moves no instruction, so pair by position (the alignment would pair
+        # `sw $v1,0x58($sp)` with an identical word elsewhere); else fall back to the alignment
+        j = i if len(t) == len(o) else (al[i][0] if al[i] is not None else None)
+        if j is None or j >= len(o):
+            continue
+        a, b = _sp_mem(tw), _sp_mem(o[j])
+        if a and b and a[0] == b[0] and a[2] != b[2]:
+            votes[(b[2], a[2])] += 1
+    if not votes:
+        return []
+    offs = {s[3] for s in slots}
+    used = {m[2] for m in map(_sp_mem, o) if m}
+    deltas = {ours - so for (ours, _) in votes for so in offs}
+
+    def score(d):                              # votes inside the slot range at both ends, slots referenced
+        both = sum(n for (ours, game), n in votes.items() if ours - d in offs and game - d in offs)
+        return both, sum(1 for so in offs if so + d in used), -abs(d)
+    delta = max(sorted(deltas), key=score)
+    want = {}
+    for (ours, game), n in votes.most_common():
+        if ours - delta in offs and (ours - delta) not in want:
+            want[ours - delta] = game - delta
+    out = []
+    for site, n in sorted({(s[0], s[1]) for s in slots}):
+        grp = [s for s in slots if (s[0], s[1]) == (site, n)]
+        nat = [s[2] for s in grp]
+        desired = sorted(grp, key=lambda s: (want.get(s[3], s[3]), s[3]))
+        des = [s[2] for s in desired]
+        named = [p for k, p in enumerate(nat) if des[k] != p]
+        if len(named) < 2:
+            continue
+        order = [p for p in des if p in named]
+        while True:                            # drop pseudos the permutation leaves in place
+            fixed = [p for k, p in enumerate(order) if sorted(order)[k] == p]
+            if not fixed:
+                break
+            order = [p for p in order if p not in fixed]
+        if len(order) < 2:
+            continue
+        f = {"kind": "spill", "order": order}
+        if site != "init":
+            f["site"] = site
+        if n != 1:
+            f["n"] = n
+        out.append(f)
+    return out
+
+
 # ------------------------------------------------------------------ search
 class Search:
-    def __init__(self, name, src, wd, log=print, flips=True):
+    def __init__(self, name, src, wd, log=print, flips=True, ra=True):
+        self.ra = ra
         self.unit = oracle.Unit(name, src, wd)
         import match
         self.addr = match.func_row(name)["addr"]
@@ -276,7 +381,11 @@ class Search:
             cons, wants = ga_constraints(st["ev"], st["res"], d, al, ps, insns)
         except Exception:  # dumps missing or unparsable: no ga candidates
             cons, wants = [], {}
-        return s1, s2, cons
+        extra = choice_forces(st["ev"], wants) if self.ra else []
+        extra = [("choice", f) for f in extra]
+        if self.ra:
+            extra += [("spill", f) for f in spill_forces(st["ev"], st["res"], al)]
+        return s1, s2, cons, extra
 
     @staticmethod
     def with_orders(forces, pass_, targets):
@@ -302,9 +411,20 @@ class Search:
         return out
 
     def directed_candidates(self, st, how):
-        s1, s2, cons = self.analyse(st, how)
+        s1, s2, cons, extra = self.analyse(st, how)
         F = st["forces"]
         out = []
+        sp = [f for k, f in extra if k == "spill" and f not in F]
+        ch = [f for k, f in extra if k == "choice" and f not in F]
+        if sp:                                 # a spill order is re-derived each round: replace the old one
+            keep = [f for f in F if f.get("kind") != "spill"]
+            out.append(keep + sp)
+        if ch:
+            out.append(F + ch)
+            if len(ch) > 1:
+                out += [F + [f] for f in ch[:8]]
+        if sp and ch:
+            out.append([f for f in F if f.get("kind") != "spill"] + sp + ch)
         if s2:
             out.append(self.with_orders(F, 2, s2))
         if s1:
@@ -396,7 +516,7 @@ class Search:
         st = self.drop(st)
         forces = list(st["forces"])
         # rewrite each replay order as the per-cycle picks it overrode, when that reproduces the match
-        for f in [f for f in forces if "order" in f]:
+        for f in [f for f in forces if f.get("kind") == "sched" and "order" in f]:
             picks = [x for x in self.decisions(st) if x[0] == f["pass"] and x[1] == f["block"]]
             cyc = []
             for _, _, c, top, was in picks:
@@ -410,9 +530,9 @@ class Search:
 
 
 def count_decisions(forces):
-    """How tools/concession.py counts a force list against MAX_FORCES: a replay order counts as the number of
-    cycles whose pick it overrode (stored in the force as "picks"), every other force as one."""
-    return sum(max(1, int(f.get("picks", 1))) if "order" in f else 1 for f in forces)
+    """How tools/concession.py counts a force list against MAX_FORCES (see concession.count_decisions)."""
+    import concession
+    return concession.count_decisions(forces)
 
 
 def directed(name, src, wd, rounds=5, beam=2, budget=80, log=print):
@@ -423,7 +543,7 @@ def directed(name, src, wd, rounds=5, beam=2, budget=80, log=print):
     m = s.minimise(m)
     forces = []
     for f in m["forces"]:
-        if "order" in f:
+        if f.get("kind") == "sched" and "order" in f:
             n = sum(1 for x in s.decisions(m) if x[0] == f["pass"] and x[1] == f["block"])
             f = dict(kind="sched", **{"pass": f["pass"]}, block=f["block"], picks=n, order=f["order"])
         forces.append(f)

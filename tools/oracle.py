@@ -104,7 +104,7 @@ class Unit:
             if m:
                 self.files[m.group(1)] = f.read_text(errors="replace")
 
-    def traced(self, tag, hooks=("ga", "la", "sched", "reorg", "gcse"), force=()):
+    def traced(self, tag, hooks=("ga", "la", "sched", "reorg", "gcse", "spill"), force=()):
         """Run cc1plus under gdb; returns (asm text, list of events)."""
         out_s, trace = f"o_{tag}.s", self.wd / f"trace_{tag}.jsonl"
         args = list(self.cc1_args)

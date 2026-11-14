@@ -1,4 +1,5 @@
 /* fuzzy: 89.7 */
+/* blocked: First()'s if/else is folded into 'a0 = 0; if (cur) a0 = cur->m_data' by jump2 because the inline's result pseudo (145) takes $a0 from conn's copy preferences ($a0/$a1); the game keeps it in $v0 (same reg as the tested cur, which blocks the fold). oracle fr 145->$v0 takes 74 -> 13 words; the rest is the vtable/0xFF pseudo order (sched1 live ranges) and Next's s0=0 hoist. Tried: polarity of Advance, sibling-style Valid/First (func_002B4250, func_00200EC0), First via m_cur: no change. */
 struct Link_00200998 {
     int m0;
     void* m_data;

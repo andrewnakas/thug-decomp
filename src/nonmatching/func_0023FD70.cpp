@@ -1,8 +1,9 @@
-/* cflags: -fno-gcse */
-/* fuzzy: 86.6 */
+/* fuzzy: 88.1 */
+/* blocked: loops 1-2 now match (Id() in the while test keeps the exit test duplicated at the entry; default flags, no -fno-gcse). Loop 3: gcse PRE hoists the item->m_30 and i reloads above the first Count loop (copies at the ends of bb 22/23), the game loads them at the join; tried Id() in Count, a named head local, a reference parameter: no change. */
 struct Link_0023FD70 {
     int m_id;
     Link_0023FD70* m_next;
+    int Id() const { return m_id; }
 };
 
 struct Item_0023FD70 {
@@ -44,10 +45,8 @@ void Mgr_0023FD70::Link()
         Item_0023FD70* item = func_00243C18(m4, &i, &key);
         int id = func_00246258(item);
         Link_0023FD70* l = item->m_2C;
-        while (l) {
-            if (!l->m_id)
-                break;
-            Item_0023FD70* c = func_0023BAD8(this, l->m_id, 0);
+        while (l && l->Id()) {
+            Item_0023FD70* c = func_0023BAD8(this, l->Id(), 0);
             bool found = false;
             for (Link_0023FD70* p = c->m_30; p && p->m_id; p = p->m_next) {
                 if (p->m_id == id) {

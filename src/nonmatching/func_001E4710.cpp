@@ -3,6 +3,7 @@
 /* const: 0x1CA200 */
 /* const: 0x3C45C0 */
 /* const: 0x32A900 */
+/* blocked: the game has a real loop (alignment nop at 0x1E495C) but loop.c neither hoisted 0x2F/0x5C nor strength-reduced path[i]; a for loop here gets both (122 words), the goto loop none (80). The threshold*savings*lifetime test needs a bigger loop at loop.c time or another flag (no neighbour evidence for -mvu0-use-vf0-vf2: 95 matched 0x1E3-0x1E5 units use default flags). */
 extern char* D_0038E320;
 extern int D_0038E318;
 extern int D_0038881C;

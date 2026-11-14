@@ -1,4 +1,5 @@
 /* fuzzy: 88.4 */
+/* blocked: the game keeps async (0) in $s3 and tests it after func_0010F5B0 (bnez $s3), so it was not a foldable constant local in the original; ours folds it and saves one s-register fewer, shifting the frame (87 words). Shape unknown. */
 struct Heap_0025D5F0 {
     char pad[0xD8];
     int mD8;

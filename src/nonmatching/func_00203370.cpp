@@ -1,4 +1,5 @@
 /* fuzzy: 93.4 */
+/* blocked: the game issues the rot.x/0.0f compare loads after all 15 Identity stores (memory dependence), ours lets sched1 hoist them (alias analysis separates the $sp-based rot from the this-based m70). Tried rot.x instead of r->x and m70.Identity(): no change. */
 typedef int qword __attribute__((mode(TI)));
 
 struct Vec_00203370 {

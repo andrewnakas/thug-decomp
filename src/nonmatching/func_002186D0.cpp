@@ -1,4 +1,5 @@
 /* fuzzy: 88.4 */
+/* blocked: first differences are global-alloc priority (pseudo 146 $s1 vs $s2, 152 $s2 vs $a0) and sched2 store order in the matrix setup; no code-shape lever found in this pass. */
 typedef int qword_002186D0 __attribute__((mode(TI)));
 
 union Row_002186D0 {

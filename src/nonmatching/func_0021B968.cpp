@@ -1,4 +1,5 @@
 /* fuzzy: 88.0 */
+/* blocked: the game's switch tree has root 0xA71394A2 with {0xE47F1B79, 0xEF59C100} on the right: balance_case_nodes only picks that root with a 4th case below 0xA71394A2 whose body equals default (its compare is then deleted by jump). That value is not pinned by the binary (any checksum below 0xA71394A2 fits), so per the case-value ruling it cannot be written. */
 struct Array_0021B968 {
     int m0;
     int m4;

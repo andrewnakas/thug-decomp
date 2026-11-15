@@ -25,6 +25,8 @@ the game, dumped yourself, to build or check anything. **The leaked THUG source 
 
 Progress is tracked on [bytematch.dev](https://bytematch.dev/andrewnakas/thug-decomp) (the headline counts only
 exact, concession-free matches). What is left, and why, is in [docs/REMAINING.md](docs/REMAINING.md).
+The project post-mortem, with an outline of what a Rust rewrite would take, is
+[docs/POSTMORTEM.md](docs/POSTMORTEM.md).
 
 ## Three tiers of C++
 
